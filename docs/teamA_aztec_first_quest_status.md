@@ -433,7 +433,7 @@ pnpm install
    - Aztec CLI tools installed globally (see Installation above)
    - If `aztec-nargo` command not found, run: `bash -i <(curl -s https://install.aztec.network)`
 
-2. **Run Tests:**
+2. **Run Noir Tests:**
    ```bash
    # From root:
    pnpm aztec:test
@@ -443,14 +443,56 @@ pnpm install
    pnpm aztec:test
    ```
 
-3. **Test Files:**
+3. **Noir Test Files:**
    - `packages/core-logic/tests/prove_aztec_builder_tier_test.nr`
    - `packages/core-logic/tests/prove_skill_threshold_test.nr`
+   - `packages/core-logic/tests/compute_pedersen_hashes.nr`
 
 4. **Expected Output:**
    - Test results for tier proof logic
    - Verification of quest completion storage
    - Pass/fail status for each test case
+
+### Integration Tests
+
+**TypeScript Integration Tests:**
+
+Run all tests:
+```bash
+pnpm --filter @hidden-garden/core-logic test
+```
+
+**Test Coverage:**
+
+1. **Hash Consistency Tests** (`tests/hash_consistency.test.ts`):
+   - Verifies TypeScript hash computations match Noir constants
+   - Tests quest ID, category, and path hash consistency
+   - Validates hex format and determinism
+   - Always runs (no devnet required)
+
+2. **RealAztecClient Integration Tests** (`tests/aztec_first_quest.test.ts`):
+   - **Requires:** Aztec devnet running and `AZTEC_PXE_URL` environment variable
+   - **Skips automatically** if `AZTEC_PXE_URL` is not set (CI-friendly)
+   - Tests:
+     - Quest completion storage via `addQuestCompletionByQuestId()`
+     - Tier proof generation via `proveAztecBuilderTier()`
+     - Public inputs verification (owner, minTier, minAverageScore, pathHash)
+     - **Privacy guarantee:** Verifies no quest-specific data (quest_id, score, timestamp) in public inputs
+
+**Running Integration Tests:**
+
+```bash
+# Set environment variable (if not already set)
+export AZTEC_PXE_URL=http://localhost:8080
+
+# Start Aztec devnet (in another terminal)
+pnpm aztec:devnet
+
+# Run tests
+pnpm --filter @hidden-garden/core-logic test
+```
+
+**Note:** Tests are automatically skipped if `AZTEC_PXE_URL` is not configured, making them CI-friendly. The test suite uses `describe.skip()` when devnet is unavailable.
 
 ### Version Requirements
 

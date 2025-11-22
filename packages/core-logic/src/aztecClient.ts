@@ -180,11 +180,36 @@ export class RealAztecClient implements AztecClient {
     try {
       const pxeUrl = this.config.pxeUrl!;
       
+      if (!pxeUrl) {
+        throw new Error(
+          'RealAztecClient: PXE URL not configured. ' +
+          'Set PXE_URL or AZTEC_PXE_URL environment variable, or pass pxeUrl in config. ' +
+          'Example: PXE_URL=http://localhost:8080'
+        );
+      }
+      
       // Create PXE client
-      this.pxe = createPXEClient(pxeUrl);
+      try {
+        this.pxe = createPXEClient(pxeUrl);
+      } catch (error) {
+        throw new Error(
+          `RealAztecClient: Could not create PXE client for ${pxeUrl}. ` +
+          `Error: ${error instanceof Error ? error.message : String(error)}. ` +
+          `Make sure @aztec/aztec.js is installed.`
+        );
+      }
       
       // Wait for PXE to be ready
-      await waitForPXE(this.pxe, 60000); // 60 second timeout
+      try {
+        await waitForPXE(this.pxe, 60000); // 60 second timeout
+      } catch (error) {
+        throw new Error(
+          `RealAztecClient: Could not connect to PXE at ${pxeUrl}. ` +
+          `Is Aztec sandbox/devnet running? ` +
+          `Start it with: pnpm aztec:devnet or aztec start --sandbox. ` +
+          `Error: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
       
       // Load Aztec SDK modules
       const sdkLoaded = await loadAztecSDK();
@@ -209,9 +234,22 @@ export class RealAztecClient implements AztecClient {
       // Load contract artifact
       const artifactPath = this.config.artifactPath || this.findContractArtifact();
       if (!artifactPath || !fs.existsSync(artifactPath)) {
+        const checkedPaths = this.config.artifactPath 
+          ? [this.config.artifactPath]
+          : [
+              path.join(__dirname, '../target/PrivateIdentityGarden.json'),
+              path.join(__dirname, '../target/private_skill_tree.json'),
+              path.join(__dirname, '../artifacts/PrivateIdentityGarden.json'),
+              path.join(process.cwd(), 'packages/core-logic/target/PrivateIdentityGarden.json'),
+              path.join(process.cwd(), 'packages/core-logic/target/private_skill_tree.json'),
+              path.join(process.cwd(), 'target/PrivateIdentityGarden.json'),
+              path.join(process.cwd(), 'target/private_skill_tree.json'),
+            ];
         throw new Error(
-          `Contract artifact not found. Checked: ${this.config.artifactPath || 'auto-detected paths'}. ` +
-          `Please compile the contract first with: pnpm aztec:compile`
+          `RealAztecClient: Could not load PrivateIdentityGarden artifact. ` +
+          `Checked paths: ${checkedPaths.join(', ')}. ` +
+          `Did you run \`pnpm aztec:compile\`? ` +
+          `The contract must be compiled before deployment.`
         );
       }
 
@@ -248,7 +286,8 @@ export class RealAztecClient implements AztecClient {
           console.log(`   Save this address to AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS for reuse`);
         } catch (error) {
           throw new Error(
-            `Failed to deploy contract. ` +
+            `RealAztecClient: Failed to deploy PrivateIdentityGarden. ` +
+            `Check devnet logs and your deployer account. ` +
             `Error: ${error instanceof Error ? error.message : String(error)}. ` +
             `Make sure the contract artifact is valid and the wallet has sufficient funds.`
           );
