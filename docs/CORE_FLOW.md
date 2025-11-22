@@ -147,11 +147,129 @@ You're saying:
 
 ## Next Steps
 
-1. **Replace MockAztecClient** with real Aztec SDK integration
+1. ✅ **Real Aztec client implemented** for `aztec_concept_quiz`
 2. **Deploy contracts** to testnet/mainnet
 3. **Set up indexer** to track tier proofs
 4. **Implement remaining quests** (18 more to go)
 5. **Add leaderboard UI** to display published tiers
+
+---
+
+## How to Demo the First Real Quest
+
+This section demonstrates the **privacy-native** flow for `aztec_concept_quiz` using the real Aztec devnet.
+
+### Prerequisites
+
+1. **Aztec devnet running:**
+   ```bash
+   pnpm aztec:devnet
+   ```
+   Wait for it to be ready (check with `aztec status`)
+
+2. **Environment variables set:**
+   ```bash
+   # In apps/aztecbat-ui/.env.local
+   NEXT_PUBLIC_USE_REAL_AZTEC=true
+   NEXT_PUBLIC_PXE_URL=http://localhost:8080
+   ```
+
+3. **App running:**
+   ```bash
+   pnpm dev:web
+   ```
+
+### Demo Steps
+
+1. **Navigate to the quest:**
+   - Go to: `http://localhost:3000/quests/aztec_concept_quiz`
+   - You should see: "Aztec mode: 🟢 REAL devnet" indicator at the top
+
+2. **Answer the quiz:**
+   - Question: "What is Aztec Protocol?"
+   - Enter answer: `{"selectedOptionId": "0"}`
+   - Click "Validate Answer"
+   - Should see: ✅ Correct! Score: 100%
+
+3. **Store Privately in Aztec:**
+   - Click "🔒 Store Privately in Aztec"
+   - What happens:
+     - `RealAztecClient` connects to Aztec devnet (if not already connected)
+     - Calls `add_quest_completion(owner, quest_id_hash, score)` on `PrivateIdentityGarden` contract
+     - Creates a private `QuestNote` in your Aztec vault:
+       ```noir
+       QuestNote {
+         quest_id_hash: keccak256("aztec_concept_quiz"),
+         category_hash: pedersen_hash("aztec_builder"),
+         score: 100,
+         timestamp: 0
+       }
+       ```
+     - Stores quest score in private storage: `quest_scores[owner][quest_id_hash] = 100`
+   - Should see: ✅ Stored in Private Vault
+   - **Privacy guarantee:** No one can see your individual quest completion or score
+
+4. **Generate & Publish Tier Proof:**
+   - Connect your wallet (MetaMask or similar)
+   - Click "🔓 Generate & Publish Tier Proof"
+   - What happens:
+     - `RealAztecClient` calls `prove_aztec_builder_tier(owner, 1, 60)` on the contract
+     - Noir circuit:
+       1. Queries private storage for quest scores
+       2. Checks if `aztec_concept_quiz` is completed with score >= 60
+       3. Computes achieved tier (1) and average score (100)
+       4. Asserts: `achieved_tier >= 1` AND `average_score >= 60`
+       5. Generates ZK proof + public inputs
+     - Returns: `{ proof, publicInputs }`
+     - Submits to L1 contract: `submitSkillTierWithProof(skillHash, tier, proof, publicInputs)`
+   - Should see: ✅ Tier proof published!
+
+### What Gets Revealed vs. What Stays Private
+
+**Public (on L1):**
+- ✅ Your Aztec address
+- ✅ Minimum tier proven: Tier 1
+- ✅ Minimum average score: 60%
+- ✅ Path hash: `aztec_builder_path`
+- ✅ ZK proof (verifiable by anyone)
+
+**Private (never revealed):**
+- ❌ Which specific quest you completed (`aztec_concept_quiz`)
+- ❌ Your actual score (100%)
+- ❌ When you completed it
+- ❌ How many attempts you made
+- ❌ Any other quest completions
+
+### Why This is Privacy-Native
+
+This flow **cannot be done on a public chain** without leaking per-quest data:
+
+- **On Ethereum/L1:** Every transaction is public. If you stored quest completions on-chain, everyone could see:
+  - Which quests you completed
+  - Your scores
+  - When you completed them
+  - Your learning journey
+
+- **On Aztec:** Quest completions are stored in **private notes** (encrypted). Only you can decrypt them. The tier proof is a **zero-knowledge proof** that compresses your private data into a public assertion:
+  - "I have achieved Tier 1" (without revealing how)
+
+This is the core innovation: **Selective skill sharing** — prove competence without revealing credentials.
+
+### Troubleshooting
+
+**"Aztec mode: 🟡 MOCK" instead of REAL:**
+- Check that `NEXT_PUBLIC_USE_REAL_AZTEC=true` is set
+- Verify Aztec devnet is running: `aztec status`
+- Check browser console for connection errors
+
+**"Failed to initialize Aztec client":**
+- Make sure devnet is running: `pnpm aztec:devnet`
+- Check PXE URL: Should be `http://localhost:8080`
+- Wait a few seconds for devnet to fully start
+
+**"Contract not deployed":**
+- Contract needs to be compiled first: `pnpm aztec:compile`
+- Contract will be auto-deployed on first use (or set `PRIVATE_IDENTITY_GARDEN_ADDRESS` if already deployed)
 
 ## The Core Innovation
 
