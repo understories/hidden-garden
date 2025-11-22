@@ -54,8 +54,6 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
-*.d.ts.map
-*.js.map
 
 # Hardhat
 artifacts/
