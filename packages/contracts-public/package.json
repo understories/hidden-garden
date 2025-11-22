@@ -1,0 +1,11 @@
+{
+  "name": "@hidden-garden/contracts-public",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "node": "hardhat node"
+  }
+}
+
