@@ -3,6 +3,7 @@ export type SkillNode = {
   name: string;
   level: number;
   xp: number;
+  children?: SkillNode[];
 };
 
 export interface AztecBuilderTierProofInputs {
