@@ -1,0 +1,9 @@
+{
+  "name": "@hidden-garden/circuits-aztec",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "test": "nargo test"
+  }
+}
+
