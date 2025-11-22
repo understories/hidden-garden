@@ -10,3 +10,7 @@ export type { AztecBuilderTierProofInputs } from './types';
 export type { SkillNode } from './skillTree';
 export { normalizeSkillId } from './skillTree';
 
+// Export quest system types and utilities
+export * from './quests/types';
+export * from './quests/mapping';
+
