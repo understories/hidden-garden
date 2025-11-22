@@ -273,6 +273,33 @@ export interface TierRequirements {
 }
 
 /**
+ * Tier evaluation input
+ * Input for evaluating whether a user has achieved a tier threshold
+ * Used for client-side tier calculation before generating proofs
+ */
+export interface TierEvaluationInput {
+  /** Array of quest notes from the user's Aztec vault */
+  questNotes: QuestNoteModel[];
+  /** Minimum tier to evaluate */
+  minTier: TierNumber;
+  /** Minimum average score required (0-100) */
+  minAverageScore: number;
+}
+
+/**
+ * Tier evaluation output
+ * Result of evaluating tier achievement based on quest notes
+ */
+export interface TierEvaluationOutput {
+  /** The highest tier achieved based on quest completions */
+  achievedTier: TierNumber;
+  /** Average score across completed quests */
+  averageScore: number;
+  /** Whether the user meets the minimum tier and average score thresholds */
+  meetsThreshold: boolean;
+}
+
+/**
  * Tier proof inputs
  * Inputs required to generate a tier proof
  */

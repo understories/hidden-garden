@@ -32,6 +32,8 @@ export type {
   QuestNoteModel,
   QuestCompletion,
   TierRequirements,
+  TierEvaluationInput,
+  TierEvaluationOutput,
   TierProofInputs,
   QuestRegistryEntry,
   // Legacy aliases (for backward compatibility)
