@@ -11,6 +11,8 @@ import {
 import {
   type AztecClient,
   MockAztecClient,
+  RealAztecClient,
+  createAztecClient,
   type QuestCompletionResult,
   computeQuestIdHash,
 } from '@hidden-garden/core-logic';
@@ -42,7 +44,9 @@ export default function QuestPage() {
   const [isValidating, setIsValidating] = useState(false);
   const [isStoring, setIsStoring] = useState(false);
   const [storageResult, setStorageResult] = useState<QuestCompletionResult | null>(null);
-  const [aztecClient] = useState<AztecClient>(new MockAztecClient());
+  const [aztecMode, setAztecMode] = useState<'real' | 'mock'>('mock');
+  const [aztecClient, setAztecClient] = useState<AztecClient | null>(null);
+  const [isInitializing, setIsInitializing] = useState(false);
   
   const { address, isConnected } = useAccount();
   const { writeContract, data: hash, isPending, error: contractError } = useWriteContract();
@@ -57,6 +61,39 @@ export default function QuestPage() {
       // Set default submission based on quest type
       if (questDef?.type === 'multiple_choice') {
         setSubmission('{"selectedOptionId": ""}');
+      }
+
+      // For aztec_concept_quiz, use real Aztec client if enabled
+      const useRealAztec = process.env.NEXT_PUBLIC_USE_REAL_AZTEC === 'true' && questId === 'aztec_concept_quiz';
+      
+      if (useRealAztec) {
+        setIsInitializing(true);
+        const client = createAztecClient('real', {
+          pxeUrl: process.env.NEXT_PUBLIC_PXE_URL || 'http://localhost:8080',
+        });
+        
+        // Initialize the client (async)
+        if (client instanceof RealAztecClient) {
+          client.initialize()
+            .then(() => {
+              setAztecClient(client);
+              setAztecMode('real');
+              setIsInitializing(false);
+            })
+            .catch((error) => {
+              console.warn('Failed to initialize real Aztec client, falling back to mock:', error);
+              setAztecClient(new MockAztecClient());
+              setAztecMode('mock');
+              setIsInitializing(false);
+            });
+        } else {
+          setAztecClient(client);
+          setAztecMode('mock');
+          setIsInitializing(false);
+        }
+      } else {
+        setAztecClient(new MockAztecClient());
+        setAztecMode('mock');
       }
     }
   }, [questId]);
@@ -96,7 +133,7 @@ export default function QuestPage() {
   };
 
   const handleStoreInAztec = async () => {
-    if (!quest || !validationResult || !validationResult.success) {
+    if (!quest || !validationResult || !validationResult.success || !aztecClient) {
       return;
     }
 
@@ -104,14 +141,24 @@ export default function QuestPage() {
     setStorageResult(null);
 
     try {
-      // Compute quest ID hash
-      const questIdHash = computeQuestIdHash(quest.questId);
+      // For aztec_concept_quiz with real client, use addQuestCompletionByQuestId
+      // Otherwise, use the hash-based method
+      let result: QuestCompletionResult;
       
-      // Store in Aztec private vault
-      const result = await aztecClient.addQuestCompletion(
-        questIdHash,
-        validationResult.score
-      );
+      if (quest.questId === 'aztec_concept_quiz' && aztecClient instanceof RealAztecClient) {
+        // Use the quest ID string directly (client computes hash internally)
+        result = await (aztecClient as RealAztecClient).addQuestCompletionByQuestId(
+          quest.questId,
+          validationResult.score
+        );
+      } else {
+        // Fallback: compute hash and use standard method
+        const questIdHash = computeQuestIdHash(quest.questId);
+        result = await aztecClient.addQuestCompletion(
+          questIdHash,
+          validationResult.score
+        );
+      }
 
       setStorageResult(result);
 
@@ -130,8 +177,10 @@ export default function QuestPage() {
   };
 
   const handlePublishTierProof = async () => {
-    if (!isConnected || !address) {
-      alert('Please connect your wallet first');
+    if (!isConnected || !address || !aztecClient) {
+      if (!isConnected || !address) {
+        alert('Please connect your wallet first');
+      }
       return;
     }
 
@@ -184,7 +233,32 @@ export default function QuestPage() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
       <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>{quest.name}</h1>
-      <p style={{ color: '#666', marginBottom: '2rem' }}>Tier {quest.tier} • {quest.type}</p>
+      <p style={{ color: '#666', marginBottom: '1rem' }}>Tier {quest.tier} • {quest.type}</p>
+      
+      {/* Aztec Mode Indicator - Only show for aztec_concept_quiz */}
+      {quest.questId === 'aztec_concept_quiz' && (
+        <div style={{
+          padding: '0.5rem 1rem',
+          backgroundColor: aztecMode === 'real' ? '#E8F5E9' : '#FFF3E0',
+          border: `1px solid ${aztecMode === 'real' ? '#4CAF50' : '#FF9800'}`,
+          borderRadius: '4px',
+          marginBottom: '1rem',
+          fontSize: '0.9rem',
+        }}>
+          <strong>Aztec mode:</strong> {aztecMode === 'real' ? '🟢 REAL devnet' : '🟡 MOCK'}
+          {isInitializing && ' (initializing...)'}
+          {aztecMode === 'real' && !isInitializing && (
+            <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem', color: '#666' }}>
+              Connected to Aztec devnet
+            </span>
+          )}
+          {aztecMode === 'mock' && quest.questId === 'aztec_concept_quiz' && (
+            <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem', color: '#666' }}>
+              (Set NEXT_PUBLIC_USE_REAL_AZTEC=true to use real devnet)
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Quest Prompt */}
       <div style={{ 
@@ -257,24 +331,29 @@ export default function QuestPage() {
       )}
 
       {/* Store in Aztec Button (only if validation passed) */}
-      {validationResult?.success && (
+      {validationResult?.success && aztecClient && (
         <>
           <button
             onClick={handleStoreInAztec}
-            disabled={isStoring}
+            disabled={isStoring || isInitializing}
             style={{
               padding: '0.75rem 1.5rem',
-              backgroundColor: isStoring ? '#ccc' : '#4CAF50',
+              backgroundColor: (isStoring || isInitializing) ? '#ccc' : '#4CAF50',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
-              cursor: isStoring ? 'not-allowed' : 'pointer',
+              cursor: (isStoring || isInitializing) ? 'not-allowed' : 'pointer',
               fontSize: '1rem',
               marginBottom: '1rem',
               marginRight: '1rem',
             }}
           >
-            {isStoring ? 'Storing in Aztec...' : '🔒 Store Privately in Aztec'}
+            {isInitializing 
+              ? 'Initializing Aztec client...' 
+              : isStoring 
+                ? 'Storing in Aztec...' 
+                : '🔒 Store Privately in Aztec'
+            }
           </button>
 
           {/* Storage Result */}
@@ -349,6 +428,27 @@ export default function QuestPage() {
                 }}>
                   ✅ Tier proof published! Your competence is now verifiable on-chain without revealing your learning journey.
                 </div>
+              )}
+
+              {/* Proof Details (for debugging/demo) */}
+              {aztecMode === 'real' && storageResult?.success && (
+                <details style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                  <summary style={{ cursor: 'pointer', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                    🔍 Proof Details (for demo)
+                  </summary>
+                  <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
+                    When you generate a tier proof, it will include:
+                  </p>
+                  <ul style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
+                    <li>Your Aztec address (public)</li>
+                    <li>Minimum tier proven: Tier 1 (public)</li>
+                    <li>Minimum average score: 60% (public)</li>
+                    <li>Path hash: aztec_builder_path (public)</li>
+                  </ul>
+                  <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                    What stays private: Individual quest IDs, individual scores, completion timestamps
+                  </p>
+                </details>
               )}
 
               {contractError && (
