@@ -15,13 +15,13 @@ import type {
   QuestSubmission,
   ValidationResult,
   PuzzleType,
-} from './types';
-import type { TierNumber } from './types';
+  TierNumber,
+} from '@hidden-garden/core-logic';
 import {
   getTierForQuest,
   getQuestCategory,
   AZTEC_BUILDER_CATEGORY,
-} from './mapping';
+} from '@hidden-garden/core-logic';
 
 /**
  * Quest registry

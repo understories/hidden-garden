@@ -1,8 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import type { SkillNode } from '@hidden-garden/common';
-import { normalizeSkillId, shortenAddress, getEnsName } from '@hidden-garden/common';
+import type { SkillNode } from '@hidden-garden/core-logic';
+import { normalizeSkillId, shortenAddress, getEnsName } from '@hidden-garden/core-logic';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
 import { mainnetPublicClient } from '../../lib/viemClients';

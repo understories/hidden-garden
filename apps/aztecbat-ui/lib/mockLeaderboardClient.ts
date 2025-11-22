@@ -2,7 +2,7 @@ import type {
   PublicSkillTier,
   UserPublicSkill,
   LeaderboardAPI,
-} from '@hidden-garden/common';
+} from '@hidden-garden/core-logic';
 
 // Simple mock users for now.
 const MOCK_USERS = {

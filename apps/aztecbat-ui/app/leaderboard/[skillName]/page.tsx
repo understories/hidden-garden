@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { PublicSkillTier } from '@hidden-garden/common';
+import type { PublicSkillTier } from '@hidden-garden/core-logic';
 import { mockLeaderboardApi } from '../../../lib/mockLeaderboardClient';
 
 type LeaderboardPageProps = {

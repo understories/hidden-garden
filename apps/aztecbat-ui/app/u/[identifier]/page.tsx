@@ -1,5 +1,5 @@
-import type { PublicSkillTier } from '@hidden-garden/common';
-import { shortenAddress } from '@hidden-garden/common';
+import type { PublicSkillTier } from '@hidden-garden/core-logic';
+import { shortenAddress } from '@hidden-garden/core-logic';
 import { mockLeaderboardApi } from '../../../lib/mockLeaderboardClient';
 import { mainnetPublicClient } from '../../../lib/viemClients';
 import Link from 'next/link';

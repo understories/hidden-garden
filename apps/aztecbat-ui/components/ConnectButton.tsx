@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import type { EnsPublicClient } from '@hidden-garden/common';
-import { shortenAddress, getEnsName } from '@hidden-garden/common';
+import type { EnsPublicClient } from '@hidden-garden/core-logic';
+import { shortenAddress, getEnsName } from '@hidden-garden/core-logic';
 import { mainnetPublicClient } from '../lib/viemClients';
 
 export const ConnectButton: React.FC = () => {

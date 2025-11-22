@@ -9,7 +9,12 @@ import {
   type QuestSubmission,
   type ValidationResult,
   type QuestId,
-} from '@hidden-garden/common';
+} from '@hidden-garden/game-engine';
+import type {
+  QuestSubmission,
+  ValidationResult,
+  QuestId,
+} from '@hidden-garden/core-logic';
 
 // Dev guard
 const isDevEnabled = process.env.NEXT_PUBLIC_ENABLE_DEV_UI === 'true';

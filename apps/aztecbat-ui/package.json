@@ -1,5 +1,5 @@
 {
-  "name": "@hidden-garden/web",
+  "name": "@hidden-garden/aztecbat-ui",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
-    "@hidden-garden/common": "workspace:*",
+    "@hidden-garden/core-logic": "workspace:*",
+    "@hidden-garden/game-engine": "workspace:*",
     "@tanstack/react-query": "^5.90.10",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.6",
