@@ -16,11 +16,13 @@ import type {
   ValidationResult,
   PuzzleType,
   TierNumber,
+  MultipleChoiceSubmission,
 } from '@hidden-garden/core-logic';
 import {
   getTierForQuest,
   getQuestCategory,
   AZTEC_BUILDER_CATEGORY,
+  computeQuestIdHash,
 } from '@hidden-garden/core-logic';
 
 /**
@@ -37,16 +39,48 @@ export const questRegistry: Record<QuestId, QuestDefinition> = {
   
   'aztec_concept_quiz': {
     questId: 'aztec_concept_quiz',
-    questIdHash: '0xPLACEHOLDER' as const, // TODO: Compute hash("aztec_concept_quiz")
+    questIdHash: computeQuestIdHash('aztec_concept_quiz'),
     tier: 1,
     category: AZTEC_BUILDER_CATEGORY,
     type: 'multiple_choice' as PuzzleType,
     name: 'SumTo7',
     prompt: 'What is Aztec Protocol?\nA) A privacy-focused Layer 2 blockchain\nB) A DeFi protocol\nC) A wallet application\nD) A token standard',
-    expectedAnswerDescription: 'Integer index (0-3) representing selected option. Correct answer is 0.',
+    expectedAnswerDescription: 'Integer index (0-3) representing selected option. Correct answer is 0 (A).',
     dependencies: [],
-    validate: (_submission: QuestSubmission): ValidationResult => {
-      throw new Error('Quest validation not implemented yet.');
+    validate: (submission: QuestSubmission): ValidationResult => {
+      // Type guard: ensure it's a multiple choice submission
+      if (!('selectedOptionId' in submission)) {
+        return {
+          success: false,
+          score: 0,
+          feedback: 'Invalid submission type. Expected multiple choice submission with selectedOptionId.',
+        };
+      }
+
+      const mcSubmission = submission as MultipleChoiceSubmission;
+      const selectedOption = mcSubmission.selectedOptionId;
+
+      // Accept both string "0" and numeric string representations
+      // Also accept "A" as option 0
+      const isCorrect = 
+        selectedOption === '0' || 
+        selectedOption === 'A' || 
+        selectedOption === 'a' ||
+        parseInt(selectedOption, 10) === 0;
+
+      if (isCorrect) {
+        return {
+          success: true,
+          score: 100,
+          feedback: 'Correct! Aztec Protocol is a privacy-focused Layer 2 blockchain that uses zero-knowledge proofs to enable private transactions.',
+        };
+      } else {
+        return {
+          success: false,
+          score: 0,
+          feedback: `Incorrect. The correct answer is A) A privacy-focused Layer 2 blockchain. You selected option ${selectedOption}.`,
+        };
+      }
     },
   },
   

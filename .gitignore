@@ -1,3 +1,9 @@
+# Self evaluation (internal reference only, do not commit)
+docs/SELF_EVALUATION.md
+
+# Merge PR summary (temporary reference document for PR preparation)
+docs/MERGE_PR_SUMMARY.md
+
 # Dependencies
 node_modules/
 .pnp

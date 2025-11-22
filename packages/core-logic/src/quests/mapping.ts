@@ -15,25 +15,23 @@ import type { QuestId, TierNumber, CategoryId, QuestIdHash } from './types';
  */
 export const AZTEC_BUILDER_CATEGORY: CategoryId = 'aztec_builder';
 
+import { computeCategoryHash, computePathHash } from './hashing';
+
 /**
  * Category hash (computed from category string)
  * This matches the category_hash used in QuestNote storage
- * Computed as: keccak256(utf8("aztec_builder"))
+ * Computed as: pedersen_hash(bytes("aztec_builder")) - matches Noir circuit
  */
-export const AZTEC_BUILDER_CATEGORY_HASH: QuestIdHash = '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash; // TODO: Compute hash
+export const AZTEC_BUILDER_CATEGORY_HASH: QuestIdHash = computeCategoryHash(AZTEC_BUILDER_CATEGORY);
 
 /**
  * Path hash for Aztec Builder pathway
  * Used in tier proof public outputs and leaderboard queries
  * This identifies the "aztec_builder_path" learning pathway
  * 
- * Computed as: keccak256(utf8("aztec_builder_path"))
- * 
- * Note: The actual hash value will be computed at runtime or build time.
- * This constant represents the intended meaning and type.
- * Do not compute the hash yet; just define the intended meaning and type.
+ * Computed as: pedersen_hash(bytes("aztec_builder_path")) - matches Noir circuit
  */
-export const PATH_HASH: QuestIdHash = '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash; // TODO: Compute hash of "aztec_builder_path"
+export const PATH_HASH: QuestIdHash = computePathHash('aztec_builder_path');
 
 /**
  * Quest ID to Tier mapping
