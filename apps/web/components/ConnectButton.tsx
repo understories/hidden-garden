@@ -25,12 +25,24 @@ export const ConnectButton: React.FC = () => {
 
       setEnsLoading(true);
       try {
-        const ensClient = mainnetPublicClient as unknown as EnsPublicClient;
+        // Create an adapter that matches EnsPublicClient interface
+        const ensClient: EnsPublicClient = {
+          getEnsName: async (args: { address: `0x${string}` }) => {
+            return mainnetPublicClient.getEnsName({ address: args.address });
+          },
+        };
         const name = await getEnsName(ensClient, address as `0x${string}`);
         if (!cancelled) {
           setEnsName(name);
         }
-      } catch (err) {
+      } catch (err: any) {
+        // Log error details for debugging
+        console.error('ENS resolution error:', {
+          message: err?.message,
+          name: err?.name,
+          cause: err?.cause,
+          error: err,
+        });
         if (!cancelled) {
           setEnsName(null);
         }
