@@ -58,6 +58,8 @@ export const QUEST_TIER_MAP: Record<QuestId, TierNumber> = {
   'noir_public_private': 2,           // PrivatePubSplit
   'noir_hash_function': 2,            // TinyHashCircuit
   'noir_first_circuit': 2,            // NoirFirstCircuit (optional)
+  'noir_syntax_basics': 2,            // NoirSyntaxBasics
+  'aztec_storage_intro': 2,           // AztecStorageIntro
   
   // Tier 3 Puzzles
   'aztec_private_state_identify': 3,  // WhichIsPrivate
@@ -104,6 +106,8 @@ export const TIER_QUEST_MAP: Record<TierNumber, QuestId[]> = {
     'noir_public_private',
     'noir_hash_function',
     'noir_first_circuit', // Optional
+    'noir_syntax_basics',
+    'aztec_storage_intro',
   ],
   3: [
     'aztec_private_state_identify',
@@ -136,6 +140,8 @@ export const TIER_REQUIRED_QUESTS: Record<TierNumber, QuestId[]> = {
     'noir_constraint_basics',
     'noir_public_private',
     'noir_hash_function',
+    'noir_syntax_basics',
+    'aztec_storage_intro',
   ],
   3: [
     'aztec_private_state_identify',
