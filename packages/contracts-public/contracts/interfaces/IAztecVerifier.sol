@@ -24,7 +24,6 @@ interface IAztecVerifier {
     /// @return true if the proof is valid, false otherwise
     function verify(bytes calldata proof, bytes calldata publicInputs)
         external
-        view
         returns (bool);
 }
 
