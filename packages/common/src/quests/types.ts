@@ -145,6 +145,7 @@ export type QuestSubmission =
 /**
  * Puzzle metadata
  * Static metadata about a puzzle (does not include validation logic)
+ * Used for registry and metadata lookups
  */
 export interface PuzzleMetadata {
   /** Unique quest identifier (human-readable) */
@@ -166,32 +167,63 @@ export interface PuzzleMetadata {
 }
 
 /**
- * Puzzle definition
- * Complete puzzle specification including validation logic
- * This is the interface that puzzle implementations must satisfy
+ * Quest definition
+ * Complete quest specification including validation logic
+ * Based on the curriculum specification at `/docs/aztecbat_curriculum.md`
+ * 
+ * Note: The `validate` function implementation will be provided by concrete
+ * quest implementations. This interface defines the contract that all quest
+ * implementations must satisfy.
  */
-export interface PuzzleDefinition extends PuzzleMetadata {
-  /**
-   * Validation function
-   * Takes a quest submission and returns validation result
-   * Implementation is provided by concrete puzzle classes
+export interface QuestDefinition {
+  /** Unique quest identifier (human-readable) */
+  questId: QuestId;
+  /** Hashed quest identifier (computed from questId) */
+  questIdHash: QuestIdHash;
+  /** Tier this quest belongs to */
+  tier: TierNumber;
+  /** Category identifier (e.g., "aztec_builder") */
+  category: CategoryId;
+  /** Type of puzzle */
+  type: PuzzleType;
+  /** Quest name for display */
+  name: string;
+  /** User-facing prompt/question text */
+  prompt: string;
+  
+  /** 
+   * Structured metadata derived from the curriculum document
+   * Description of the expected answer format or correct answer
    */
-  validate: (submission: QuestSubmission) => ValidationResult | Promise<ValidationResult>;
+  expectedAnswerDescription?: string;
+  
+  /** 
+   * Dependencies on other quests
+   * Quests that must be completed before this quest can be attempted
+   */
+  dependencies?: QuestId[];
   
   /**
-   * Optional: Additional metadata for UI rendering
+   * Validation function
+   * Validates a quest submission and returns a validation result
+   * 
+   * Implementation note: This function will be implemented by concrete
+   * quest classes. The implementation should:
+   * - Parse the submission based on puzzle type
+   * - Apply validation logic as specified in the curriculum
+   * - Return a ValidationResult with success, score (0-100), and optional feedback
+   * 
+   * @param submission The user's submission for this quest
+   * @returns Validation result with success status, score, and feedback
    */
-  uiMetadata?: {
-    /** For multiple_choice: available options */
-    options?: string[];
-    /** For numeric_input: expected input format hint */
-    inputHint?: string;
-    /** For structured_text: code language or format */
-    codeLanguage?: string;
-    /** For devnet_tx: instructions for devnet interaction */
-    devnetInstructions?: string;
-  };
+  validate(submission: QuestSubmission): Promise<ValidationResult> | ValidationResult;
 }
+
+/**
+ * Puzzle definition (legacy alias)
+ * @deprecated Use QuestDefinition instead
+ */
+export interface PuzzleDefinition extends QuestDefinition {}
 
 /**
  * Quest completion record
@@ -238,12 +270,12 @@ export interface TierProofInputs {
 
 /**
  * Quest registry entry
- * Entry in the quest registry mapping quest IDs to puzzle definitions
+ * Entry in the quest registry mapping quest IDs to quest definitions
  */
 export interface QuestRegistryEntry {
   /** Quest metadata */
   metadata: PuzzleMetadata;
-  /** Reference to puzzle definition (may be lazy-loaded) */
-  puzzle?: PuzzleDefinition;
+  /** Reference to quest definition (may be lazy-loaded) */
+  quest?: QuestDefinition;
 }
 

@@ -12,7 +12,7 @@
 import type {
   QuestId,
   PuzzleMetadata,
-  PuzzleDefinition,
+  QuestDefinition,
   QuestRegistryEntry,
   TierNumber,
 } from './types';
@@ -196,7 +196,7 @@ const QUEST_REGISTRY: Map<QuestId, QuestRegistryEntry> = new Map();
 Object.values(QUEST_METADATA_REGISTRY).forEach((metadata) => {
   QUEST_REGISTRY.set(metadata.questId, {
     metadata,
-    puzzle: undefined, // Will be set when puzzle is loaded
+    quest: undefined, // Will be set when quest is loaded
   });
 });
 
@@ -231,47 +231,79 @@ export function getQuestRegistryEntry(questId: QuestId): QuestRegistryEntry | un
 }
 
 /**
- * Register a puzzle definition
- * This allows puzzle implementations to register their validation logic
+ * Register a quest definition
+ * This allows quest implementations to register their validation logic
  */
-export function registerPuzzle(puzzle: PuzzleDefinition): void {
-  const entry = QUEST_REGISTRY.get(puzzle.questId);
+export function registerQuest(quest: QuestDefinition): void {
+  const entry = QUEST_REGISTRY.get(quest.questId);
   if (!entry) {
-    throw new Error(`Quest ${puzzle.questId} not found in registry`);
+    throw new Error(`Quest ${quest.questId} not found in registry`);
   }
   
-  // Validate that puzzle matches metadata
-  if (puzzle.questId !== entry.metadata.questId ||
-      puzzle.tier !== entry.metadata.tier ||
-      puzzle.puzzleType !== entry.metadata.puzzleType) {
-    throw new Error(`Puzzle definition does not match metadata for ${puzzle.questId}`);
+  // Validate that quest matches metadata
+  if (quest.questId !== entry.metadata.questId ||
+      quest.tier !== entry.metadata.tier ||
+      quest.type !== entry.metadata.puzzleType) {
+    throw new Error(`Quest definition does not match metadata for ${quest.questId}`);
   }
   
-  entry.puzzle = puzzle;
+  entry.quest = quest;
 }
 
 /**
- * Get puzzle definition (with validation logic)
- * Returns undefined if puzzle not yet registered
+ * Get quest definition (with validation logic)
+ * Returns undefined if quest not yet registered
  */
-export function getPuzzle(questId: QuestId): PuzzleDefinition | undefined {
-  return QUEST_REGISTRY.get(questId)?.puzzle;
+export function getQuest(questId: QuestId): QuestDefinition | undefined {
+  return QUEST_REGISTRY.get(questId)?.quest;
 }
 
 /**
- * Check if a puzzle is registered (has validation logic)
+ * Check if a quest is registered (has validation logic)
+ */
+export function isQuestRegistered(questId: QuestId): boolean {
+  return QUEST_REGISTRY.get(questId)?.quest !== undefined;
+}
+
+/**
+ * Get all registered quests
+ */
+export function getAllRegisteredQuests(): QuestDefinition[] {
+  return Array.from(QUEST_REGISTRY.values())
+    .map((entry) => entry.quest)
+    .filter((quest): quest is QuestDefinition => quest !== undefined);
+}
+
+/**
+ * Register a puzzle definition (legacy alias)
+ * @deprecated Use registerQuest instead
+ */
+export function registerPuzzle(puzzle: QuestDefinition): void {
+  return registerQuest(puzzle);
+}
+
+/**
+ * Get puzzle definition (legacy alias)
+ * @deprecated Use getQuest instead
+ */
+export function getPuzzle(questId: QuestId): QuestDefinition | undefined {
+  return getQuest(questId);
+}
+
+/**
+ * Check if a puzzle is registered (legacy alias)
+ * @deprecated Use isQuestRegistered instead
  */
 export function isPuzzleRegistered(questId: QuestId): boolean {
-  return QUEST_REGISTRY.get(questId)?.puzzle !== undefined;
+  return isQuestRegistered(questId);
 }
 
 /**
- * Get all registered puzzles
+ * Get all registered puzzles (legacy alias)
+ * @deprecated Use getAllRegisteredQuests instead
  */
-export function getAllRegisteredPuzzles(): PuzzleDefinition[] {
-  return Array.from(QUEST_REGISTRY.values())
-    .map((entry) => entry.puzzle)
-    .filter((puzzle): puzzle is PuzzleDefinition => puzzle !== undefined);
+export function getAllRegisteredPuzzles(): QuestDefinition[] {
+  return getAllRegisteredQuests();
 }
 
 /**

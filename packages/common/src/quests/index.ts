@@ -26,7 +26,8 @@ export type {
   PuzzleLogicSubmission,
   // Puzzle definitions
   PuzzleMetadata,
-  PuzzleDefinition,
+  QuestDefinition,
+  PuzzleDefinition, // Legacy alias for QuestDefinition
   // Quest completion
   QuestCompletion,
   TierRequirements,
@@ -62,6 +63,11 @@ export {
   getTierMetadata,
   getAllQuestMetadata,
   getQuestRegistryEntry,
+  registerQuest,
+  getQuest,
+  isQuestRegistered,
+  getAllRegisteredQuests,
+  // Legacy aliases
   registerPuzzle,
   getPuzzle,
   isPuzzleRegistered,
