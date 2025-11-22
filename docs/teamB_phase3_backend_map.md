@@ -86,6 +86,38 @@ const { data: balance } = useReadContract({
 
 **Backend API:** ❌ No backend endpoint exists. Query contract directly.
 
+### Self Verification UX
+
+**Hook:** `useHasValidSBT(address?: Address)`
+
+**Location:** `apps/aztecbat-ui/hooks/useHasValidSBT.ts`
+
+**Usage in `/me` page:**
+```typescript
+import { useHasValidSBT } from '../../hooks/useHasValidSBT';
+
+const { isLoading, isVerified, error, refetch } = useHasValidSBT(address);
+```
+
+**Hook Returns:**
+- `isLoading: boolean` - True while checking SBT status
+- `isVerified: boolean` - True if user has valid SBT
+- `error: Error | null` - Error if contract not deployed or query fails
+- `refetch: () => void` - Function to manually re-check SBT status
+
+**Manual Re-check During Demo:**
+
+After completing Self verification flow:
+1. Click "I've completed verification" button (appears after clicking "Verify with Self")
+2. This triggers `refetch()` automatically after 1 second
+3. Or click "Check Verification Status" button to manually refetch immediately
+
+**Status Display States:**
+- **Loading:** Shows "Checking verification…" with spinner
+- **Verified:** Shows green badge "Verified Human ✅"
+- **Not Verified:** Shows "Not verified yet" with "Verify with Self" button
+- **Error:** Shows amber warning badge with error message (non-blocking)
+
 ---
 
 ## 2. Skill Proofs / Leaderboard
