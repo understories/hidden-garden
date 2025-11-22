@@ -4,6 +4,13 @@ docs/SELF_EVALUATION.md
 # Merge PR summary (temporary reference document for PR preparation)
 docs/MERGE_PR_SUMMARY.md
 
+# Competition verification (internal reference only, do not commit)
+docs/COMPETITION_VERIFICATION.md
+
+# Review and commit planning documents (temporary, do not commit)
+COMMIT_MESSAGES.md
+REVIEW_AND_READINESS.md
+
 # Dependencies
 node_modules/
 .pnp
