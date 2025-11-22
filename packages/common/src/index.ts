@@ -4,6 +4,10 @@ import type { UserIdentity } from './api';
 export type { SkillNode } from './skillTree';
 export { normalizeSkillId } from './skillTree';
 
+// Export ENS utilities
+export { shortenAddress, getEnsName } from './ens';
+export type { EnsPublicClient } from './ens';
+
 // Export API types
 export * from './api';
 export type { UserIdentity, PublicSkillTier, UserPublicSkill, LeaderboardAPI } from './api';
