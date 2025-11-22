@@ -16,6 +16,7 @@ use dep::aztec::{
     note::Note,
 };
 use easy_private_state::EasyPrivateUint;
+use dep::std::hash;
 
 /// @title SkillNode
 /// @notice Represents a single node in a user's private skill tree
@@ -74,6 +75,8 @@ pub contract PrivateIdentityGarden {
         skill_levels: Map<AztecAddress, Map<Field, EasyPrivateUint<Context>, Context>, Context>,
         // Map: user -> skill_hash -> parent_hash
         skill_parents: Map<AztecAddress, Map<Field, EasyPrivateUint<Context>, Context>, Context>,
+        // Map: user -> quest_id_hash -> score (for quest completions)
+        quest_scores: Map<AztecAddress, Map<Field, EasyPrivateUint<Context>, Context>, Context>,
     }
 
     // ============ Skill Tree Functions ============
@@ -263,10 +266,12 @@ pub contract PrivateIdentityGarden {
     /// @dev Creates a new private note for the quest completion. If the same quest_id
     ///      already exists, this will create a new note (the latest one can be used).
     ///      For keeping the best score, the caller should check existing notes first.
+    /// @param owner The address of the user completing the quest
     /// @param quest_id_hash Hash of the quest identifier
     /// @param score Score for this quest (0-100, where >= 60 is passing)
     #[external("private")]
     pub fn add_quest_completion(
+        owner: AztecAddress,
         quest_id_hash: Field,
         score: u8
     ) {
@@ -292,13 +297,21 @@ pub contract PrivateIdentityGarden {
             timestamp,
         };
         
-        // 3. Insert it into the caller's private state using Aztec.nr note APIs
-        //    Create a new private note - if the same quest_id already exists,
-        //    this creates a new note (the latest completion can be used)
-        //    For overwriting or keeping best score, would need to:
-        //    - Query existing notes for this quest_id_hash
-        //    - Compare scores and either nullify old note or skip if new score is lower
-        //    For now, we create a new note each time
+        // 3. Store the quest score in private storage (for querying in proofs)
+        //    Also create a private note for the quest completion
+        //    If the same quest_id already exists, we keep the best (highest) score
+        let quest_scores_map = storage.quest_scores;
+        let user_quest_map = quest_scores_map.at(owner);
+        let quest_score_storage = user_quest_map.at(quest_id_hash);
+        
+        // Get existing score if any, and keep the maximum
+        let existing_score = quest_score_storage.get_value() as u8;
+        let best_score = if score > existing_score { score } else { existing_score };
+        
+        // Store the best score
+        quest_score_storage.set(best_score as u64, owner);
+        
+        // Also create a private note for the quest completion
         Note::new(quest_note);
     }
 
@@ -346,58 +359,60 @@ pub contract PrivateIdentityGarden {
         // 3. Find the maximum tier where all prerequisites are met
         // 4. Calculate average score across all completed quests
         
-        // Placeholder implementation showing the intended logic:
+        // Query quest scores from private storage
+        let quest_scores_map = storage.quest_scores;
+        let user_quest_map = quest_scores_map.at(owner);
+        
+        // Initialize tracking variables
         let mut achieved_tier: u8 = 0;
         let mut total_score: u64 = 0;
         let mut quest_count: u64 = 0;
         
         // Check tier 1: requires quest_tier_1_hash with score >= min_average_score
-        // In full implementation: query notes for quest_tier_1_hash and category aztec_builder_category
-        // For now, placeholder logic:
-        // let tier_1_note = query_note(quest_tier_1_hash, aztec_builder_category);
-        // if tier_1_note.exists && tier_1_note.score >= min_average_score {
-        //     achieved_tier = 1;
-        //     total_score += tier_1_note.score as u64;
-        //     quest_count += 1;
-        // }
+        let tier_1_storage = user_quest_map.at(quest_tier_1_hash);
+        let tier_1_score = tier_1_storage.get_value() as u8;
+        if tier_1_score >= min_average_score && tier_1_score > 0 {
+            achieved_tier = 1;
+            total_score += tier_1_score as u64;
+            quest_count += 1;
+        }
         
         // Check tier 2: requires tier 1 + quest_tier_2_hash
-        // if achieved_tier >= 1 {
-        //     let tier_2_note = query_note(quest_tier_2_hash, aztec_builder_category);
-        //     if tier_2_note.exists && tier_2_note.score >= min_average_score {
-        //         achieved_tier = 2;
-        //         total_score += tier_2_note.score as u64;
-        //         quest_count += 1;
-        //     }
-        // }
+        if achieved_tier >= 1 {
+            let tier_2_storage = user_quest_map.at(quest_tier_2_hash);
+            let tier_2_score = tier_2_storage.get_value() as u8;
+            if tier_2_score >= min_average_score && tier_2_score > 0 {
+                achieved_tier = 2;
+                total_score += tier_2_score as u64;
+                quest_count += 1;
+            }
+        }
         
         // Check tier 3: requires tier 2 + quest_tier_3_hash
-        // if achieved_tier >= 2 {
-        //     let tier_3_note = query_note(quest_tier_3_hash, aztec_builder_category);
-        //     if tier_3_note.exists && tier_3_note.score >= min_average_score {
-        //         achieved_tier = 3;
-        //         total_score += tier_3_note.score as u64;
-        //         quest_count += 1;
-        //     }
-        // }
+        if achieved_tier >= 2 {
+            let tier_3_storage = user_quest_map.at(quest_tier_3_hash);
+            let tier_3_score = tier_3_storage.get_value() as u8;
+            if tier_3_score >= min_average_score && tier_3_score > 0 {
+                achieved_tier = 3;
+                total_score += tier_3_score as u64;
+                quest_count += 1;
+            }
+        }
         
         // Check tier 4: requires tier 3 + quest_tier_4_hash
-        // if achieved_tier >= 3 {
-        //     let tier_4_note = query_note(quest_tier_4_hash, aztec_builder_category);
-        //     if tier_4_note.exists && tier_4_note.score >= min_average_score {
-        //         achieved_tier = 4;
-        //         total_score += tier_4_note.score as u64;
-        //         quest_count += 1;
-        //     }
-        // }
+        if achieved_tier >= 3 {
+            let tier_4_storage = user_quest_map.at(quest_tier_4_hash);
+            let tier_4_score = tier_4_storage.get_value() as u8;
+            if tier_4_score >= min_average_score && tier_4_score > 0 {
+                achieved_tier = 4;
+                total_score += tier_4_score as u64;
+                quest_count += 1;
+            }
+        }
         
-        // Calculate average score
-        // let average_score = if quest_count > 0 { total_score / quest_count } else { 0 };
-        
-        // For now, using placeholder values - in full implementation these would be computed from notes
-        // This is a skeleton showing the intended structure
-        let computed_achieved_tier: u8 = 0; // Would be computed from note queries
-        let computed_average_score: u8 = 0; // Would be computed from note queries
+        // Calculate average score across all completed quests
+        let computed_average_score = if quest_count > 0 { (total_score / quest_count) as u8 } else { 0 };
+        let computed_achieved_tier = achieved_tier;
         
         // Assert:
         //   * achieved_tier >= min_tier
