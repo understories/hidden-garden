@@ -612,6 +612,317 @@ NEXT_PUBLIC_SKILL_LEADERBOARD_ADDRESS=0x...
 
 ---
 
+## 8. Gaps Team B Must Fill
+
+This section identifies what exists vs. what's missing for each Phase 3 flow, and suggests where new code should live.
+
+---
+
+### Flow 1: Self Verification → SBT → hasValidSBT → "Verified Human ✅"
+
+#### What Exists ✅
+
+**Contract Integration:**
+- ✅ `SelfHumanSBT` contract deployed (local Hardhat)
+- ✅ `SelfHumanSBTAbi` exported from `@hidden-garden/core-logic`
+- ✅ `getSelfHumanSBTAddress(chainId)` function
+- ✅ `hasValidSBT(address)` function signature documented
+- ✅ `verifyAndMint(proofPayload, userContextData)` function signature documented
+
+**Wagmi Setup:**
+- ✅ `wagmiConfig` configured with Sepolia
+- ✅ `WalletProvider` wrapping app
+- ✅ `useReadContract` and `useWriteContract` hooks available
+- ✅ `useAccount` hook for getting connected address
+
+**Documentation:**
+- ✅ `docs/self-integration.md` - Complete Self Protocol integration guide
+- ✅ Contract flow documented (verifyAndMint → Hub callback → customVerificationHook)
+
+#### What's Missing ❌
+
+**Self SDK Integration:**
+- ❌ Self SDK packages not installed in `apps/aztecbat-ui`
+- ❌ No Self client initialization
+- ❌ No proof generation from Self SDK
+- ❌ No verification config setup matching contract
+
+**UI Components:**
+- ❌ No Self verification flow component
+- ❌ No "Verify with Self" button/UI
+- ❌ No proof generation status display
+- ❌ No verification success/failure feedback
+
+**Hooks:**
+- ❌ No `useSBTStatus(address)` hook for checking SBT
+- ❌ No `useSelfVerification()` hook for verification flow
+- ❌ No hook for reading verification config from contract
+
+**SBT Status Display:**
+- ❌ No SBT status indicator in `/me` page
+- ❌ No "Verified Human ✅" badge component
+- ❌ No SBT status in `/u/[identifier]` profile page
+- ❌ No conditional UI based on SBT status
+
+**Contract Config:**
+- ❌ No way to read contract's `scope()` or `verificationConfigId` from frontend
+- ❌ No environment variable for Self Hub V2 address
+- ❌ No environment variable for verification config ID
+
+#### Suggested File/Paths for New Code
+
+**Self SDK Integration:**
+- `apps/aztecbat-ui/lib/selfClient.ts` - Initialize Self SDK client
+- `apps/aztecbat-ui/lib/selfConfig.ts` - Verification config matching contract
+
+**Hooks:**
+- `apps/aztecbat-ui/hooks/useSBTStatus.ts` - Check if address has valid SBT
+- `apps/aztecbat-ui/hooks/useSelfVerification.ts` - Self verification flow hook
+- `apps/aztecbat-ui/hooks/useContractConfig.ts` - Read contract scope/config
+
+**Components:**
+- `apps/aztecbat-ui/components/SelfVerificationButton.tsx` - "Verify with Self" button
+- `apps/aztecbat-ui/components/SelfVerificationFlow.tsx` - Full verification flow UI
+- `apps/aztecbat-ui/components/SBTStatusBadge.tsx` - "Verified Human ✅" badge
+- `apps/aztecbat-ui/components/SBTStatusIndicator.tsx` - SBT status display component
+
+**Integration Points:**
+- Update `apps/aztecbat-ui/app/me/page.tsx` - Add SBT status check and verification button
+- Update `apps/aztecbat-ui/app/u/[identifier]/page.tsx` - Display SBT status on profile
+
+**Environment Variables:**
+```bash
+# Add to .env.local
+NEXT_PUBLIC_SELF_HUB_V2_ADDRESS=0x... # IdentityVerificationHub V2 address
+NEXT_PUBLIC_SELF_SCOPE_SEED=proof-of-human # Must match contract
+NEXT_PUBLIC_SELF_CONFIG_ID=0x... # Verification config ID
+```
+
+---
+
+### Flow 2: Skill → Proof → SkillLeaderboard.submitSkillTier
+
+#### What Exists ✅
+
+**Contract Integration:**
+- ✅ `SkillLeaderboard` contract deployed (local Hardhat)
+- ✅ `SkillLeaderboardAbi` exported from `@hidden-garden/core-logic`
+- ✅ `getSkillLeaderboardAddress(chainId)` function
+- ✅ `submitSkillTier(skillHash, tier)` function signature documented
+- ✅ `submitSkillTierWithProof(skillHash, minLevel, proof, publicInputs)` function signature documented
+- ✅ `skillTier(skillHash, address)` view function documented
+
+**Utilities:**
+- ✅ `hashSkillName(skillName)` function exported
+- ✅ Public inputs encoding format documented (`abi.encode(userAddress, skillHash, minLevel)`)
+
+**Wagmi Setup:**
+- ✅ `useWriteContract` hook available
+- ✅ `useReadContract` hook available
+
+**UI Foundation:**
+- ✅ `/me` page has local skill editor with `SkillNode[]` state
+- ✅ Skills can be edited (level, xp) locally
+- ✅ Skills can be added with `normalizeSkillId`
+
+**Backend API:**
+- ✅ `LeaderboardClient` class for fetching leaderboard data
+- ✅ Indexer API endpoints for leaderboard and user skills
+
+#### What's Missing ❌
+
+**Proof Generation:**
+- ❌ No Aztec/Noir proof generation integration
+- ❌ No backend API endpoint for proof generation (`POST /api/aztec/generate-proof`)
+- ❌ No proof generation UI/flow
+- ❌ No connection to Aztec devnet
+- ❌ No Noir circuit compilation/integration
+
+**Skill Submission UI:**
+- ❌ No "Submit to Leaderboard" button in `/me` page
+- ❌ No skill submission flow component
+- ❌ No transaction status handling (pending, success, error)
+- ❌ No confirmation UI after submission
+
+**Hooks:**
+- ❌ No `useSubmitSkillTier()` hook for plain submission
+- ❌ No `useSubmitSkillTierWithProof()` hook for ZK proof submission
+- ❌ No `useSkillTier(skillHash, address)` hook for checking user's tier
+- ❌ No hook for checking if user can submit (SBT check + skill validation)
+
+**Skill Validation:**
+- ❌ No validation that skill exists in local state before submission
+- ❌ No validation that tier is within valid range (1-10)
+- ❌ No check that user has SBT before allowing submission
+
+**Integration with Local Skills:**
+- ❌ No connection between local `SkillNode[]` state and contract submission
+- ❌ No mapping from local skill `id` to contract `skillHash`
+- ❌ No sync between local skill level and submitted tier
+
+**Error Handling:**
+- ❌ No error handling for contract submission failures
+- ❌ No retry logic for failed transactions
+- ❌ No user feedback for transaction errors
+
+**Post-Submission:**
+- ❌ No redirect to leaderboard after successful submission
+- ❌ No refresh of leaderboard data after submission
+- ❌ No update of local state after on-chain submission
+
+#### Suggested File/Paths for New Code
+
+**Hooks:**
+- `apps/aztecbat-ui/hooks/useSubmitSkillTier.ts` - Plain skill tier submission
+- `apps/aztecbat-ui/hooks/useSubmitSkillTierWithProof.ts` - ZK proof submission
+- `apps/aztecbat-ui/hooks/useSkillTier.ts` - Read user's skill tier from contract
+- `apps/aztecbat-ui/hooks/useCanSubmitSkill.ts` - Check if user can submit (SBT + validation)
+
+**Components:**
+- `apps/aztecbat-ui/components/SubmitSkillButton.tsx` - Submit skill to leaderboard button
+- `apps/aztecbat-ui/components/SkillSubmissionFlow.tsx` - Full submission flow with confirmation
+- `apps/aztecbat-ui/components/TransactionStatus.tsx` - Display transaction pending/success/error
+- `apps/aztecbat-ui/components/SkillTierBadge.tsx` - Display skill tier badge
+
+**Proof Generation (Future):**
+- `apps/aztecbat-ui/lib/proofGenerator.ts` - Aztec/Noir proof generation client
+- `apps/aztecbat-ui/hooks/useGenerateProof.ts` - Hook for proof generation
+- `apps/aztecbat-ui/components/ProofGenerationFlow.tsx` - UI for proof generation
+
+**Integration Points:**
+- Update `apps/aztecbat-ui/app/me/page.tsx`:
+  - Add "Submit to Leaderboard" button for each skill
+  - Add SBT check before allowing submission
+  - Add transaction status display
+  - Add redirect to leaderboard after success
+- Update `apps/aztecbat-ui/app/leaderboard/[skillName]/page.tsx`:
+  - Refresh data after new submission
+  - Show user's position if they're on leaderboard
+
+**Utilities:**
+- `apps/aztecbat-ui/lib/skillUtils.ts` - Skill validation, mapping local to contract format
+- `apps/aztecbat-ui/lib/publicInputs.ts` - Public inputs encoding utilities
+
+**Environment Variables:**
+```bash
+# Add to .env.local (for future proof generation)
+NEXT_PUBLIC_AZTEC_RPC_URL=https://...
+NEXT_PUBLIC_PROOF_API_URL=http://localhost:3001/api/aztec
+```
+
+---
+
+### Flow 3: ENS Text Record `skilltree_profile_url`
+
+#### What Exists ✅
+
+**ENS Resolution:**
+- ✅ `mainnetPublicClient` configured for mainnet
+- ✅ `getEnsName(client, address)` utility function
+- ✅ `shortenAddress(address)` utility function
+- ✅ ENS resolution pattern in `ConnectButton` component
+- ✅ ENS name → address resolution in `/u/[identifier]` page
+- ✅ Address → ENS name reverse lookup in `/u/[identifier]` page
+
+**Viem Client:**
+- ✅ `mainnetPublicClient` exported from `apps/aztecbat-ui/lib/viemClients.ts`
+- ✅ Configured with LlamaRPC as default RPC
+
+**Documentation:**
+- ✅ ENS resolution utilities documented in backend map
+
+#### What's Missing ❌
+
+**Text Record Reading:**
+- ❌ No function to read ENS text records
+- ❌ No `getEnsText()` wrapper utility
+- ❌ No hook for reading text records
+- ❌ No UI component to display text record value
+
+**Profile URL Integration:**
+- ❌ No reading of `skilltree_profile_url` text record
+- ❌ No display of profile URL in user profile pages
+- ❌ No link to external profile if text record exists
+- ❌ No fallback if text record doesn't exist
+
+**Text Record Management:**
+- ❌ No UI for users to set their own `skilltree_profile_url`
+- ❌ No transaction flow for setting ENS text records
+- ❌ No validation of URL format
+
+**Caching:**
+- ❌ No caching of text record reads (unlike ENS name resolution)
+- ❌ No batch reading of text records
+
+#### Suggested File/Paths for New Code
+
+**Utilities:**
+- `apps/aztecbat-ui/lib/ensTextRecords.ts` - ENS text record reading utilities
+  - `getEnsText(client, name, key)` - Read text record
+  - `getProfileUrl(ensName)` - Read `skilltree_profile_url` specifically
+
+**Hooks:**
+- `apps/aztecbat-ui/hooks/useEnsTextRecord.ts` - Hook for reading ENS text records
+- `apps/aztecbat-ui/hooks/useProfileUrl.ts` - Hook specifically for profile URL
+
+**Components:**
+- `apps/aztecbat-ui/components/ProfileUrlLink.tsx` - Display profile URL if exists
+- `apps/aztecbat-ui/components/SetProfileUrlButton.tsx` - UI for setting profile URL (future)
+
+**Integration Points:**
+- Update `apps/aztecbat-ui/app/u/[identifier]/page.tsx`:
+  - Read `skilltree_profile_url` text record for ENS names
+  - Display profile URL link if exists
+  - Show external profile link badge
+- Update `apps/aztecbat-ui/app/me/page.tsx`:
+  - Show user's profile URL if they have ENS name
+  - Add "Set Profile URL" button (future feature)
+
+**Example Usage:**
+```typescript
+// In ensTextRecords.ts
+export async function getProfileUrl(
+  client: PublicClient,
+  ensName: string
+): Promise<string | null> {
+  try {
+    const url = await client.getEnsText({
+      name: ensName,
+      key: 'skilltree_profile_url',
+    });
+    return url || null;
+  } catch {
+    return null;
+  }
+}
+```
+
+**Note:** Setting ENS text records requires:
+- User to own the ENS name
+- Transaction to ENS resolver contract
+- This is a future feature, not Phase 3 priority
+
+---
+
+## 9. Implementation Priority
+
+### Phase 3.1 (High Priority)
+1. **SBT Status Check** - Add `useSBTStatus` hook and display in UI
+2. **Skill Submission (Plain)** - Add `useSubmitSkillTier` hook and button in `/me`
+3. **Replace Mock API** - Use `LeaderboardClient` in `/u/[identifier]` page
+
+### Phase 3.2 (Medium Priority)
+4. **Self Verification Flow** - Integrate Self SDK and verification UI
+5. **Transaction Status** - Add transaction pending/success/error handling
+6. **ENS Text Records** - Read and display `skilltree_profile_url`
+
+### Phase 3.3 (Future)
+7. **ZK Proof Generation** - Integrate Aztec/Noir proof generation
+8. **Proof Submission** - Add `useSubmitSkillTierWithProof` hook
+9. **Set Profile URL** - UI for setting ENS text records
+
+---
+
 **Last Updated:** Phase 3 Backend Map  
 **Status:** ✅ Ready for implementation
 
