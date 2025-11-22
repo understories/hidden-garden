@@ -2,8 +2,10 @@
 
 import * as React from 'react';
 import type { SkillNode } from '@hidden-garden/common';
-import { normalizeSkillId } from '@hidden-garden/common';
+import { normalizeSkillId, shortenAddress, getEnsName } from '@hidden-garden/common';
 import Link from 'next/link';
+import { useAccount } from 'wagmi';
+import { mainnetPublicClient } from '../../lib/viemClients';
 
 const initialSkills: SkillNode[] = [
   {
@@ -25,6 +27,65 @@ const initialSkills: SkillNode[] = [
 export default function MyGardenPage() {
   const [skills, setSkills] = React.useState<SkillNode[]>(initialSkills);
   const [newSkillName, setNewSkillName] = React.useState('');
+
+  const { address, isConnected } = useAccount();
+  const [ensName, setEnsName] = React.useState<string | null>(null);
+  const [ensLoading, setEnsLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function resolveEns() {
+      if (!address || !isConnected) {
+        setEnsName(null);
+        return;
+      }
+
+      setEnsLoading(true);
+      try {
+        const name = await getEnsName(
+          mainnetPublicClient as any,
+          address as `0x${string}`,
+        );
+        if (!cancelled) {
+          setEnsName(name);
+        }
+      } catch {
+        if (!cancelled) {
+          setEnsName(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setEnsLoading(false);
+        }
+      }
+    }
+
+    resolveEns();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [address, isConnected]);
+
+  const profileIdentifier =
+    ensName && ensName.length > 0
+      ? ensName
+      : address
+      ? address
+      : null;
+
+  const profileHref = profileIdentifier ? `/u/${profileIdentifier}` : null;
+
+  const profileLabel = !isConnected
+    ? 'Connect your wallet to view your public profile'
+    : ensLoading
+    ? 'Resolving ENS…'
+    : ensName
+    ? `View my public profile (${ensName})`
+    : address
+    ? `View my public profile (${shortenAddress(address)})`
+    : 'View my public profile';
 
   function updateSkill(id: string, updates: Partial<Pick<SkillNode, 'level' | 'xp'>>) {
     setSkills((prev) =>
@@ -153,6 +214,32 @@ export default function MyGardenPage() {
           We&apos;ll normalize the name into a stable id (e.g. &quot;Zero-Knowledge Proofs&quot; →{' '}
           <code>zero-knowledge-proofs</code>).
         </p>
+      </section>
+
+      <section className="space-y-2 border-t pt-4 mt-4">
+        <h2 className="text-lg font-semibold">Public profile</h2>
+        <p className="text-sm text-gray-600">
+          Your public profile shows only the skills you&apos;ve chosen to reveal to the leaderboard,
+          not your full private garden.
+        </p>
+        <div>
+          {profileHref && isConnected ? (
+            <Link
+              href={profileHref}
+              className="inline-flex items-center px-4 py-2 rounded border text-sm font-medium bg-white hover:bg-gray-50"
+            >
+              {profileLabel}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="inline-flex items-center px-4 py-2 rounded border text-sm text-gray-400 bg-gray-50 cursor-not-allowed"
+            >
+              {profileLabel}
+            </button>
+          )}
+        </div>
       </section>
     </main>
   );
