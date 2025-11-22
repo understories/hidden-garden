@@ -8,6 +8,7 @@
     "test": "turbo test",
     "dev:web": "pnpm --filter @hidden-garden/web dev",
     "dev:indexer": "pnpm --filter @hidden-garden/indexer dev",
+    "dev:playground": "pnpm --filter @hidden-garden/playground dev",
     "e2e:skills": "ts-node --project scripts/tsconfig.json scripts/e2e-skill-test.ts"
   },
   "dependencies": {
