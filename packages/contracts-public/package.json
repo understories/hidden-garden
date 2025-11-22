@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "compile": "hardhat compile",
     "test": "hardhat test",
+    "build": "hardhat compile",
     "node": "hardhat node"
   },
   "devDependencies": {
