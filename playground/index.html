@@ -132,6 +132,38 @@
       border-radius: 4px;
       margin-bottom: 2rem;
     }
+
+    .disabled-section {
+      opacity: 0.5;
+      pointer-events: none;
+      position: relative;
+    }
+
+    .disabled-section::before {
+      content: "Coming Soon - Not Required for MVP";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 0.5rem;
+      text-align: center;
+      font-size: 0.85rem;
+      border-radius: 8px 8px 0 0;
+      z-index: 10;
+    }
+
+    .mvp-badge {
+      display: inline-block;
+      background: #28a745;
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      margin-left: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -140,27 +172,62 @@
 
   <div class="warning">
     <strong>⚠️ Dev Only:</strong> This playground is for developer testing only. Do not use in production.
+    <br><strong>🎯 MVP Focus:</strong> Testing core contract interactions (SBT minting + skill submission) on local network.
+  </div>
+
+  <!-- Network Configuration Section -->
+  <div class="section">
+    <h2>Network Configuration <span class="mvp-badge">MVP</span></h2>
+    <label for="networkSelect">Network:</label>
+    <select id="networkSelect" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; margin-top: 0.5rem; background: white; cursor: pointer;">
+      <option value="local" selected>Local (Hardhat) - Use This for MVP Testing</option>
+      <option value="sepolia" disabled>Ethereum Sepolia Testnet (Not Required for MVP)</option>
+      <option value="custom" disabled>Custom (Not Required for MVP)</option>
+    </select>
+    
+    <div id="customAddresses" style="display: none; margin-top: 1rem;">
+      <label for="customSbtAddress">SelfHumanSBT Address (required for Sepolia):</label>
+      <input type="text" id="customSbtAddress" placeholder="0x..." />
+      
+      <label for="customLeaderboardAddress">SkillLeaderboard Address (required for Sepolia):</label>
+      <input type="text" id="customLeaderboardAddress" placeholder="0x..." />
+      <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+        💡 Enter your deployed contract addresses. Contracts will be initialized automatically when addresses are valid.
+      </p>
+    </div>
+    
+    <div id="networkStatus" class="status info" style="display: none; margin-top: 1rem;">
+      <strong>Network:</strong> <span id="networkInfo"></span>
+    </div>
   </div>
 
   <!-- Wallet Connection Section -->
   <div class="section">
-    <h2>Wallet Connection</h2>
+    <h2>Wallet Connection <span class="mvp-badge">MVP</span></h2>
     <button id="connectBtn">Connect Wallet</button>
     <div id="walletStatus" class="status info" style="display: none;">
       <strong>Connected:</strong> <span id="walletAddress"></span>
     </div>
+    <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+      💡 Connect MetaMask to your local Hardhat network (http://localhost:8545)
+    </p>
   </div>
 
   <!-- SBT Minting Section -->
   <div class="section">
-    <h2>SelfHumanSBT</h2>
+    <h2>SelfHumanSBT <span class="mvp-badge">MVP</span></h2>
     <button id="mintSbtBtn" disabled>Mint SelfHumanSBT</button>
+    <button id="verifySbtBtn" disabled style="background: #28a745;">Verify SBT On-Chain</button>
     <div id="sbtStatus"></div>
+    <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+      💡 Core MVP feature: Mint your human verification SBT. Use "Verify" to confirm on-chain.
+      <br><small style="color: #999;">Note: If verification shows an error but minting succeeds, the SBT is valid - this is a known dev environment quirk.</small>
+    </p>
   </div>
 
   <!-- Skill Submission Section -->
   <div class="section">
-    <h2>Submit Skill Tier</h2>
+    <h2>Submit Skill Tier <span class="mvp-badge">MVP</span></h2>
     <label for="skillId">Skill ID (e.g., "solidity", "rust"):</label>
     <input type="text" id="skillId" placeholder="solidity" />
     
@@ -169,17 +236,23 @@
     
     <button id="submitSkillBtn" disabled>Submit Skill Tier</button>
     <div id="skillStatus"></div>
+    <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+      💡 Core MVP feature: Submit your skill tier to the leaderboard
+    </p>
   </div>
 
   <!-- Leaderboard Query Section -->
-  <div class="section">
-    <h2>Query Leaderboard (Indexer)</h2>
+  <div class="section disabled-section">
+    <h2>Query Leaderboard (Indexer) <span style="font-size: 0.75rem; color: #999;">(Not Required for MVP)</span></h2>
     <label for="skillHash">Skill Hash (bytes32):</label>
-    <input type="text" id="skillHash" placeholder="0x..." />
+    <input type="text" id="skillHash" placeholder="0x..." disabled />
     
-    <button id="fetchLeaderboardBtn">Fetch Leaderboard from Indexer</button>
+    <button id="fetchLeaderboardBtn" disabled>Fetch Leaderboard from Indexer</button>
     <div id="leaderboardStatus"></div>
     <pre id="leaderboardResult" style="display: none;"></pre>
+    <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #999;">
+      This feature will be enabled after MVP testing is complete
+    </p>
   </div>
 
   <script type="module" src="/main.ts"></script>
