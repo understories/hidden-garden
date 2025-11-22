@@ -1,17 +1,21 @@
-import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
+import { WalletProvider } from '../components/WalletProvider';
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'Hidden Garden',
+  description: 'Skill tree + leaderboard',
 };
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <WalletProvider>{children}</WalletProvider>
+      </body>
     </html>
   );
 }
