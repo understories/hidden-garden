@@ -68,19 +68,9 @@ export {
 
 // Registry
 export {
-  getQuestMetadata,
-  getTierMetadata,
-  getAllQuestMetadata,
-  getQuestRegistryEntry,
-  registerQuest,
-  getQuest,
-  isQuestRegistered,
-  getAllRegisteredQuests,
-  // Legacy aliases
-  registerPuzzle,
-  getPuzzle,
-  isPuzzleRegistered,
-  getAllRegisteredPuzzles,
-  isValidQuestId,
+  questRegistry,
+  getQuestDefinition,
+  listQuestsByTier,
+  listAllQuests,
 } from './registry';
 
