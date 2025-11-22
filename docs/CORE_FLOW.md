@@ -209,29 +209,59 @@ See `tests/integration/first_quest_aztec_flow.test.ts` for the full test suite.
 
 ---
 
-## How to Demo the First Real Quest
+## Dev Sanity: Quick Start for First Quest
 
-This section demonstrates the **privacy-native** flow for `aztec_concept_quiz` using the real Aztec devnet.
+### Prerequisites & Setup
 
-### Prerequisites
-
-1. **Aztec devnet running:**
+1. **Install Aztec CLI (if not already installed):**
    ```bash
-   pnpm aztec:devnet
+   bash -i <(curl -s https://install.aztec.network)
    ```
-   Wait for it to be ready (check with `aztec status`)
 
-2. **Environment variables set:**
+2. **Start Aztec devnet/sandbox:**
+   ```bash
+   # Option 1: Use helper script (if available)
+   pnpm aztec:up-devnet
+   
+   # Option 2: Start sandbox directly
+   aztec start --sandbox
+   ```
+   Wait for it to be ready (check with `aztec status` or look for PXE URL in logs)
+
+3. **Set environment variables:**
    ```bash
    # In apps/aztecbat-ui/.env.local
    NEXT_PUBLIC_USE_REAL_AZTEC=true
-   NEXT_PUBLIC_PXE_URL=http://localhost:8080
+   NEXT_PUBLIC_PXE_URL=http://localhost:8080  # or whatever port Aztec sandbox uses
+   
+   # Optional: Reuse existing contract deployment
+   AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS=<contract_address>
    ```
 
-3. **App running:**
+4. **Compile Noir contract (if not already compiled):**
+   ```bash
+   pnpm aztec:compile
+   ```
+
+5. **Start the app:**
    ```bash
    pnpm dev:web
    ```
+
+### Environment Variables Reference
+
+**Required for Real Aztec Mode:**
+- `NEXT_PUBLIC_USE_REAL_AZTEC=true` - Enables real Aztec client (default: false, uses mock)
+- `NEXT_PUBLIC_PXE_URL` - Aztec PXE endpoint (default: `http://localhost:8080`)
+
+**Optional:**
+- `AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS` - Reuse existing contract deployment (if not set, deploys new contract)
+
+**Note:** These variables are read at build time for `NEXT_PUBLIC_*` vars, so restart the dev server after changing them.
+
+## How to Demo the First Real Quest
+
+This section demonstrates the **privacy-native** flow for `aztec_concept_quiz` using the real Aztec devnet.
 
 ### Demo Steps
 

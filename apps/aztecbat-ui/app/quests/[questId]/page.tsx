@@ -47,6 +47,8 @@ export default function QuestPage() {
   const [aztecMode, setAztecMode] = useState<'real' | 'mock'>('mock');
   const [aztecClient, setAztecClient] = useState<AztecClient | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [tierProofResult, setTierProofResult] = useState<{ proof: string; publicInputs: string } | null>(null);
+  const [isGeneratingProof, setIsGeneratingProof] = useState(false);
   
   const { address, isConnected } = useAccount();
   const { writeContract, data: hash, isPending, error: contractError } = useWriteContract();
@@ -184,20 +186,31 @@ export default function QuestPage() {
       return;
     }
 
+    setIsGeneratingProof(true);
+    setTierProofResult(null);
+
     try {
       // Generate tier proof (for Tier 1 with the first quest)
-      const tierProofResult = await aztecClient.proveAztecBuilderTier(1, 60);
+      const result = await aztecClient.proveAztecBuilderTier(1, 60);
 
-      if (!tierProofResult.success || !tierProofResult.proof) {
-        alert('Failed to generate tier proof: ' + (tierProofResult.error || 'Unknown error'));
+      if (!result.success || !result.proof) {
+        alert('Failed to generate tier proof: ' + (result.error || 'Unknown error'));
+        setIsGeneratingProof(false);
         return;
       }
+
+      // Store proof result for display
+      setTierProofResult({
+        proof: result.proof.proof,
+        publicInputs: result.proof.publicInputs,
+      });
 
       // Get contract address
       const chainId = 31337; // Hardhat local
       const contractAddress = getSkillLeaderboardAddress(chainId);
       if (!contractAddress) {
         alert('Contract not deployed on this chain');
+        setIsGeneratingProof(false);
         return;
       }
 
@@ -212,13 +225,15 @@ export default function QuestPage() {
         args: [
           skillHash,
           1, // minLevel (tier 1)
-          tierProofResult.proof.proof,
-          tierProofResult.proof.publicInputs,
+          result.proof.proof,
+          result.proof.publicInputs,
         ],
       });
     } catch (error) {
       console.error('Error publishing tier proof:', error);
       alert('Failed to publish tier proof: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsGeneratingProof(false);
     }
   };
 
@@ -398,26 +413,87 @@ export default function QuestPage() {
               </p>
               <button
                 onClick={handlePublishTierProof}
-                disabled={!isConnected || isPending || isConfirming}
+                disabled={!isConnected || isPending || isConfirming || isGeneratingProof}
                 style={{
                   padding: '0.75rem 1.5rem',
-                  backgroundColor: (!isConnected || isPending || isConfirming) ? '#ccc' : '#9C27B0',
+                  backgroundColor: (!isConnected || isPending || isConfirming || isGeneratingProof) ? '#ccc' : '#9C27B0',
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: (!isConnected || isPending || isConfirming) ? 'not-allowed' : 'pointer',
+                  cursor: (!isConnected || isPending || isConfirming || isGeneratingProof) ? 'not-allowed' : 'pointer',
                   fontSize: '1rem',
                 }}
               >
                 {!isConnected 
                   ? 'Connect Wallet First' 
+                  : isGeneratingProof
+                    ? 'Generating Proof...'
                   : isPending 
-                    ? 'Generating Proof...' 
+                    ? 'Publishing...' 
                     : isConfirming
                       ? 'Confirming...'
                       : '🔓 Generate & Publish Tier Proof'
                 }
               </button>
+
+              {/* Proof Result Display */}
+              {tierProofResult && (
+                <div style={{ 
+                  marginTop: '1rem', 
+                  padding: '1rem', 
+                  backgroundColor: '#E3F2FD',
+                  borderRadius: '4px',
+                  border: '1px solid #2196F3'
+                }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#1976D2' }}>
+                    ✅ Tier Proof Generated
+                  </div>
+                  <details style={{ marginTop: '0.5rem' }}>
+                    <summary style={{ cursor: 'pointer', fontSize: '0.9rem', color: '#666' }}>
+                      View Public Inputs (what is revealed)
+                    </summary>
+                    <div style={{ 
+                      marginTop: '0.5rem', 
+                      padding: '0.75rem', 
+                      backgroundColor: '#fff',
+                      borderRadius: '4px',
+                      fontFamily: 'monospace',
+                      fontSize: '0.85rem',
+                      overflow: 'auto',
+                      maxHeight: '200px'
+                    }}>
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <strong>Public Inputs (hex):</strong>
+                        <pre style={{ marginTop: '0.25rem', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                          {tierProofResult.publicInputs}
+                        </pre>
+                      </div>
+                      <div style={{ 
+                        marginTop: '0.5rem', 
+                        padding: '0.5rem', 
+                        backgroundColor: '#FFF3E0',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem'
+                      }}>
+                        <strong>What is public:</strong>
+                        <ul style={{ marginTop: '0.25rem', paddingLeft: '1.5rem' }}>
+                          <li>Owner (Aztec address)</li>
+                          <li>min_tier: 1</li>
+                          <li>min_average_score: 60</li>
+                          <li>path_hash: aztec_builder_path</li>
+                        </ul>
+                        <strong style={{ display: 'block', marginTop: '0.5rem' }}>What stays private:</strong>
+                        <ul style={{ marginTop: '0.25rem', paddingLeft: '1.5rem' }}>
+                          <li>Individual quest IDs</li>
+                          <li>Individual scores</li>
+                          <li>Completion timestamps</li>
+                          <li>Number of attempts</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </details>
+                </div>
+              )}
 
               {isConfirmed && (
                 <div style={{ 
@@ -428,27 +504,6 @@ export default function QuestPage() {
                 }}>
                   ✅ Tier proof published! Your competence is now verifiable on-chain without revealing your learning journey.
                 </div>
-              )}
-
-              {/* Proof Details (for debugging/demo) */}
-              {aztecMode === 'real' && storageResult?.success && (
-                <details style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-                  <summary style={{ cursor: 'pointer', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                    🔍 Proof Details (for demo)
-                  </summary>
-                  <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
-                    When you generate a tier proof, it will include:
-                  </p>
-                  <ul style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
-                    <li>Your Aztec address (public)</li>
-                    <li>Minimum tier proven: Tier 1 (public)</li>
-                    <li>Minimum average score: 60% (public)</li>
-                    <li>Path hash: aztec_builder_path (public)</li>
-                  </ul>
-                  <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem', fontStyle: 'italic' }}>
-                    What stays private: Individual quest IDs, individual scores, completion timestamps
-                  </p>
-                </details>
               )}
 
               {contractError && (
