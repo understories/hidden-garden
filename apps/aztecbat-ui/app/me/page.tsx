@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useAccount } from 'wagmi';
 import { mainnetPublicClient } from '../../lib/viemClients';
 import { startSelfVerificationFlow } from '../../lib/selfVerification';
+import { useHasValidSBT } from '../../hooks/useHasValidSBT';
 
 const initialSkills: SkillNode[] = [
   {
@@ -33,8 +34,13 @@ export default function MyGardenPage() {
   const [ensName, setEnsName] = React.useState<string | null>(null);
   const [ensLoading, setEnsLoading] = React.useState(false);
 
-  // Self verification status: 'not-verified' | 'checking' | 'verified'
-  const [verificationStatus, setVerificationStatus] = React.useState<'not-verified' | 'checking' | 'verified'>('not-verified');
+  // Check SBT status using on-chain contract call
+  const { isLoading: sbtLoading, isVerified, error: sbtError, refetch: refetchSBT } = useHasValidSBT(
+    address as `0x${string}` | undefined,
+  );
+
+  // Track if user has manually completed verification (for hackathon demo)
+  const [verificationCompleted, setVerificationCompleted] = React.useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -154,28 +160,64 @@ export default function MyGardenPage() {
               Verify your identity with Self to prove you&apos;re human and unlock additional features.
             </p>
             <div className="text-sm">
-              {verificationStatus === 'not-verified' && (
-                <span className="text-gray-500">Not verified yet</span>
-              )}
-              {verificationStatus === 'checking' && (
+              {sbtLoading && (
                 <span className="text-blue-600">Checking verification…</span>
               )}
-              {verificationStatus === 'verified' && (
+              {!sbtLoading && isVerified && (
                 <span className="text-green-600 font-medium">Verified Human ✅</span>
+              )}
+              {!sbtLoading && !isVerified && (
+                <span className="text-gray-500">Not verified yet</span>
+              )}
+              {sbtError && (
+                <span className="text-red-500 text-xs">
+                  {sbtError.message || 'Error checking verification'}
+                </span>
               )}
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              if (!address) return;
-              startSelfVerificationFlow(address as `0x${string}`);
-            }}
-            disabled={!isConnected || verificationStatus === 'checking'}
-            className="px-4 py-2 rounded border text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Verify with Self
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (!address) return;
+                startSelfVerificationFlow(address as `0x${string}`);
+              }}
+              disabled={!isConnected || sbtLoading || isVerified}
+              className="px-4 py-2 rounded border text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Verify with Self
+            </button>
+            {verificationCompleted && !isVerified && (
+              <button
+                type="button"
+                onClick={() => {
+                  refetchSBT();
+                }}
+                disabled={sbtLoading}
+                className="px-4 py-2 rounded border text-sm font-medium bg-blue-50 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {sbtLoading ? 'Checking…' : 'Check Verification Status'}
+              </button>
+            )}
+          </div>
+          {!isVerified && !verificationCompleted && (
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setVerificationCompleted(true);
+                  // Auto-refetch after a short delay
+                  setTimeout(() => {
+                    refetchSBT();
+                  }, 1000);
+                }}
+                className="text-xs text-blue-600 underline hover:text-blue-800"
+              >
+                I&apos;ve completed verification
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
