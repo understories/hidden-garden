@@ -1,3 +1,6 @@
-// Mock leaderboard client implementation
-// This file will implement the LeaderboardAPI interface
+import type {
+  PublicSkillTier,
+  UserPublicSkill,
+  LeaderboardAPI,
+} from '@hidden-garden/common';
 
