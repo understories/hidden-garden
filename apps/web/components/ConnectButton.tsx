@@ -24,14 +24,25 @@ export const ConnectButton: React.FC = () => {
 
       setEnsLoading(true);
       try {
-        const name = await mainnetPublicClient.getEnsName({
-          address: address as `0x${string}`,
-        });
+        // Use getEnsName with a timeout and better error handling
+        const name = await Promise.race([
+          mainnetPublicClient.getEnsName({
+            address: address as `0x${string}`,
+          }),
+          new Promise<string | null>((_, reject) =>
+            setTimeout(() => reject(new Error('ENS resolution timeout')), 5000),
+          ),
+        ]) as string | null;
+        
         if (!cancelled) {
           setEnsName(name);
         }
-      } catch (err) {
-        console.error('ENS resolution error:', err);
+      } catch (err: any) {
+        // Silently fail - not all addresses have ENS names
+        // Only log if it's not a contract execution error (which is expected for addresses without ENS)
+        if (err?.message && !err.message.includes('reverted')) {
+          console.warn('ENS resolution warning:', err.message);
+        }
         if (!cancelled) {
           setEnsName(null);
         }
