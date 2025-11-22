@@ -6,7 +6,10 @@
     "test": "hardhat test",
     "build": "hardhat compile",
     "node": "hardhat node",
-    "deploy:local": "hardhat run scripts/deploy.ts --network hardhat"
+    "deploy:local": "hardhat run scripts/deploy.ts --network hardhat",
+    "deploy:node": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
+    "console": "hardhat console --network hardhat"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "6.1.0",
