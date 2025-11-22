@@ -20,7 +20,7 @@ export type QuestId = string;
  * Quest ID Hash
  * The hashed version of a quest_id (Field in Noir, bytes32 in Solidity)
  * Represented as a 0x-prefixed hex string in TypeScript
- * Computed using keccak256 hash of the quest_id string
+ * Computed using pedersen_hash of the quest_id string (matches Noir circuit)
  */
 export type QuestIdHash = `0x${string}`;
 
@@ -40,7 +40,7 @@ export type CategoryId = 'aztec_builder';
 /**
  * Category Hash
  * The hashed version of the category (Field in Noir, bytes32 in Solidity)
- * Computed using keccak256 hash of the category string
+ * Computed using pedersen_hash of the category string (matches Noir circuit)
  */
 export type CategoryHash = `0x${string}`;
 

@@ -20,7 +20,7 @@ import { computeCategoryHash, computePathHash } from './hashing';
 /**
  * Category hash (computed from category string)
  * This matches the category_hash used in QuestNote storage
- * Computed as: keccak256(utf8("aztec_builder"))
+ * Computed as: pedersen_hash(bytes("aztec_builder")) - matches Noir circuit
  */
 export const AZTEC_BUILDER_CATEGORY_HASH: QuestIdHash = computeCategoryHash(AZTEC_BUILDER_CATEGORY);
 
@@ -29,7 +29,7 @@ export const AZTEC_BUILDER_CATEGORY_HASH: QuestIdHash = computeCategoryHash(AZTE
  * Used in tier proof public outputs and leaderboard queries
  * This identifies the "aztec_builder_path" learning pathway
  * 
- * Computed as: keccak256(utf8("aztec_builder_path"))
+ * Computed as: pedersen_hash(bytes("aztec_builder_path")) - matches Noir circuit
  */
 export const PATH_HASH: QuestIdHash = computePathHash('aztec_builder_path');
 
