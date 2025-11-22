@@ -182,8 +182,8 @@ See `tests/integration/first_quest_aztec_flow.test.ts` for the full test suite.
 ## Current Status
 
 ✅ **Implemented:**
-- Quest validation (first quest working)
-- Quest ID hash computation
+- Quest validation (three quests working in aztec_builder path)
+- Quest ID hash computation with real Pedersen hashes
 - Aztec client interface with both mock and real implementations
 - Complete UI flow for quest → Aztec → L1
 - L1 contract integration (wagmi)
@@ -191,7 +191,10 @@ See `tests/integration/first_quest_aztec_flow.test.ts` for the full test suite.
 - Factory function for client creation (`createAztecClient`)
 
 ⚠️ **Partial Implementation:**
-- **For quest `aztec_concept_quiz`:** Real Aztec devnet integration is implemented
+- **For three quests in aztec_builder path:** Real Aztec devnet integration is implemented
+  - `aztec_concept_quiz` (Tier 1)
+  - `noir_syntax_basics` (Tier 2)
+  - `aztec_storage_intro` (Tier 2)
   - `RealAztecClient` connects to Aztec devnet
   - Contract deployment/loading (requires compiled contract artifact)
   - Quest completion storage via `addQuestCompletionByQuestId()`
@@ -201,10 +204,10 @@ See `tests/integration/first_quest_aztec_flow.test.ts` for the full test suite.
 
 ## Next Steps
 
-1. ✅ **Real Aztec client implemented** for `aztec_concept_quiz`
+1. ✅ **Real Aztec client implemented** for three quests (`aztec_concept_quiz`, `noir_syntax_basics`, `aztec_storage_intro`)
 2. **Deploy contracts** to testnet/mainnet
 3. **Set up indexer** to track tier proofs
-4. **Implement remaining quests** (18 more to go)
+4. **Implement remaining quests** (16 more to go)
 5. **Add leaderboard UI** to display published tiers
 
 ---
@@ -213,7 +216,12 @@ See `tests/integration/first_quest_aztec_flow.test.ts` for the full test suite.
 
 This section documents how to run the first quest (`aztec_concept_quiz`) with real Aztec devnet integration.
 
-**Note:** This is the **only quest** currently wired for real Aztec devnet. Other quests will use mock mode until they are individually enabled.
+**Note:** Three quests are now implemented in the aztec_builder path:
+- `aztec_concept_quiz` (Tier 1)
+- `noir_syntax_basics` (Tier 2)
+- `aztec_storage_intro` (Tier 2)
+
+All three quests support real Aztec devnet integration. Other quests will use mock mode until they are individually enabled.
 
 ### Prerequisites & Setup
 
