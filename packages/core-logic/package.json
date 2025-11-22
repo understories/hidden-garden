@@ -8,12 +8,23 @@
     "build": "tsc --noEmit",
     "test": "jest",
     "test:aztec": "jest tests/aztec_first_quest.test.ts",
+    "test:env": "jest tests/aztec_env.test.ts",
     "aztec:compile": "aztec-nargo compile",
-    "aztec:test": "aztec-nargo test"
+    "aztec:test": "aztec-nargo test",
+    "aztec:version": "aztec --version || echo '⚠️  aztec CLI not installed'"
   },
   "dependencies": {
     "@aztec/aztec.js": "3.0.0-devnet.5",
     "ethers": "^6.15.0"
+  },
+  "_aztecVersionInfo": {
+    "comment": "Aztec devnet version pinned to 3.0.0-devnet.5. This must match:",
+    "comment2": "1. @aztec/aztec.js package version above",
+    "comment3": "2. Nargo.toml git tag (v3.0.0-devnet.5)",
+    "comment4": "3. aztec CLI version (check with: pnpm aztec:version)",
+    "comment5": "4. Official docs: https://docs.aztec.network/devnet",
+    "targetDevnetVersion": "3.0.0-devnet.5",
+    "lastVerified": "2025-11-22"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
