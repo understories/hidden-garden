@@ -4,7 +4,8 @@
   "scripts": {
     "lint": "turbo lint",
     "build": "turbo build",
-    "test": "turbo test"
+    "test": "turbo test",
+    "dev:web": "pnpm --filter @hidden-garden/web dev"
   }
 }
 
