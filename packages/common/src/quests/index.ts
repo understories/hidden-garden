@@ -45,19 +45,25 @@ export type {
 export {
   AZTEC_BUILDER_CATEGORY,
   AZTEC_BUILDER_CATEGORY_HASH,
-  AZTEC_BUILDER_PATH_HASH,
+  PATH_HASH,
   QUEST_TIER_MAP,
+  QUEST_CATEGORY_MAP,
   TIER_QUEST_MAP,
   TIER_REQUIRED_QUESTS,
   TIER_1_QUEST_ID,
   TIER_2_QUEST_ID,
   TIER_3_QUEST_ID,
   TIER_4_QUEST_ID,
-  getQuestTier,
-  getTierQuests,
+  getTierForQuest,
+  getQuestsForTier,
+  getAllQuestIds,
+  getQuestCategory,
   getTierRequiredQuests,
   isQuestOptional,
-  getQuestCategory,
+  // Legacy exports
+  getQuestTier,
+  getTierQuests,
+  AZTEC_BUILDER_PATH_HASH, // Legacy alias for PATH_HASH
 } from './mapping';
 
 // Registry
