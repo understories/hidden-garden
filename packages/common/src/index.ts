@@ -1,5 +1,5 @@
 // Re-export types and utilities
-export type { SkillNode } from './types';
+export type { SkillNode, AztecBuilderTierProofInputs } from './types';
 export { normalizeSkillId } from './utils';
 
 // Re-export contract addresses and ABIs
