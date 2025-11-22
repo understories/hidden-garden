@@ -1,10 +1,3 @@
-import type {
-  SkillTier,
-  UserPublicSkills,
-  SkillLeaderboard,
-  SkillLeaderboardEntry,
-} from './index';
-
 // Basic identity for any on-chain user we show in the UI.
 export type UserIdentity = {
   address: `0x${string}`;
@@ -48,15 +41,35 @@ export interface LeaderboardAPI {
 // API Response types
 
 // Get user public skills response
-export type GetUserPublicSkillsResponse = UserPublicSkills;
+export type GetUserPublicSkillsResponse = {
+  user: UserIdentity;
+  skillTiers: Array<{
+    skillId: string;
+    tier: number;
+    achievedAt: number;
+  }>;
+};
 
 // Get skill leaderboard response
-export type GetSkillLeaderboardResponse = SkillLeaderboard;
+export type GetSkillLeaderboardResponse = {
+  skillId: string;
+  entries: Array<{
+    rank: number;
+    user: UserIdentity;
+    tier: number;
+    achievedAt: number;
+  }>;
+  totalParticipants: number;
+};
 
 // Get user skill tier response
 export type GetUserSkillTierResponse = {
   user: UserIdentity;
-  skillTier: SkillTier | null; // null if user doesn't have this skill
+  skillTier: {
+    skillId: string;
+    tier: number;
+    achievedAt: number;
+  } | null; // null if user doesn't have this skill
 };
 
 // List all skills response
@@ -72,7 +85,12 @@ export type ListSkillsResponse = {
 export type GetUserLeaderboardPositionResponse = {
   skillId: string;
   user: UserIdentity;
-  entry: SkillLeaderboardEntry | null; // null if user is not on leaderboard
+  entry: {
+    rank: number;
+    user: UserIdentity;
+    tier: number;
+    achievedAt: number;
+  } | null; // null if user is not on leaderboard
 };
 
 // API Request types
