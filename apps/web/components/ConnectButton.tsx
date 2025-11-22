@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { shortenAddress } from '@hidden-garden/common';
+import type { EnsPublicClient } from '@hidden-garden/common';
+import { shortenAddress, getEnsName } from '@hidden-garden/common';
 import { mainnetPublicClient } from '../lib/viemClients';
 
 export const ConnectButton: React.FC = () => {
@@ -24,25 +25,12 @@ export const ConnectButton: React.FC = () => {
 
       setEnsLoading(true);
       try {
-        // Use getEnsName with a timeout and better error handling
-        const name = await Promise.race([
-          mainnetPublicClient.getEnsName({
-            address: address as `0x${string}`,
-          }),
-          new Promise<string | null>((_, reject) =>
-            setTimeout(() => reject(new Error('ENS resolution timeout')), 5000),
-          ),
-        ]) as string | null;
-        
+        const ensClient = mainnetPublicClient as unknown as EnsPublicClient;
+        const name = await getEnsName(ensClient, address as `0x${string}`);
         if (!cancelled) {
           setEnsName(name);
         }
-      } catch (err: any) {
-        // Silently fail - not all addresses have ENS names
-        // Only log if it's not a contract execution error (which is expected for addresses without ENS)
-        if (err?.message && !err.message.includes('reverted')) {
-          console.warn('ENS resolution warning:', err.message);
-        }
+      } catch (err) {
         if (!cancelled) {
           setEnsName(null);
         }
