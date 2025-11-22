@@ -2,9 +2,17 @@
 
 import * as React from 'react';
 import type { SkillNode } from '@hidden-garden/core-logic';
-import { normalizeSkillId, shortenAddress, getEnsName, hashSkillName } from '@hidden-garden/core-logic';
+import {
+  normalizeSkillId,
+  shortenAddress,
+  getEnsName,
+  hashSkillName,
+  SkillLeaderboardAbi,
+  getSkillLeaderboardAddress,
+} from '@hidden-garden/core-logic';
 import Link from 'next/link';
-import { useAccount } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId } from 'wagmi';
+import { encodeAbiParameters, parseAbiParameters } from 'viem';
 import { mainnetPublicClient } from '../../lib/viemClients';
 import { startSelfVerificationFlow } from '../../lib/selfVerification';
 import { useHasValidSBT } from '../../hooks/useHasValidSBT';
@@ -32,6 +40,11 @@ export default function MyGardenPage() {
   const [newSkillName, setNewSkillName] = React.useState('');
 
   const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { writeContract, data: hash, isPending: isWritePending, error: writeError } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+  });
   const [ensName, setEnsName] = React.useState<string | null>(null);
   const [ensLoading, setEnsLoading] = React.useState(false);
 
@@ -51,6 +64,8 @@ export default function MyGardenPage() {
   const [proofGenerating, setProofGenerating] = React.useState(false);
   const [proofError, setProofError] = React.useState<string | null>(null);
   const [proofResult, setProofResult] = React.useState<{ proofData: string; claimedTier: number } | null>(null);
+  // Transaction state
+  const [submittingSkill, setSubmittingSkill] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -312,6 +327,7 @@ export default function MyGardenPage() {
                           setProofError(null);
                           setProofResult(null);
                           setProofGenerating(false);
+                          setSubmittingSkill(null);
                         }}
                         className="text-xs text-gray-500 hover:text-gray-700"
                       >
@@ -323,9 +339,29 @@ export default function MyGardenPage() {
                         ⚠️ {proofError}
                       </div>
                     )}
-                    {proofResult && (
+                    {writeError && (
+                      <div className="mb-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
+                        ⚠️ Transaction failed: {writeError.message || 'Unknown error'}
+                      </div>
+                    )}
+                    {proofResult && !submittingSkill && (
                       <div className="mb-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded border border-green-200">
                         ✅ Proof generated! Claimed tier: {proofResult.claimedTier}
+                      </div>
+                    )}
+                    {submittingSkill === skill.id && isWritePending && (
+                      <div className="mb-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-200">
+                        ⏳ Waiting for wallet signature…
+                      </div>
+                    )}
+                    {submittingSkill === skill.id && isConfirming && (
+                      <div className="mb-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-200">
+                        ⏳ Transaction pending…
+                      </div>
+                    )}
+                    {submittingSkill === skill.id && isConfirmed && (
+                      <div className="mb-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded border border-green-200">
+                        ✅ Published to leaderboard!
                       </div>
                     )}
                     <div className="flex gap-2 items-center">
@@ -366,8 +402,37 @@ export default function MyGardenPage() {
                             });
 
                             setProofResult(result);
-                            // TODO: Next step - submit to contract
-                            console.log('Proof generated:', result);
+
+                            // Submit to contract
+                            if (!address) {
+                              throw new Error('Wallet not connected');
+                            }
+
+                            const leaderboardAddress = getSkillLeaderboardAddress(chainId);
+                            if (!leaderboardAddress) {
+                              throw new Error(`SkillLeaderboard contract not deployed on chain ${chainId}`);
+                            }
+
+                            // Encode public inputs: abi.encode(userAddress, skillHash, minLevel)
+                            const publicInputs = encodeAbiParameters(
+                              parseAbiParameters('address, bytes32, uint8'),
+                              [address, skillHash as `0x${string}`, selectedTier],
+                            );
+
+                            setSubmittingSkill(skill.id);
+
+                            // Call submitSkillTierWithProof
+                            writeContract({
+                              address: leaderboardAddress,
+                              abi: SkillLeaderboardAbi,
+                              functionName: 'submitSkillTierWithProof',
+                              args: [
+                                skillHash as `0x${string}`, // bytes32 skillHash
+                                selectedTier, // uint8 minLevel
+                                result.proofData as `0x${string}`, // bytes proof
+                                publicInputs, // bytes publicInputs
+                              ],
+                            });
                           } catch (error: any) {
                             setProofError(
                               error?.message || 'Failed to generate proof. Please try again.',
@@ -377,10 +442,16 @@ export default function MyGardenPage() {
                             setProofGenerating(false);
                           }
                         }}
-                        disabled={proofGenerating}
+                        disabled={proofGenerating || isWritePending || isConfirming}
                         className="px-3 py-1 rounded border text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {proofGenerating ? 'Generating proof…' : 'Generate proof & publish'}
+                        {proofGenerating
+                          ? 'Generating proof…'
+                          : isWritePending
+                          ? 'Waiting for signature…'
+                          : isConfirming
+                          ? 'Transaction pending…'
+                          : 'Generate proof & publish'}
                       </button>
                     </div>
                   </div>
@@ -388,14 +459,15 @@ export default function MyGardenPage() {
                   <div className="border-t pt-2 mt-2">
                     <button
                       type="button"
-                      onClick={() => {
-                        setRevealingSkillId(skill.id);
-                        setSelectedTier(3); // Reset to default
-                        // Reset proof state when opening reveal dialog
-                        setProofError(null);
-                        setProofResult(null);
-                        setProofGenerating(false);
-                      }}
+                        onClick={() => {
+                          setRevealingSkillId(skill.id);
+                          setSelectedTier(3); // Reset to default
+                          // Reset proof state when opening reveal dialog
+                          setProofError(null);
+                          setProofResult(null);
+                          setProofGenerating(false);
+                          setSubmittingSkill(null);
+                        }}
                       disabled={!isConnected || !isVerified}
                       className="text-xs px-3 py-1.5 rounded border text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       title={
