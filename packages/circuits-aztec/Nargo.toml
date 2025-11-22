@@ -1,0 +1,8 @@
+[package]
+name = "circuits-aztec"
+version = "0.0.0"
+type = "lib"
+authors = []
+
+[dependencies]
+
