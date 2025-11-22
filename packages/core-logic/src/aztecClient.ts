@@ -7,6 +7,8 @@
 
 import type { QuestIdHash, QuestId } from './quests/types';
 import { computeQuestIdHash } from './quests/hashing';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Aztec.js types - using type-only imports to avoid runtime dependency issues during build
 // The actual values will be imported dynamically at runtime
@@ -25,18 +27,32 @@ type CompleteAddress = any;
 let createPXEClient: any;
 let waitForPXE: any;
 let Fr: any;
+let AztecAddress: any;
+let getDeployedTestAccountsWallets: any;
+let Contract: any;
 
-// Initialize Aztec.js imports at module load time
+// Initialize Aztec.js imports dynamically at runtime
 // This will fail gracefully if @aztec/aztec.js is not available
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const aztecJs = require('@aztec/aztec.js');
-  createPXEClient = aztecJs.createPXEClient;
-  waitForPXE = aztecJs.waitForPXE;
-  Fr = aztecJs.Fr;
-} catch (error) {
-  // Aztec.js not available - will fail at runtime with clear error
-  // This is acceptable during development when package might not be fully set up
+async function loadAztecSDK() {
+  try {
+    // Use dynamic import for ESM modules
+    // @ts-ignore - dynamic import may not be recognized by TypeScript
+    const aztecJs = await import('@aztec/aztec.js');
+    // @ts-ignore - dynamic import may not be recognized by TypeScript
+    const aztecAccounts = await import('@aztec/accounts/testing');
+    
+    createPXEClient = aztecJs.createPXEClient;
+    waitForPXE = aztecJs.waitForPXE;
+    Fr = aztecJs.Fr;
+    AztecAddress = aztecJs.AztecAddress;
+    Contract = aztecJs.Contract;
+    getDeployedTestAccountsWallets = aztecAccounts.getDeployedTestAccountsWallets;
+    
+    return true;
+  } catch (error) {
+    // Aztec.js not available - will fail at runtime with clear error
+    return false;
+  }
 }
 
 /**
@@ -80,6 +96,8 @@ export interface AztecClientConfig {
   pxeUrl?: string;
   /** Contract address (if already deployed) */
   contractAddress?: AztecAddress;
+  /** Optional: path to contract artifact JSON */
+  artifactPath?: string;
 }
 
 /**
@@ -144,7 +162,9 @@ export class RealAztecClient implements AztecClient {
 
   constructor(config: AztecClientConfig = {}) {
     this.config = {
-      pxeUrl: process.env.PXE_URL || 'http://localhost:8080',
+      pxeUrl: process.env.PXE_URL || process.env.AZTEC_PXE_URL || 'http://localhost:8080',
+      contractAddress: process.env.AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS || config?.contractAddress,
+      artifactPath: config?.artifactPath,
       ...config,
     };
   }
@@ -166,28 +186,73 @@ export class RealAztecClient implements AztecClient {
       // Wait for PXE to be ready
       await waitForPXE(this.pxe, 60000); // 60 second timeout
       
-      // Get accounts from sandbox (sandbox has pre-funded accounts)
-      const accounts = await this.pxe.getRegisteredAccounts();
-      if (accounts.length === 0) {
-        throw new Error('No accounts found in Aztec sandbox. Make sure devnet is running.');
+      // Load Aztec SDK modules
+      const sdkLoaded = await loadAztecSDK();
+      if (!sdkLoaded) {
+        throw new Error('Failed to load @aztec/aztec.js. Make sure it is installed.');
+      }
+
+      // Get test account wallets from sandbox
+      // getDeployedTestAccountsWallets returns AccountWallet instances
+      const wallets = await getDeployedTestAccountsWallets(this.pxe);
+      if (wallets.length === 0) {
+        throw new Error('No test accounts found in Aztec sandbox. Make sure devnet is running.');
       }
       
-      // Use first account (sandbox provides pre-funded accounts)
-      this.account = accounts[0];
-      this.userAddress = this.account.address.toString();
+      // Use first wallet (sandbox provides pre-funded test accounts)
+      const accountWallet = wallets[0];
+      this.userAddress = accountWallet.getAddress().toString();
+      
+      // Store wallet for contract interactions
+      this.account = accountWallet as any; // Store wallet as account for compatibility
 
-      // Load or deploy contract
+      // Load contract artifact
+      const artifactPath = this.config.artifactPath || this.findContractArtifact();
+      if (!artifactPath || !fs.existsSync(artifactPath)) {
+        throw new Error(
+          `Contract artifact not found. Checked: ${this.config.artifactPath || 'auto-detected paths'}. ` +
+          `Please compile the contract first with: pnpm aztec:compile`
+        );
+      }
+
+      const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf-8'));
+
+      // Load or deploy contract using real Aztec.js SDK API
       if (this.config.contractAddress) {
-        // Use existing contract
+        // Connect to existing contract at specified address
         this.contractAddress = this.config.contractAddress;
-        // Note: Contract artifact loading will be implemented after compilation
-        // For now, we'll need to load the artifact from target/ directory
-        throw new Error('Contract artifact loading not yet implemented. Contract must be compiled first.');
+        
+        // Use AztecAddress.fromString() to parse address
+        const contractAddr = AztecAddress.fromString(this.contractAddress);
+        
+        // Create Contract instance: new Contract(address, artifact, wallet)
+        this.contract = new Contract(contractAddr, artifact, accountWallet);
+        
+        console.log(`✅ Connected to existing PrivateIdentityGarden contract at: ${this.contractAddress}`);
       } else {
         // Deploy new contract
-        // Note: This requires the contract to be compiled first
-        // The artifact will be in target/ directory after running `aztec-nargo compile`
-        throw new Error('Contract deployment not yet implemented. Please compile the contract first with `pnpm aztec:compile`.');
+        // Real API: Contract.deploy(wallet, artifact).send().deployed()
+        try {
+          const deployTx = Contract.deploy(accountWallet, artifact);
+          const receipt = await deployTx.send().deployed();
+          
+          // Get contract address from deployed receipt
+          this.contractAddress = receipt.address.toString();
+          this.contract = receipt.contract;
+          
+          if (!this.contractAddress) {
+            throw new Error('Contract deployment succeeded but address not found in receipt');
+          }
+          
+          console.log(`✅ Deployed PrivateIdentityGarden contract at: ${this.contractAddress}`);
+          console.log(`   Save this address to AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS for reuse`);
+        } catch (error) {
+          throw new Error(
+            `Failed to deploy contract. ` +
+            `Error: ${error instanceof Error ? error.message : String(error)}. ` +
+            `Make sure the contract artifact is valid and the wallet has sufficient funds.`
+          );
+        }
       }
     } catch (error) {
       throw new Error(`Failed to initialize Aztec client: ${error instanceof Error ? error.message : String(error)}`);
@@ -301,12 +366,12 @@ export class RealAztecClient implements AztecClient {
         throw new Error('User address not available');
       }
 
-      // Use account address directly
-      const ownerAddress = this.account!.address;
+      // Get owner address from wallet
+      const ownerAddress = (this.account as any).getAddress();
 
       // Call private function: prove_aztec_builder_tier(owner, min_tier, min_average_score)
-      // Note: This will be implemented once contract artifact is loaded
-      const tx = this.contract!.methods.prove_aztec_builder_tier(
+      // Real API: contract.methods.methodName(...args).send().wait()
+      const tx = this.contract.methods.prove_aztec_builder_tier(
         ownerAddress,
         minTier,
         minAverageScore
@@ -345,6 +410,59 @@ export class RealAztecClient implements AztecClient {
    */
   getContractAddress(): AztecAddress | null {
     return this.contractAddress;
+  }
+
+  /**
+   * Find the contract artifact file
+   * Looks in common locations: target/, artifacts/, target/PrivateIdentityGarden.json
+   */
+  private findContractArtifact(): string | null {
+    const possiblePaths = [
+      path.join(__dirname, '../target/PrivateIdentityGarden.json'),
+      path.join(__dirname, '../target/private_skill_tree.json'),
+      path.join(__dirname, '../artifacts/PrivateIdentityGarden.json'),
+      path.join(process.cwd(), 'packages/core-logic/target/PrivateIdentityGarden.json'),
+      path.join(process.cwd(), 'packages/core-logic/target/private_skill_tree.json'),
+      path.join(process.cwd(), 'target/PrivateIdentityGarden.json'),
+      path.join(process.cwd(), 'target/private_skill_tree.json'),
+    ];
+
+    for (const artifactPath of possiblePaths) {
+      if (fs.existsSync(artifactPath)) {
+        return artifactPath;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Create contract methods wrapper
+   * This is a helper to create method callers from artifact
+   * The actual implementation will depend on Aztec.js API
+   */
+  private createContractMethods(artifact: any, wallet: any): any {
+    // This is a placeholder - actual implementation will use Aztec.js contract methods
+    // The artifact contains ABI information that can be used to create method callers
+    // For now, return a mock structure that will be replaced with actual API calls
+    return {
+      add_quest_completion: (...args: any[]) => ({
+        send: async () => ({
+          wait: async () => ({
+            txHash: '0x' + Math.random().toString(16).substring(2, 66),
+          }),
+        }),
+      }),
+      prove_aztec_builder_tier: (...args: any[]) => ({
+        send: async () => ({
+          wait: async () => ({
+            txHash: '0x' + Math.random().toString(16).substring(2, 66),
+            proof: '0x' + '0'.repeat(128),
+            publicInputs: '0x' + '0'.repeat(64),
+          }),
+        }),
+      }),
+    };
   }
 }
 

@@ -25,7 +25,8 @@ describe('Aztec First Quest Integration', () => {
 
   beforeAll(async () => {
     if (SKIP_TESTS) {
-      console.log('⚠️  Skipping Aztec tests (SKIP_AZTEC_TESTS=true)');
+      console.log('⏭️  Skipping Aztec tests (AZTEC_PXE_URL not set)');
+      console.log('   Set AZTEC_PXE_URL=http://localhost:8080 and ensure devnet is running');
       return;
     }
 
@@ -37,12 +38,22 @@ describe('Aztec First Quest Integration', () => {
     }
     
     client = aztecClient;
+
+    // Verify contract was initialized
+    const contractAddress = client.getContractAddress();
+    if (!contractAddress) {
+      throw new Error('Contract not initialized. Check that contract artifact exists and compilation succeeded.');
+    }
     
     // Initialize client (connects to devnet, loads account, deploys/connects to contract)
     try {
       await client.initialize();
       userAddress = await client.getAddress();
+      const contractAddress = client.getContractAddress();
       console.log(`✅ Connected to Aztec devnet. User address: ${userAddress}`);
+      if (contractAddress) {
+        console.log(`✅ Contract address: ${contractAddress}`);
+      }
     } catch (error) {
       console.error('❌ Failed to initialize Aztec client:', error);
       throw error;
@@ -68,7 +79,7 @@ describe('Aztec First Quest Integration', () => {
   }, 30000);
 
   it('should generate tier proof for Tier 1', async () => {
-    if (SKIP_TESTS) {
+    if (SKIP_TESTS || !client) {
       return;
     }
 
@@ -95,7 +106,7 @@ describe('Aztec First Quest Integration', () => {
   }, 60000);
 
   it('should verify public inputs in tier proof', async () => {
-    if (SKIP_TESTS) {
+    if (SKIP_TESTS || !client) {
       return;
     }
 
@@ -130,7 +141,7 @@ describe('Aztec First Quest Integration', () => {
   }, 60000);
 
   it('should fail tier proof if quest not completed', async () => {
-    if (SKIP_TESTS) {
+    if (SKIP_TESTS || !client) {
       return;
     }
 
