@@ -1,23 +1,21 @@
-import type { UserIdentity } from './api';
-
 // ============================================================================
 // Core Types & Utilities
 // ============================================================================
 
-// Re-export types and utilities (from chain branch)
-export type { SkillNode, AztecBuilderTierProofInputs } from './types';
-export { normalizeSkillId } from './utils';
+// Re-export types and utilities from core-logic
+export type { SkillNode, AztecBuilderTierProofInputs } from '@hidden-garden/core-logic';
+export { normalizeSkillId } from '@hidden-garden/core-logic';
 
 // Export skill tree types (from web branch - may overlap with types.ts)
 // Note: skillTree.ts and types.ts both export SkillNode - we prioritize types.ts
-export type { SkillNode as SkillTreeNode } from './skillTree';
+export type { SkillNode as SkillTreeNode } from '@hidden-garden/core-logic';
 
 // ============================================================================
 // Contract Integration (from chain branch)
 // ============================================================================
 
-// Re-export contract addresses and ABIs
-export type { Address, SupportedChainId } from './contracts';
+// Re-export contract addresses and ABIs from core-logic
+export type { Address, SupportedChainId } from '@hidden-garden/core-logic';
 export {
   CHAINS,
   SELF_HUMAN_SBT_ADDRESS,
@@ -26,41 +24,41 @@ export {
   SkillLeaderboardAbi,
   getSelfHumanSBTAddress,
   getSkillLeaderboardAddress,
-} from './contracts';
+} from '@hidden-garden/core-logic';
 
 // ============================================================================
 // Leaderboard Client (from chain branch)
 // ============================================================================
 
-// Re-export leaderboard client
-export type { SkillHash, LeaderboardEntry, UserSkill, LeaderboardClientConfig } from './leaderboardClient';
-export { LeaderboardClient, getAztecBuilderLeaderboard } from './leaderboardClient';
+// Re-export leaderboard client from core-logic
+export type { SkillHash, LeaderboardEntry, UserSkill, LeaderboardClientConfig } from '@hidden-garden/core-logic';
+export { LeaderboardClient, getAztecBuilderLeaderboard } from '@hidden-garden/core-logic';
 
 // ============================================================================
 // Skill Utilities (from chain branch)
 // ============================================================================
 
-// Re-export skill utilities
-export { hashSkillName } from './skills';
+// Re-export skill utilities from core-logic
+export { hashSkillName } from '@hidden-garden/core-logic';
 
 // ============================================================================
 // Quest System (from chain branch)
 // ============================================================================
 
-// Re-export quest logic interface layer
-export * from './quests';
+// Re-export quest logic interface layer from core-logic
+export * from '@hidden-garden/core-logic';
 
 // ============================================================================
 // API & ENS Integration (from web branch)
 // ============================================================================
 
-// Export ENS utilities
-export { shortenAddress, getEnsName } from './ens';
-export type { EnsPublicClient } from './ens';
+// Export ENS utilities from core-logic
+export { shortenAddress, getEnsName } from '@hidden-garden/core-logic';
+export type { EnsPublicClient } from '@hidden-garden/core-logic';
 
-// Export API types
-export * from './api';
-export type { UserIdentity, PublicSkillTier, UserPublicSkill, LeaderboardAPI } from './api';
+// Export API types from core-logic
+export type { UserIdentity, PublicSkillTier, UserPublicSkill, LeaderboardAPI } from '@hidden-garden/core-logic';
+export * from '@hidden-garden/core-logic';
 
 // ============================================================================
 // Web Branch Custom Types (from web branch)
@@ -75,14 +73,14 @@ export type SkillTier = {
 
 // User public skills
 export type UserPublicSkills = {
-  user: UserIdentity;
+  user: import('@hidden-garden/core-logic').UserIdentity;
   skillTiers: SkillTier[]; // All skill tiers this user has achieved
 };
 
 // Leaderboard entry for a specific skill
 export type SkillLeaderboardEntry = {
   rank: number; // Position in leaderboard (1-indexed)
-  user: UserIdentity;
+  user: import('@hidden-garden/core-logic').UserIdentity;
   tier: number; // Highest tier achieved for this skill
   achievedAt: number; // Timestamp when this tier was achieved
 };
