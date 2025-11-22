@@ -63,6 +63,17 @@ typechain-types/
 # Next.js
 next-env.d.ts
 
+# Auto-generated contract configs
+packages/common/src/contracts.ts
+packages/common/src/contracts.js
+
+# Compiled TypeScript output (if any JS files are generated)
+**/dist/
+**/*.js.map
+
+# Indexer database
+services/indexer/data/
+
 # Temporary files
 *.tmp
 *.temp
@@ -70,4 +81,15 @@ next-env.d.ts
 
 # Misc
 .turbo/
+
+# Playground build output
+playground/dist/
+playground/node_modules/
+
+# Turbo build logs
+.turbo/*.log
+**/.turbo/*.log
+
+# Next.js dev logs
+.next/**/*.log
 
