@@ -32,6 +32,9 @@ export default function MyGardenPage() {
   const [ensName, setEnsName] = React.useState<string | null>(null);
   const [ensLoading, setEnsLoading] = React.useState(false);
 
+  // Self verification status: 'not-verified' | 'checking' | 'verified'
+  const [verificationStatus, setVerificationStatus] = React.useState<'not-verified' | 'checking' | 'verified'>('not-verified');
+
   React.useEffect(() => {
     let cancelled = false;
 
@@ -141,6 +144,39 @@ export default function MyGardenPage() {
           ← Back home
         </Link>
       </header>
+
+      <section className="space-y-3 border-b pb-4 mb-4">
+        <h2 className="text-lg font-semibold">Identity Verification</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex-1">
+            <p className="text-sm text-gray-600 mb-2">
+              Verify your identity with Self to prove you&apos;re human and unlock additional features.
+            </p>
+            <div className="text-sm">
+              {verificationStatus === 'not-verified' && (
+                <span className="text-gray-500">Not verified yet</span>
+              )}
+              {verificationStatus === 'checking' && (
+                <span className="text-blue-600">Checking verification…</span>
+              )}
+              {verificationStatus === 'verified' && (
+                <span className="text-green-600 font-medium">Verified Human ✅</span>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              // TODO: Implement Self verification flow
+              console.log('Verify with Self clicked');
+            }}
+            disabled={!isConnected || verificationStatus === 'checking'}
+            className="px-4 py-2 rounded border text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Verify with Self
+          </button>
+        </div>
+      </section>
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Skills</h2>
