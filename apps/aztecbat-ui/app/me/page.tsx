@@ -156,38 +156,59 @@ export default function MyGardenPage() {
         <h2 className="text-lg font-semibold">Identity Verification</h2>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex-1">
-            <p className="text-sm text-gray-600 mb-2">
+            <p className="text-sm text-gray-600 mb-3">
               Verify your identity with Self to prove you&apos;re human and unlock additional features.
             </p>
-            <div className="text-sm">
+            
+            {/* Status Display */}
+            <div className="flex items-center gap-2">
               {sbtLoading && (
-                <span className="text-blue-600">Checking verification…</span>
+                <div className="flex items-center gap-2 text-sm text-blue-600">
+                  <span className="inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></span>
+                  <span>Checking verification…</span>
+                </div>
               )}
+              
               {!sbtLoading && isVerified && (
-                <span className="text-green-600 font-medium">Verified Human ✅</span>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700 border border-green-200">
+                    <span>✅</span>
+                    <span>Verified Human</span>
+                  </span>
+                </div>
               )}
-              {!sbtLoading && !isVerified && (
-                <span className="text-gray-500">Not verified yet</span>
+              
+              {!sbtLoading && !isVerified && !sbtError && (
+                <span className="text-sm text-gray-500">Not verified yet</span>
               )}
-              {sbtError && (
-                <span className="text-red-500 text-xs">
-                  {sbtError.message || 'Error checking verification'}
-                </span>
+              
+              {sbtError && !sbtLoading && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm text-gray-500">Not verified yet</span>
+                  <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                    ⚠️ {sbtError.message || 'Error checking verification status'}
+                  </span>
+                </div>
               )}
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                if (!address) return;
-                startSelfVerificationFlow(address as `0x${string}`);
-              }}
-              disabled={!isConnected || sbtLoading || isVerified}
-              className="px-4 py-2 rounded border text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Verify with Self
-            </button>
+          
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-2">
+            {!isVerified && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!address) return;
+                  startSelfVerificationFlow(address as `0x${string}`);
+                }}
+                disabled={!isConnected || sbtLoading}
+                className="px-4 py-2 rounded border text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Verify with Self
+              </button>
+            )}
+            
             {verificationCompleted && !isVerified && (
               <button
                 type="button"
@@ -200,9 +221,8 @@ export default function MyGardenPage() {
                 {sbtLoading ? 'Checking…' : 'Check Verification Status'}
               </button>
             )}
-          </div>
-          {!isVerified && !verificationCompleted && (
-            <div className="mt-2">
+            
+            {!isVerified && !verificationCompleted && (
               <button
                 type="button"
                 onClick={() => {
@@ -212,12 +232,12 @@ export default function MyGardenPage() {
                     refetchSBT();
                   }, 1000);
                 }}
-                className="text-xs text-blue-600 underline hover:text-blue-800"
+                className="text-xs text-blue-600 underline hover:text-blue-800 text-left"
               >
                 I&apos;ve completed verification
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
 
