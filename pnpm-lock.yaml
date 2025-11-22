@@ -40,11 +40,14 @@ importers:
         specifier: ^2.6.1
         version: 2.6.1
 
-  apps/web:
+  apps/aztecbat-ui:
     dependencies:
-      '@hidden-garden/common':
+      '@hidden-garden/core-logic':
         specifier: workspace:*
-        version: link:../../packages/common
+        version: link:../../packages/core-logic
+      '@hidden-garden/game-engine':
+        specifier: workspace:*
+        version: link:../../packages/game-engine
       '@tanstack/react-query':
         specifier: ^5.90.10
         version: 5.90.10(react@19.2.0)
@@ -108,6 +111,26 @@ importers:
       hardhat:
         specifier: 2.26.0
         version: 2.26.0(ts-node@10.9.2)(typescript@5.9.3)
+
+  packages/core-logic:
+    dependencies:
+      ethers:
+        specifier: ^6.15.0
+        version: 6.15.0
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/game-engine:
+    dependencies:
+      '@hidden-garden/core-logic':
+        specifier: workspace:*
+        version: link:../core-logic
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   playground:
     dependencies:
