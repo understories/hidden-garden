@@ -525,6 +525,133 @@ const real = createAztecClient('real', { pxeUrl: 'http://localhost:8080' });
 
 ---
 
-**Last Updated:** After RealAztecClient implementation (Nov 2025)  
+## Devnet Version & Tooling
+
+### Pinned Versions
+
+**Target Devnet Version:** `3.0.0-devnet.5`  
+**Last Verified:** November 22, 2025  
+**Official Docs:** https://docs.aztec.network/devnet
+
+**This version must match across:**
+1. `@aztec/aztec.js` package: `3.0.0-devnet.5` (in `packages/core-logic/package.json`)
+2. Noir dependencies: `v3.0.0-devnet.5` tag (in `packages/core-logic/Nargo.toml`)
+3. Aztec CLI version: Check with `pnpm aztec:version`
+4. Devnet version: Started with `pnpm aztec:up-devnet`
+
+**Verification:** This version matches the official Aztec devnet documentation at https://docs.aztec.network/devnet. Judges can verify by checking the official docs and comparing with our pinned versions.
+
+### Version Checking Commands
+
+**Check Aztec CLI version:**
+```bash
+pnpm aztec:version
+# Or directly:
+aztec --version
+```
+
+**Start devnet (pinned version):**
+```bash
+pnpm aztec:up-devnet
+# This runs: aztec-up 3.0.0-devnet.5
+# Falls back to 3.0.0-devnet.4 if .5 is unavailable
+```
+
+**Start local sandbox:**
+```bash
+aztec start --sandbox
+# Or use the devnet script:
+pnpm aztec:devnet
+```
+
+**Connect RealAztecClient to sandbox:**
+- Default PXE URL: `http://localhost:8080`
+- Set `NEXT_PUBLIC_PXE_URL=http://localhost:8080` in `.env.local`
+- `RealAztecClient` automatically connects to this endpoint
+
+### Version Test
+
+Run the environment test to verify versions match:
+```bash
+pnpm --filter @hidden-garden/core-logic test:env
+# Or run all tests:
+pnpm --filter @hidden-garden/core-logic test
+```
+
+The test will:
+- ✅ Check if Aztec CLI is installed
+- ✅ Verify CLI version matches target (`3.0.0-devnet.5` or `.4`)
+- ✅ Verify package.json version matches
+- ⏭️ Skip gracefully if Aztec CLI is not installed (with helpful message)
+
+---
+
+## Circuit Privacy Guarantees for First Quest
+
+### What the Circuit Proves
+
+The `prove_aztec_builder_tier` circuit proves **aggregate competence** without revealing **individual learning data**:
+
+- **Proves:** User has achieved at least Tier 1 in the Aztec Builder pathway
+- **Proves:** User's average score across completed quests is at least 60%
+- **Proves:** This is for the "aztec_builder_path" learning pathway
+
+### Exactly Which Fields Are Public
+
+**Public Inputs (revealed in proof):**
+- `owner`: User's Aztec address
+- `min_tier`: Minimum tier being proven (e.g., 1)
+- `min_average_score`: Minimum average score being proven (e.g., 60)
+
+**Public Outputs (revealed in proof):**
+- `owner`: User's Aztec address (returned as function return value)
+- `path_hash`: Hash of "aztec_builder_path" (computed in circuit, becomes public output)
+
+**Function Signature:**
+```noir
+pub fn prove_aztec_builder_tier(
+    owner: AztecAddress,      // PUBLIC INPUT
+    min_tier: u8,             // PUBLIC INPUT
+    min_average_score: u8      // PUBLIC INPUT
+) -> AztecAddress             // PUBLIC OUTPUT
+```
+
+### Explicit Statement: Per-Quest Data Never Leaves Private Storage
+
+**The following data is NEVER revealed in the proof:**
+
+- ❌ **Quest ID:** Which specific quest was completed (e.g., "aztec_concept_quiz")
+- ❌ **Quest ID Hash:** The hash of the quest ID (used internally to query storage, but not revealed)
+- ❌ **Individual Score:** The actual score for the quest (e.g., 100%)
+- ❌ **Timestamp:** When the quest was completed
+- ❌ **Number of Attempts:** How many times the user attempted the quest
+- ❌ **Other Quest Completions:** Any other quests the user may have completed
+
+**How Privacy is Enforced:**
+
+1. **Private Storage:** Quest completions are stored as encrypted private notes in Aztec's private execution environment
+2. **Private Queries:** The circuit queries private storage without revealing individual values
+3. **Private Computation:** Tier and average score are computed from private data
+4. **Public Assertions Only:** Only aggregate assertions (tier >= X, average >= Y) are proven publicly
+5. **Function Signature:** The function signature enforces privacy - it cannot return private values
+
+**This is why this app only exists because of Aztec's privacy layer:**
+
+- On a public blockchain (Ethereum L1), storing quest completions would reveal:
+  - Which quests you completed
+  - Your scores
+  - When you completed them
+  - Your learning journey
+
+- On Aztec, quest completions are private, and only aggregate competence proofs are public:
+  - "I have achieved Tier 1" (without revealing how)
+  - "My average score is at least 60%" (without revealing individual scores)
+  - "This is for aztec_builder_path" (without revealing which quests)
+
+This enables **selective skill sharing** - proving competence without revealing credentials.
+
+---
+
+**Last Updated:** After privacy documentation and integration tests (Nov 2025)  
 **Next Update:** After contract compilation and artifact loading implementation
 
