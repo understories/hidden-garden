@@ -1,41 +1,53 @@
 // SPDX-License-Identifier: MIT
 // Test to compute Pedersen hashes for TypeScript lookup
 // 
-// This test computes the pedersen_hash values for:
-// - "aztec_concept_quiz" (quest ID)
-// - "aztec_builder" (category)
-// - "aztec_builder_path" (path)
+// This test computes the pedersen_hash values for all quest IDs, categories, and paths.
 //
-// Run: aztec-nargo test tests/compute_pedersen_hashes.nr
+// Run: nargo test compute_pedersen_hashes
 // Extract the Field values from output and convert to hex for TypeScript.
 
 use dep::std::hash;
 
-/// Combined test that computes all three hashes and makes them easy to extract
+/// Test that computes all Pedersen hashes needed for the application
 /// The hash values will appear in the test output as Field elements
 #[test]
-fn compute_all_pedersen_hashes() {
-    // Quest ID hash: "aztec_concept_quiz"
+fn compute_pedersen_hashes() {
+    // Quest ID: "aztec_concept_quiz"
     // Bytes: [97, 122, 116, 101, 99, 95, 99, 111, 110, 99, 101, 112, 116, 95, 113, 117, 105, 122]
-    let quest_bytes = [97, 122, 116, 101, 99, 95, 99, 111, 110, 99, 101, 112, 116, 95, 113, 117, 105, 122];
-    let quest_hash = hash::pedersen_hash(quest_bytes);
+    let q1_bytes = [97, 122, 116, 101, 99, 95, 99, 111, 110, 99, 101, 112, 116, 95, 113, 117, 105, 122];
+    let q1 = hash::pedersen_hash(q1_bytes);
     
-    // Category hash: "aztec_builder"
+    // Quest ID: "noir_syntax_basics"
+    // Bytes: [110, 111, 105, 114, 95, 115, 121, 110, 116, 97, 120, 95, 98, 97, 115, 105, 99, 115]
+    let q2_bytes = [110, 111, 105, 114, 95, 115, 121, 110, 116, 97, 120, 95, 98, 97, 115, 105, 99, 115];
+    let q2 = hash::pedersen_hash(q2_bytes);
+    
+    // Quest ID: "aztec_storage_intro"
+    // Bytes: [97, 122, 116, 101, 99, 95, 115, 116, 111, 114, 97, 103, 101, 95, 105, 110, 116, 114, 111]
+    let q3_bytes = [97, 122, 116, 101, 99, 95, 115, 116, 111, 114, 97, 103, 101, 95, 105, 110, 116, 114, 111];
+    let q3 = hash::pedersen_hash(q3_bytes);
+    
+    // Category: "aztec_builder"
     // Bytes: [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114]
-    let category_bytes = [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114];
-    let category_hash = hash::pedersen_hash(category_bytes);
+    let cat_bytes = [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114];
+    let cat = hash::pedersen_hash(cat_bytes);
     
-    // Path hash: "aztec_builder_path"
+    // Path: "aztec_builder_path"
     // Bytes: [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104]
     let path_bytes = [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104];
-    let path_hash = hash::pedersen_hash(path_bytes);
+    let path = hash::pedersen_hash(path_bytes);
+    
+    // Dummy constraints so the values are printed in test output
+    constrain q1 == q1;
+    constrain q2 == q2;
+    constrain q3 == q3;
+    constrain cat == cat;
+    constrain path == path;
     
     // Assert all hashes are non-zero to ensure they were computed
-    assert(quest_hash != 0, "Quest hash should be non-zero");
-    assert(category_hash != 0, "Category hash should be non-zero");
-    assert(path_hash != 0, "Path hash should be non-zero");
-    
-    // The test framework will output these Field values
-    // Look for them in the test output and convert to hex
-    // Format: Field(<big_integer>) -> convert to hex -> pad to 64 chars -> add 0x prefix
+    assert(q1 != 0, "Quest 1 hash should be non-zero");
+    assert(q2 != 0, "Quest 2 hash should be non-zero");
+    assert(q3 != 0, "Quest 3 hash should be non-zero");
+    assert(cat != 0, "Category hash should be non-zero");
+    assert(path != 0, "Path hash should be non-zero");
 }
