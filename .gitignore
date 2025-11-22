@@ -10,6 +10,15 @@ docs/COMPETITION_VERIFICATION.md
 # Review and commit planning documents (temporary, do not commit)
 COMMIT_MESSAGES.md
 REVIEW_AND_READINESS.md
+HASHING_REQUIREMENTS.md
+
+# Bounty and competition documents (internal reference only, do not commit)
+docs/AZTEC_BOUNTY_REQUIREMENTS.md
+docs/BOUNTY_ALIGNMENT_ANALYSIS.md
+docs/HASHING_API_REQUIREMENTS.md
+docs/COMPETITION_VERIFICATION.md
+docs/SELF_EVALUATION.md
+docs/MERGE_PR_SUMMARY.md
 
 # Dependencies
 node_modules/
