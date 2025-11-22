@@ -17,6 +17,11 @@ export default function Home() {
       <p style={{ fontSize: '1.5rem', color: '#666' }}>
         A privacy-preserving skill tree and leaderboard.
       </p>
+      <div className="mt-4">
+        <Link href="/me" className="text-sm underline text-blue-600">
+          Go to My Garden
+        </Link>
+      </div>
       <Link href="/leaderboard/rust" className="text-blue-600 underline">
         View Rust leaderboard
       </Link>
