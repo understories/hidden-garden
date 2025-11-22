@@ -101,29 +101,83 @@ You're saying:
 
 ## Testing the Flow
 
-1. **Start the app:**
+### Prerequisites
+
+1. **Aztec devnet/sandbox running:**
+   ```bash
+   # Option 1: Use our script (pins version)
+   pnpm aztec:up-devnet
+   
+   # Option 2: Start sandbox directly
+   aztec start --sandbox
+   ```
+   Wait for it to be ready (check with `aztec status`)
+
+2. **Environment variables set:**
+   ```bash
+   # In apps/aztecbat-ui/.env.local
+   NEXT_PUBLIC_USE_REAL_AZTEC=true
+   NEXT_PUBLIC_PXE_URL=http://localhost:8080
+   ```
+
+3. **App running:**
    ```bash
    pnpm dev:web
    ```
 
-2. **Navigate to quest:**
-   - Go to: `http://localhost:3000/quests/aztec_concept_quiz`
-   - Or click quest name in dev UI: `http://localhost:3000/dev/aztecbat-status`
+### UI Flow (Manual Testing)
 
-3. **Complete the quiz:**
+1. **Navigate to quest:**
+   - Go to: `http://localhost:3000/quests/aztec_concept_quiz`
+   - **Verify:** You should see "Aztec mode: 🟢 REAL devnet" indicator at the top
+   - If you see "🟡 MOCK", check that `NEXT_PUBLIC_USE_REAL_AZTEC=true` is set
+
+2. **Answer the quiz:**
+   - Question: "What is Aztec Protocol?"
    - Enter answer: `{"selectedOptionId": "0"}`
    - Click "Validate Answer"
-   - Should see: ✅ Correct! Score: 100%
+   - **Should see:** ✅ Correct! Score: 100%
 
-4. **Store in Aztec:**
+3. **Store Privately in Aztec:**
    - Click "🔒 Store Privately in Aztec"
-   - Should see: ✅ Stored in Private Vault
+   - **What happens:**
+     - `RealAztecClient` connects to Aztec devnet (if not already connected)
+     - Calls `add_quest_completion(owner, quest_id_hash, score)` on `PrivateIdentityGarden` contract
+     - Creates a private `QuestNote` in your Aztec vault
+   - **Should see:** ✅ Stored in Private Vault
+   - **UI indicator:** "Aztec mode: 🟢 REAL devnet" should still be visible
+   - **Transaction hash:** Should be displayed (this is the Aztec transaction, not L1)
 
-5. **Generate & Publish Proof:**
-   - Connect wallet (if not already)
+4. **Generate & Publish Tier Proof:**
+   - Connect your wallet (MetaMask or similar) - required for L1 submission
    - Click "🔓 Generate & Publish Tier Proof"
-   - Proof is generated and submitted to L1
-   - Should see: ✅ Tier proof published!
+   - **What happens:**
+     - `RealAztecClient` calls `prove_aztec_builder_tier(owner, 1, 60)` on the contract
+     - Noir circuit generates ZK proof + public inputs
+     - Returns: `{ proof, publicInputs }`
+     - Submits to L1 contract: `submitSkillTierWithProof(skillHash, tier, proof, publicInputs)`
+   - **Should see:** ✅ Tier proof published!
+   - **For demo:** Proof details may be displayed as JSON (expandable section)
+
+### Non-UI Testing (Integration Tests)
+
+Run the full flow without UI:
+
+```bash
+# Set environment variable
+export AZTEC_PXE_URL=http://localhost:8080
+
+# Run integration tests
+pnpm test:integration
+```
+
+This tests:
+- Quest validation
+- Aztec storage
+- Tier proof generation
+- Privacy guarantees
+
+See `tests/integration/first_quest_aztec_flow.test.ts` for the full test suite.
 
 ## Current Status
 
@@ -255,21 +309,57 @@ This flow **cannot be done on a public chain** without leaking per-quest data:
 
 This is the core innovation: **Selective skill sharing** — prove competence without revealing credentials.
 
+### Judge Checklist
+
+**Can the judge verify:**
+
+1. **Aztec version matches target:**
+   ```bash
+   pnpm aztec:version
+   # Should show: 3.0.0-devnet.5 (or .4)
+   # Verify against: https://docs.aztec.network/devnet
+   ```
+
+2. **Sandbox is running:**
+   ```bash
+   aztec status
+   # Should show sandbox is running
+   ```
+
+3. **Follow the quest flow:**
+   - Visit `/quests/aztec_concept_quiz`
+   - See "Aztec mode: 🟢 REAL devnet" indicator
+   - Complete quiz → validate → store → prove
+   - Verify no per-quest data is visible on-chain
+   - Verify only tier + path hash are revealed (if L1 submission is wired up)
+
+4. **Check sandbox logs:**
+   - Sandbox logs show private transactions
+   - No quest-specific data in public logs
+   - Only aggregate tier proofs are visible
+
 ### Troubleshooting
 
 **"Aztec mode: 🟡 MOCK" instead of REAL:**
-- Check that `NEXT_PUBLIC_USE_REAL_AZTEC=true` is set
-- Verify Aztec devnet is running: `aztec status`
+- Check that `NEXT_PUBLIC_USE_REAL_AZTEC=true` is set in `.env.local`
+- Verify Aztec devnet is running: `aztec status` or `pnpm aztec:devnet`
 - Check browser console for connection errors
+- Verify PXE URL: Should be `http://localhost:8080`
 
 **"Failed to initialize Aztec client":**
 - Make sure devnet is running: `pnpm aztec:devnet`
 - Check PXE URL: Should be `http://localhost:8080`
 - Wait a few seconds for devnet to fully start
+- Check Docker is running (required for sandbox)
 
 **"Contract not deployed":**
 - Contract needs to be compiled first: `pnpm aztec:compile`
 - Contract will be auto-deployed on first use (or set `PRIVATE_IDENTITY_GARDEN_ADDRESS` if already deployed)
+
+**PXE connection errors:**
+- Verify sandbox is accessible: `curl http://localhost:8080` (should return some response)
+- Check firewall/network settings
+- Try restarting sandbox: `aztec-down` then `pnpm aztec:devnet`
 
 ## The Core Innovation
 
