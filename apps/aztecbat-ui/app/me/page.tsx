@@ -66,6 +66,23 @@ export default function MyGardenPage() {
   const [proofResult, setProofResult] = React.useState<{ proofData: string; claimedTier: number } | null>(null);
   // Transaction state
   const [submittingSkill, setSubmittingSkill] = React.useState<string | null>(null);
+  // Track revealed skills: skillId -> tier
+  const [revealedSkills, setRevealedSkills] = React.useState<Record<string, number>>({});
+
+  // Update revealed skills when transaction is confirmed
+  React.useEffect(() => {
+    if (isConfirmed && submittingSkill && proofResult) {
+      setRevealedSkills((prev) => ({
+        ...prev,
+        [submittingSkill]: proofResult.claimedTier,
+      }));
+      // Reset submission state after a delay
+      setTimeout(() => {
+        setSubmittingSkill(null);
+        setProofResult(null);
+      }, 2000);
+    }
+  }, [isConfirmed, submittingSkill, proofResult]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -284,6 +301,11 @@ export default function MyGardenPage() {
                   <div className="text-xs text-gray-500">
                     id: <code>{skill.id}</code>
                   </div>
+                  {revealedSkills[skill.id] && (
+                    <div className="text-xs text-green-600 mt-1">
+                      ✅ Revealed at Tier {revealedSkills[skill.id]}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-4 items-center">
                   <label className="flex flex-col text-xs text-gray-600">
@@ -362,6 +384,11 @@ export default function MyGardenPage() {
                     {submittingSkill === skill.id && isConfirmed && (
                       <div className="mb-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded border border-green-200">
                         ✅ Published to leaderboard!
+                      </div>
+                    )}
+                    {revealedSkills[skill.id] && (
+                      <div className="mb-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded border border-green-200">
+                        ✅ Revealed at Tier {revealedSkills[skill.id]}
                       </div>
                     )}
                     <div className="flex gap-2 items-center">
