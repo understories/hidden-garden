@@ -104,5 +104,13 @@ const mockLeaderboardApi: LeaderboardAPI = {
   },
 };
 
+export function formatDisplayName(entry: PublicSkillTier): string {
+  if (entry.ensName && entry.ensName.length > 0) {
+    return entry.ensName;
+  }
+  const addr = entry.userAddress;
+  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
+}
+
 export { mockLeaderboardApi };
 
