@@ -39,6 +39,9 @@ importers:
       '@hidden-garden/common':
         specifier: workspace:*
         version: link:../../packages/common
+      '@tanstack/react-query':
+        specifier: ^5.90.10
+        version: 5.90.10(react@19.2.0)
       '@types/node':
         specifier: ^24.10.1
         version: 24.10.1
