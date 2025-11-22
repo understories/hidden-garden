@@ -18,6 +18,31 @@ use dep::aztec::{
 use easy_private_state::EasyPrivateUint;
 use dep::std::hash;
 
+// ============================================================================
+// HASH CONSTANTS - Single Source of Truth for Quest/Category/Path Hashes
+// ============================================================================
+// These constants MUST match the values in TypeScript (packages/core-logic/src/quests/hashing.ts)
+// If you change the hashing scheme here, you MUST update TypeScript to match.
+//
+// These are computed using pedersen_hash from the string bytes (ASCII values).
+// To verify consistency:
+// 1. Run: aztec-nargo test tests/compute_pedersen_hashes.nr
+// 2. Compare output with EXPECTED_* constants in TypeScript hashing.ts
+// 3. Run: pnpm --filter @hidden-garden/core-logic test hash_consistency
+// ============================================================================
+
+// Quest ID: "aztec_concept_quiz"
+// Bytes: [97, 122, 116, 101, 99, 95, 99, 111, 110, 99, 101, 112, 116, 95, 113, 117, 105, 122]
+const AZTEC_CONCEPT_QUIZ_HASH: Field = hash::pedersen_hash([97, 122, 116, 101, 99, 95, 99, 111, 110, 99, 101, 112, 116, 95, 113, 117, 105, 122]);
+
+// Category: "aztec_builder"
+// Bytes: [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114]
+const AZTEC_BUILDER_CATEGORY_HASH: Field = hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114]);
+
+// Path: "aztec_builder_path"
+// Bytes: [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104]
+const AZTEC_BUILDER_PATH_HASH: Field = hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104]);
+
 /// @title SkillNode
 /// @notice Represents a single node in a user's private skill tree
 struct SkillNode {
@@ -279,13 +304,11 @@ pub contract PrivateIdentityGarden {
         assert(score <= 100, "Score must be between 0 and 100");
         
         // 2. Create a QuestNote with:
-        //    category_hash = hash_to_field("aztec_builder")
+        //    category_hash = AZTEC_BUILDER_CATEGORY_HASH (constant)
         //    timestamp = current block timestamp or 0 if not easily accessible
-        // Hash "aztec_builder" string to a field using pedersen_hash
-        // In Noir, we convert the string to bytes (ASCII values) and hash them
-        // "aztec_builder" as bytes: [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114]
-        let category_bytes = [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114];
-        let category_hash = hash::pedersen_hash(category_bytes);
+        // Use the constant hash for "aztec_builder" category
+        // This ensures consistency with TypeScript and prevents hash mismatches
+        let category_hash = AZTEC_BUILDER_CATEGORY_HASH;
         // Note: Timestamp set to 0 as block timestamp is not easily accessible in private functions
         // In production, could use context.block_timestamp() if available
         let timestamp: u64 = 0;
@@ -424,9 +447,9 @@ pub contract PrivateIdentityGarden {
         // - user_address / pk (returned as function return value)
         // - min_tier (already a public input via function parameter)
         // - min_average_score (already a public input via function parameter)
-        // - path_hash = hash_to_field("aztec_builder_path")
-        let path_hash_bytes = [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104]; // "aztec_builder_path"
-        let path_hash = hash::pedersen_hash(path_hash_bytes);
+        // - path_hash = AZTEC_BUILDER_PATH_HASH (constant)
+        // Use the constant hash for "aztec_builder_path" to ensure consistency with TypeScript
+        let path_hash = AZTEC_BUILDER_PATH_HASH;
         
         // The path_hash is automatically a public output since it's computed in the function
         // The caller's address is returned as a public output

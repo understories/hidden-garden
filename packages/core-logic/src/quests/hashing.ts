@@ -19,10 +19,12 @@
 import type { QuestId, QuestIdHash, CategoryId } from './types';
 
 /**
- * Hardcoded Pedersen hash values computed from Noir circuit
+ * Expected Pedersen hash values - MUST match Noir circuit constants
  * 
- * These values are computed by the Noir circuit using:
- * - hash::pedersen_hash(string_bytes)
+ * These values MUST match the constants defined in:
+ * - packages/core-logic/src/main.nr (AZTEC_CONCEPT_QUIZ_HASH, AZTEC_BUILDER_CATEGORY_HASH, AZTEC_BUILDER_PATH_HASH)
+ * 
+ * If you change the hashing scheme in Noir, you MUST update these values.
  * 
  * To compute new values:
  * 1. Run: aztec-nargo test tests/compute_pedersen_hashes.nr
@@ -35,19 +37,44 @@ import type { QuestId, QuestIdHash, CategoryId } from './types';
  * - Use Barretenberg to compute hashes at runtime
  * 
  * Current values are placeholders - MUST be replaced with actual computed values.
+ * 
+ * IMPORTANT: These are exported as constants for hash consistency tests.
+ * See: packages/core-logic/tests/hash_consistency.test.ts
  */
+
+/**
+ * Expected hash for quest ID "aztec_concept_quiz"
+ * Must match: AZTEC_CONCEPT_QUIZ_HASH in main.nr
+ * Computed from: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 99, 111, 110, 99, 101, 112, 116, 95, 113, 117, 105, 122])
+ */
+export const EXPECTED_AZTEC_CONCEPT_QUIZ_HASH: QuestIdHash = '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash; // TODO: Compute from Noir
+
+/**
+ * Expected hash for category "aztec_builder"
+ * Must match: AZTEC_BUILDER_CATEGORY_HASH in main.nr
+ * Computed from: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114])
+ */
+export const EXPECTED_AZTEC_BUILDER_CATEGORY_HASH: QuestIdHash = '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash; // TODO: Compute from Noir
+
+/**
+ * Expected hash for path "aztec_builder_path"
+ * Must match: AZTEC_BUILDER_PATH_HASH in main.nr
+ * Computed from: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104])
+ */
+export const EXPECTED_AZTEC_BUILDER_PATH_HASH: QuestIdHash = '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash; // TODO: Compute from Noir
+
 const PEDERSEN_HASH_LOOKUP: Record<string, QuestIdHash> = {
   // Quest IDs (computed from Noir: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 99, 111, 110, 99, 101, 112, 116, 95, 113, 117, 105, 122]))
-  'aztec_concept_quiz': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
+  'aztec_concept_quiz': EXPECTED_AZTEC_CONCEPT_QUIZ_HASH,
   'noir_basic_puzzle': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
   'first_private_tx': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
   'identity_architect_scenario': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
   
   // Category (computed from Noir: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114]))
-  'aztec_builder': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
+  'aztec_builder': EXPECTED_AZTEC_BUILDER_CATEGORY_HASH,
   
   // Path (computed from Noir: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104]))
-  'aztec_builder_path': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
+  'aztec_builder_path': EXPECTED_AZTEC_BUILDER_PATH_HASH,
 };
 
 /**
