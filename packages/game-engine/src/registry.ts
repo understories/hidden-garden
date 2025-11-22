@@ -22,6 +22,7 @@ import {
   getTierForQuest,
   getQuestCategory,
   AZTEC_BUILDER_CATEGORY,
+  computeQuestIdHash,
 } from '@hidden-garden/core-logic';
 
 /**
@@ -38,7 +39,7 @@ export const questRegistry: Record<QuestId, QuestDefinition> = {
   
   'aztec_concept_quiz': {
     questId: 'aztec_concept_quiz',
-    questIdHash: '0xPLACEHOLDER' as const, // TODO: Compute hash("aztec_concept_quiz")
+    questIdHash: computeQuestIdHash('aztec_concept_quiz'),
     tier: 1,
     category: AZTEC_BUILDER_CATEGORY,
     type: 'multiple_choice' as PuzzleType,
