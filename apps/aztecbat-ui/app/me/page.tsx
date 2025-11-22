@@ -2,12 +2,13 @@
 
 import * as React from 'react';
 import type { SkillNode } from '@hidden-garden/core-logic';
-import { normalizeSkillId, shortenAddress, getEnsName } from '@hidden-garden/core-logic';
+import { normalizeSkillId, shortenAddress, getEnsName, hashSkillName } from '@hidden-garden/core-logic';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
 import { mainnetPublicClient } from '../../lib/viemClients';
 import { startSelfVerificationFlow } from '../../lib/selfVerification';
 import { useHasValidSBT } from '../../hooks/useHasValidSBT';
+import { stubSkillProofProvider } from '@hidden-garden/game-engine';
 
 const initialSkills: SkillNode[] = [
   {
@@ -46,6 +47,10 @@ export default function MyGardenPage() {
   const [revealingSkillId, setRevealingSkillId] = React.useState<string | null>(null);
   // Track selected tier for the skill being revealed
   const [selectedTier, setSelectedTier] = React.useState<number>(3);
+  // Proof generation state
+  const [proofGenerating, setProofGenerating] = React.useState(false);
+  const [proofError, setProofError] = React.useState<string | null>(null);
+  const [proofResult, setProofResult] = React.useState<{ proofData: string; claimedTier: number } | null>(null);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -303,17 +308,37 @@ export default function MyGardenPage() {
                         onClick={() => {
                           setRevealingSkillId(null);
                           setSelectedTier(3);
+                          // Reset proof state when canceling
+                          setProofError(null);
+                          setProofResult(null);
+                          setProofGenerating(false);
                         }}
                         className="text-xs text-gray-500 hover:text-gray-700"
                       >
                         Cancel
                       </button>
                     </div>
+                    {proofError && (
+                      <div className="mb-2 text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
+                        ⚠️ {proofError}
+                      </div>
+                    )}
+                    {proofResult && (
+                      <div className="mb-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded border border-green-200">
+                        ✅ Proof generated! Claimed tier: {proofResult.claimedTier}
+                      </div>
+                    )}
                     <div className="flex gap-2 items-center">
                       <select
                         value={selectedTier}
-                        onChange={(e) => setSelectedTier(Number(e.target.value))}
-                        className="border rounded px-2 py-1 text-sm"
+                        onChange={(e) => {
+                          setSelectedTier(Number(e.target.value));
+                          // Reset proof state when tier changes
+                          setProofError(null);
+                          setProofResult(null);
+                        }}
+                        disabled={proofGenerating}
+                        className="border rounded px-2 py-1 text-sm disabled:opacity-50"
                       >
                         {[1, 2, 3, 4, 5].map((tier) => (
                           <option key={tier} value={tier}>
@@ -323,20 +348,39 @@ export default function MyGardenPage() {
                       </select>
                       <button
                         type="button"
-                        onClick={() => {
-                          // TODO: Implement proof generation and submission
-                          console.log('Generate proof & publish for:', {
-                            skillId: skill.id,
-                            skillName: skill.name,
-                            tier: selectedTier,
-                          });
-                          // Close dialog after submission starts
-                          setRevealingSkillId(null);
-                          setSelectedTier(3);
+                        onClick={async () => {
+                          if (!address) return;
+
+                          setProofGenerating(true);
+                          setProofError(null);
+                          setProofResult(null);
+
+                          try {
+                            // Compute skillHash using canonical method from Team A
+                            const skillHash = hashSkillName(skill.name);
+
+                            // Generate proof using Team A's stub provider
+                            const result = await stubSkillProofProvider.generateProof({
+                              skillHash,
+                              minTier: selectedTier,
+                            });
+
+                            setProofResult(result);
+                            // TODO: Next step - submit to contract
+                            console.log('Proof generated:', result);
+                          } catch (error: any) {
+                            setProofError(
+                              error?.message || 'Failed to generate proof. Please try again.',
+                            );
+                            console.error('Proof generation error:', error);
+                          } finally {
+                            setProofGenerating(false);
+                          }
                         }}
-                        className="px-3 py-1 rounded border text-sm font-medium bg-blue-600 text-white hover:bg-blue-700"
+                        disabled={proofGenerating}
+                        className="px-3 py-1 rounded border text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Generate proof & publish
+                        {proofGenerating ? 'Generating proof…' : 'Generate proof & publish'}
                       </button>
                     </div>
                   </div>
@@ -347,6 +391,10 @@ export default function MyGardenPage() {
                       onClick={() => {
                         setRevealingSkillId(skill.id);
                         setSelectedTier(3); // Reset to default
+                        // Reset proof state when opening reveal dialog
+                        setProofError(null);
+                        setProofResult(null);
+                        setProofGenerating(false);
                       }}
                       disabled={!isConnected || !isVerified}
                       className="text-xs px-3 py-1.5 rounded border text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
