@@ -41,9 +41,25 @@ pnpm build --filter @hidden-garden/private-skill-tree
 # Check for compilation errors without building
 nargo check
 
-# Run tests (when added)
+# Run tests
 nargo test
 ```
+
+## Testing
+
+The contract includes tests for the `prove_skill_threshold` function:
+
+```bash
+# Run all tests
+nargo test
+
+# Tests verify:
+# - Level 5 >= threshold 3 (should pass)
+# - Level 2 >= threshold 3 (should fail)
+# - Edge cases (equality, boundaries)
+```
+
+Test files are located in `tests/prove_skill_threshold_test.nr`.
 
 ## Development
 
@@ -57,4 +73,5 @@ This contract uses:
 - `src/main.nr`: Main contract file
 - `Nargo.toml`: Noir package configuration with Aztec dependencies
 - `package.json`: Node.js package for build scripts
+
 

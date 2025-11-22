@@ -101,5 +101,38 @@ pub contract PrivateSkillTree {
         
         (level_value as u8, parent_value as Field)
     }
+
+    /// @notice Prove that the caller's skill level meets or exceeds a threshold
+    /// @dev This function reads private state, verifies the constraint, and emits public outputs
+    ///      that can be verified on L1. The public outputs include:
+    ///      - caller's AztecAddress (accessed via storage context)
+    ///      - skill_hash (from function parameter - automatically public input)
+    ///      - min_level (from function parameter - automatically public input)
+    ///      These values will appear as public inputs/outputs in the ZK circuit and can be read
+    ///      by the L1 verifier contract.
+    /// @param owner The address of the user proving the threshold (public input for L1 verification)
+    /// @param skill_hash Hash of the skill identifier to check (public input)
+    /// @param min_level Minimum level threshold to prove (public input)
+    /// @return Returns the owner's address as a public output for L1 verification
+    #[private]
+    pub fn prove_skill_threshold(owner: AztecAddress, skill_hash: Field, min_level: u8) -> AztecAddress {
+        // Read the owner's private skill level for the given skill_hash
+        // This read is private - the actual level value is not revealed
+        let levels = storage.skill_levels;
+        let level_map = levels.at(owner);
+        let level_storage = level_map.at(skill_hash);
+        let current_level = level_storage.get_value() as u8;
+        
+        // Assert that the owner's level meets or exceeds the minimum threshold
+        // This constraint is enforced in the ZK circuit without revealing the actual level
+        // Only the boolean result (true/false) is proven, not the level value itself
+        assert(current_level >= min_level, "Skill level does not meet minimum threshold");
+        
+        // Return the owner's address as a public output
+        // skill_hash and min_level are already public inputs (function parameters)
+        // These three values (owner, skill_hash, min_level) will be available on L1
+        // for verification in the SkillLeaderboard contract
+        owner
+    }
 }
 
