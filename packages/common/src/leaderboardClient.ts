@@ -1,4 +1,5 @@
 import type { Address } from './contracts';
+import { hashSkillName } from './skills';
 
 /**
  * Skill hash type (0x-prefixed hex string, 66 characters)
@@ -89,5 +90,15 @@ export class LeaderboardClient {
     const data = await response.json();
     return data as UserSkill[];
   }
+}
+
+/**
+ * Get the Aztec Builder pathway leaderboard
+ * @param client The LeaderboardClient instance
+ * @returns Array of leaderboard entries for the Aztec Builder pathway
+ */
+export function getAztecBuilderLeaderboard(client: LeaderboardClient): Promise<LeaderboardEntry[]> {
+  const pathHash = hashSkillName('aztec_builder_path');
+  return client.getLeaderboard(pathHash);
 }
 

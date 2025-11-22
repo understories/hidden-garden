@@ -14,7 +14,7 @@ export {
 
 // Re-export leaderboard client
 export type { SkillHash, LeaderboardEntry, UserSkill, LeaderboardClientConfig } from './leaderboardClient';
-export { LeaderboardClient } from './leaderboardClient';
+export { LeaderboardClient, getAztecBuilderLeaderboard } from './leaderboardClient';
 
 // Re-export skill utilities
 export { hashSkillName } from './skills';
