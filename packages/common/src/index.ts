@@ -1,8 +1,62 @@
 import type { UserIdentity } from './api';
 
-// Export skill tree types
-export type { SkillNode } from './skillTree';
-export { normalizeSkillId } from './skillTree';
+// ============================================================================
+// Core Types & Utilities
+// ============================================================================
+
+// Re-export types and utilities (from chain branch)
+export type { SkillNode, AztecBuilderTierProofInputs } from './types';
+export { normalizeSkillId } from './utils';
+
+// Export skill tree types (from web branch - may overlap with types.ts)
+// Note: skillTree.ts and types.ts both export SkillNode - we prioritize types.ts
+export type { SkillNode as SkillTreeNode } from './skillTree';
+
+// ============================================================================
+// Contract Integration (from chain branch)
+// ============================================================================
+
+// TODO: Create contracts.ts file with contract addresses and ABIs
+// For now, these exports are commented out until contracts.ts is created
+// Re-export contract addresses and ABIs
+// export type { Address, SupportedChainId } from './contracts';
+// export {
+//   CHAINS,
+//   SELF_HUMAN_SBT_ADDRESS,
+//   SKILL_LEADERBOARD_ADDRESS,
+//   SelfHumanSBTAbi,
+//   SkillLeaderboardAbi,
+// } from './contracts';
+
+// Temporary type definitions until contracts.ts is created
+export type Address = `0x${string}`;
+export type SupportedChainId = number;
+
+// ============================================================================
+// Leaderboard Client (from chain branch)
+// ============================================================================
+
+// Re-export leaderboard client
+export type { SkillHash, LeaderboardEntry, UserSkill, LeaderboardClientConfig } from './leaderboardClient';
+export { LeaderboardClient, getAztecBuilderLeaderboard } from './leaderboardClient';
+
+// ============================================================================
+// Skill Utilities (from chain branch)
+// ============================================================================
+
+// Re-export skill utilities
+export { hashSkillName } from './skills';
+
+// ============================================================================
+// Quest System (from chain branch)
+// ============================================================================
+
+// Re-export quest logic interface layer
+export * from './quests';
+
+// ============================================================================
+// API & ENS Integration (from web branch)
+// ============================================================================
 
 // Export ENS utilities
 export { shortenAddress, getEnsName } from './ens';
@@ -11,6 +65,10 @@ export type { EnsPublicClient } from './ens';
 // Export API types
 export * from './api';
 export type { UserIdentity, PublicSkillTier, UserPublicSkill, LeaderboardAPI } from './api';
+
+// ============================================================================
+// Web Branch Custom Types (from web branch)
+// ============================================================================
 
 // Public skill tier
 export type SkillTier = {
@@ -39,4 +97,3 @@ export type SkillLeaderboard = {
   entries: SkillLeaderboardEntry[]; // Sorted by rank (highest tier first, then by achievedAt)
   totalParticipants: number; // Total number of users who have this skill
 };
-
