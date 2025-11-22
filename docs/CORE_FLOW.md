@@ -26,7 +26,7 @@ You're saying:
 **Action:** Click "🔒 Store Privately in Aztec"
 
 **What Happens:**
-- Computes `questIdHash = keccak256("aztec_concept_quiz")`
+- Computes `questIdHash = pedersen_hash("aztec_concept_quiz")` (matches Noir circuit)
 - Calls Aztec SDK: `add_quest_completion(owner, questIdHash, score)`
 - Stores `QuestNote` in private Aztec vault:
   ```noir
@@ -90,7 +90,7 @@ You're saying:
 ### Core Logic (Team A)
 - `packages/core-logic/src/main.nr` - Noir contract with `add_quest_completion` and `prove_aztec_builder_tier`
 - `packages/core-logic/src/aztecClient.ts` - TypeScript interface for Aztec SDK
-- `packages/core-logic/src/quests/hashing.ts` - Quest ID hash computation (keccak256)
+- `packages/core-logic/src/quests/hashing.ts` - Quest ID hash computation (pedersen_hash, matching Noir)
 
 ### Game Engine
 - `packages/game-engine/src/registry.ts` - Quest registry with validation functions
@@ -209,7 +209,11 @@ See `tests/integration/first_quest_aztec_flow.test.ts` for the full test suite.
 
 ---
 
-## Dev Sanity: Quick Start for First Quest
+## First Quest Aztec Devnet Flow
+
+This section documents how to run the first quest (`aztec_concept_quiz`) with real Aztec devnet integration.
+
+**Note:** This is the **only quest** currently wired for real Aztec devnet. Other quests will use mock mode until they are individually enabled.
 
 ### Prerequisites & Setup
 
@@ -257,7 +261,64 @@ See `tests/integration/first_quest_aztec_flow.test.ts` for the full test suite.
 **Optional:**
 - `AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS` - Reuse existing contract deployment (if not set, deploys new contract)
 
-**Note:** These variables are read at build time for `NEXT_PUBLIC_*` vars, so restart the dev server after changing them.
+**Note:** 
+- These variables are read at build time for `NEXT_PUBLIC_*` vars, so restart the dev server after changing them.
+- **Team B compatibility:** If these env vars are not set, the app defaults to mock mode and works without Aztec devnet.
+
+### Step-by-Step Instructions
+
+1. **Start devnet:**
+   ```bash
+   aztec start --sandbox
+   # Wait for: "PXE Server listening on http://localhost:8080"
+   ```
+
+2. **Set environment variables:**
+   ```bash
+   # In apps/aztecbat-ui/.env.local
+   NEXT_PUBLIC_USE_REAL_AZTEC=true
+   NEXT_PUBLIC_PXE_URL=http://localhost:8080
+   ```
+
+3. **Compile contract:**
+   ```bash
+   pnpm aztec:compile
+   ```
+
+4. **Start app:**
+   ```bash
+   pnpm dev:web
+   ```
+
+5. **Visit quest page:**
+   - Navigate to: `http://localhost:3000/quests/aztec_concept_quiz`
+   - You should see: "Aztec mode: 🟢 REAL devnet ✅" banner
+
+6. **Complete quest:**
+   - Answer: `{"selectedOptionId": "0"}`
+   - Click "Validate Answer" → See score 100%
+   - Click "🔒 Store Privately in Aztec" → See success message
+
+7. **Generate tier proof:**
+   - Connect wallet (MetaMask or similar)
+   - Click "🔓 Generate & Publish Tier Proof"
+   - See proof generated with public inputs displayed
+   - Verify: Only aggregate data (tier, min_average_score, path_hash) is public
+   - Verify: No quest-specific data (quest_id, score, timestamp) in public inputs
+
+### What is Private vs Public
+
+**Public (revealed in tier proof):**
+- Owner (Aztec address)
+- min_tier (1)
+- min_average_score (60)
+- path_hash (aztec_builder_path)
+
+**Private (never revealed):**
+- Individual quest IDs
+- Individual scores
+- Completion timestamps
+- Number of attempts
 
 ## How to Demo the First Real Quest
 
@@ -283,7 +344,7 @@ This section demonstrates the **privacy-native** flow for `aztec_concept_quiz` u
      - Creates a private `QuestNote` in your Aztec vault:
        ```noir
        QuestNote {
-         quest_id_hash: keccak256("aztec_concept_quiz"),
+         quest_id_hash: pedersen_hash("aztec_concept_quiz"),  // Matches Noir circuit
          category_hash: pedersen_hash("aztec_builder"),
          score: 100,
          timestamp: 0
