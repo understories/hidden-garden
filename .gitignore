@@ -55,6 +55,14 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 
+# Hardhat
+artifacts/
+cache/
+typechain-types/
+
+# Next.js
+next-env.d.ts
+
 # Temporary files
 *.tmp
 *.temp
