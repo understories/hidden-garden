@@ -359,6 +359,23 @@ export function QuestCard({ quest }: { quest: QuestDefinition }) {
 
 ---
 
+## Branching Model
+
+See `CONTRIBUTING.md` for the complete branching model. Summary:
+
+- **Long-lived branches:**
+  - `team-a/core` - Team A's integration branch
+  - `team-b/game-ui` - Team B's integration branch
+  - `main` - Final integration branch
+
+- **Feature branches:**
+  - Team A: `feat/team-a/<description>`
+  - Team B: `feat/team-b/<description>`
+
+- **PR flow:**
+  - Team A: `feat/team-a/*` → `team-a/core` → `main`
+  - Team B: `feat/team-b/*` → `team-b/game-ui` → `main`
+
 ## Development Workflow
 
 ### Team A Workflow
