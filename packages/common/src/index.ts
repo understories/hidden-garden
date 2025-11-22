@@ -18,3 +18,6 @@ export { LeaderboardClient, getAztecBuilderLeaderboard } from './leaderboardClie
 
 // Re-export skill utilities
 export { hashSkillName } from './skills';
+
+// Re-export quest logic interface layer
+export * from './quests';
