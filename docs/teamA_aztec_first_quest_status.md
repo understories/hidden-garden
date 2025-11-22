@@ -313,6 +313,150 @@ struct QuestNote {
 
 ---
 
-**Last Updated:** Discovery phase (Nov 2025)  
-**Next Update:** After hash mismatch resolution and SDK installation
+## Aztec Tooling Setup
+
+### Installed Packages
+
+**Aztec JS SDK:**
+- `@aztec/aztec.js@3.0.0-devnet.5` - Installed in `packages/core-logic/package.json`
+- Provides TypeScript/JavaScript client for interacting with Aztec contracts
+- Used for calling private functions and generating proofs
+
+**Aztec Noir Dependencies:**
+- Updated `packages/core-logic/Nargo.toml` to use `v3.0.0-devnet.5` tag
+- `aztec` - Aztec.nr standard library
+- `easy-private-state` - Private state utilities
+
+**Aztec CLI Tools (Global Installation Required):**
+- `aztec` - Main CLI tool
+- `aztec-nargo` - Noir compiler for Aztec
+- `aztec-up` - Local devnet/sandbox manager
+- `aztec-wallet` - Wallet management
+
+**Installation:**
+```bash
+# Install Aztec CLI tools globally (one-time setup)
+bash -i <(curl -s https://install.aztec.network)
+
+# Install npm dependencies (already done)
+pnpm install
+```
+
+### Available Scripts
+
+**Root Package Scripts:**
+- `pnpm aztec:devnet` - Start local Aztec devnet (requires Docker)
+  - Runs: `aztec-up 3.0.0-devnet.5`
+  - Starts local sandbox environment
+- `pnpm aztec:compile` - Compile Noir contract
+  - Runs: `aztec-nargo compile` in `packages/core-logic/`
+  - Compiles `PrivateIdentityGarden` contract
+- `pnpm aztec:test` - Run Aztec integration tests
+  - Runs: `aztec-nargo test` in `packages/core-logic/`
+  - Executes Noir test files
+
+**Core Logic Package Scripts:**
+- `pnpm --filter @hidden-garden/core-logic aztec:compile` - Direct compile
+- `pnpm --filter @hidden-garden/core-logic aztec:test` - Direct test
+
+### How to Start Local Devnet
+
+1. **Prerequisites:**
+   - Docker must be installed and running
+   - Aztec CLI tools installed globally (see Installation above)
+   - If `aztec-up` command not found, run: `bash -i <(curl -s https://install.aztec.network)`
+
+2. **Start Devnet:**
+   ```bash
+   pnpm aztec:devnet
+   ```
+   This will:
+   - Download and start Aztec Sandbox v3.0.0-devnet.5 (first time only)
+   - Expose RPC endpoint (typically `http://localhost:8080`)
+   - Create pre-funded accounts for testing
+
+3. **Verify Devnet is Running:**
+   ```bash
+   aztec status
+   ```
+
+4. **Stop Devnet:**
+   ```bash
+   aztec-down
+   ```
+
+### How to Compile Noir Contract
+
+1. **Prerequisites:**
+   - Aztec CLI tools installed globally (see Installation above)
+   - If `aztec-nargo` command not found, run: `bash -i <(curl -s https://install.aztec.network)`
+
+2. **Compile:**
+   ```bash
+   # From root:
+   pnpm aztec:compile
+   
+   # Or directly:
+   cd packages/core-logic
+   pnpm aztec:compile
+   ```
+
+3. **Expected Output:**
+   - Compiled contract artifacts in `target/` directory
+   - TypeScript types generated (if configured)
+   - Contract bytecode ready for deployment
+
+### How to Run Aztec Tests
+
+1. **Prerequisites:**
+   - Aztec CLI tools installed globally (see Installation above)
+   - If `aztec-nargo` command not found, run: `bash -i <(curl -s https://install.aztec.network)`
+
+2. **Run Tests:**
+   ```bash
+   # From root:
+   pnpm aztec:test
+   
+   # Or directly:
+   cd packages/core-logic
+   pnpm aztec:test
+   ```
+
+3. **Test Files:**
+   - `packages/core-logic/tests/prove_aztec_builder_tier_test.nr`
+   - `packages/core-logic/tests/prove_skill_threshold_test.nr`
+
+4. **Expected Output:**
+   - Test results for tier proof logic
+   - Verification of quest completion storage
+   - Pass/fail status for each test case
+
+### Version Requirements
+
+**This project expects:**
+- Aztec Sandbox >= 3.0.0-devnet.5
+- Aztec CLI tools (latest from install script)
+- Docker (for local devnet)
+- Node.js >= 20.9.0 (for Next.js compatibility)
+
+**Pinned Versions:**
+- `@aztec/aztec.js`: `3.0.0-devnet.5` (exact version)
+- Aztec.nr dependencies: `v3.0.0-devnet.5` tag
+
+### Environment Variables (Optional)
+
+For connecting to remote devnet instead of local sandbox:
+
+```bash
+export VERSION=3.0.0-devnet.5
+export NODE_URL=https://devnet.aztec.network/
+export SPONSORED_FPC_ADDRESS=0x280e5686a148059543f4d0968f9a18cd4992520fcd887444b8689bf2726a1f97
+```
+
+**Note:** Local sandbox (`aztec-up`) is recommended for development as it provides pre-funded accounts and faster iteration.
+
+---
+
+**Last Updated:** After Aztec tooling installation (Nov 2025)  
+**Next Update:** After hash mismatch resolution and real SDK integration
 
