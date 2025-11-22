@@ -80,7 +80,71 @@ These rebases will be clean fast-forwards with no conflicts.
 - Teams should coordinate if both need to modify root `package.json` scripts
 - Lockfile conflicts are rare but can happen if both teams add dependencies simultaneously
 
+## Aztec Devnet Integration
+
+### Tests Required Before Merging
+
+**Core Logic Tests:**
+```bash
+# Run all core-logic tests (will skip Aztec tests if devnet not available)
+pnpm --filter @hidden-garden/core-logic test
+```
+
+**Expected Results:**
+- ✅ Hash consistency tests pass (may warn about placeholders - this is expected until hashes are computed)
+- ✅ RealAztecClient integration tests skip if `AZTEC_PXE_URL` not set (CI-friendly)
+- ✅ RealAztecClient integration tests pass if devnet is running and `AZTEC_PXE_URL` is set
+- ✅ All other tests pass regardless of devnet availability
+
+### Running Tests in Mock-Only Mode (No Devnet)
+
+**Default behavior (no devnet):**
+- Integration tests automatically skip when `AZTEC_PXE_URL` is not set
+- All other tests run normally
+- No errors or failures
+
+**Command:**
+```bash
+# Just run tests - they'll skip Aztec integration tests if devnet not available
+pnpm --filter @hidden-garden/core-logic test
+```
+
+### Running Tests in Real Mode (With Devnet)
+
+**Prerequisites:**
+1. Aztec devnet running: `aztec start --sandbox`
+2. Contract compiled: `pnpm aztec:compile`
+3. Environment variable: `export AZTEC_PXE_URL=http://localhost:8080`
+
+**Command:**
+```bash
+# Set env var and run tests
+export AZTEC_PXE_URL=http://localhost:8080
+pnpm --filter @hidden-garden/core-logic test
+```
+
+**Expected Results:**
+- ✅ All tests pass, including RealAztecClient integration tests
+- ✅ Tests verify quest completion storage
+- ✅ Tests verify tier proof generation
+- ✅ Tests verify privacy guarantees (no quest-specific data in public inputs)
+
+### Team B Compatibility
+
+**Team B can work without Aztec devnet:**
+- ✅ All tests pass without devnet (integration tests skip)
+- ✅ UI defaults to mock mode (no env vars needed)
+- ✅ No breaking changes to existing APIs
+- ✅ Feature flag (`NEXT_PUBLIC_USE_REAL_AZTEC`) controls real vs mock mode
+
+**Team B can enable real mode when ready:**
+- Set `NEXT_PUBLIC_USE_REAL_AZTEC=true` in `.env.local`
+- Start Aztec devnet
+- Only `aztec_concept_quiz` uses real client (other quests use mock)
+
 ## Conclusion
 
 ✅ **Safe to commit and push** - These changes are low-risk and will merge cleanly with team branches.
+
+✅ **Team B compatible** - Team B can continue working without Aztec devnet. Real mode is opt-in via feature flag.
 
