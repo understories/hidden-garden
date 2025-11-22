@@ -172,33 +172,41 @@ struct QuestNote {
 - Or: Update TypeScript to use pedersen_hash (requires Aztec SDK or compatible library)
 - **Must be consistent across both codebases**
 
-### 🟡 High Priority: Aztec SDK Integration
+### ✅ COMPLETED: Aztec SDK Integration
 
-**Missing:**
-- No `@aztec/aztec.js` or similar SDK package installed
-- No Aztec client initialization code
-- No connection to Aztec devnet
-- No private function call implementation
+**Status:** Implemented for `aztec_concept_quiz`
 
-**Needed:**
-- Install Aztec JS SDK: `@aztec/aztec.js` (or latest equivalent)
-- Create real `AztecClient` implementation
-- Initialize Aztec client with devnet connection
-- Implement `addQuestCompletion()` using SDK's private function call API
-- Implement `proveAztecBuilderTier()` using SDK's proof generation API
+**What's Done:**
+- ✅ `@aztec/aztec.js@3.0.0-devnet.5` installed
+- ✅ `RealAztecClient` implementation created
+- ✅ PXE client connection to Aztec devnet
+- ✅ Account loading from sandbox
+- ✅ `addQuestCompletionByQuestId()` method (accepts questId string, computes hash)
+- ✅ `addQuestCompletion()` method (accepts questIdHash)
+- ✅ `proveAztecBuilderTier()` method
+- ✅ Factory function `createAztecClient()` with mode selection
+- ✅ Integration tests created (`tests/aztec_first_quest.test.ts`)
+
+**What's Pending:**
+- ⚠️ Contract artifact loading (requires compiled contract)
+- ⚠️ Contract deployment logic (needs artifact)
+- ⚠️ Proof extraction format (depends on Aztec SDK receipt structure)
 
 ### 🟡 High Priority: Contract Compilation & Deployment
 
-**Missing:**
-- Contract not compiled for latest Aztec devnet
-- Contract not deployed to devnet
-- No contract address available
+**Status:** In Progress
 
-**Needed:**
-- Compile `main.nr` with latest Aztec tooling
-- Deploy to Aztec devnet
-- Update contract address in codebase
-- Verify contract functions are callable
+**What's Done:**
+- ✅ `Nargo.toml` updated to use `v3.0.0-devnet.5`
+- ✅ Compile script: `pnpm aztec:compile`
+- ✅ `RealAztecClient` has deployment/loading logic (placeholder)
+
+**What's Needed:**
+- ⚠️ Compile `main.nr` contract: Run `pnpm aztec:compile`
+- ⚠️ Load contract artifact in `RealAztecClient.initialize()`
+- ⚠️ Deploy contract to devnet (first time) or load existing address
+- ⚠️ Update `PRIVATE_IDENTITY_GARDEN_ADDRESS` environment variable after deployment
+- ⚠️ Verify contract functions are callable via integration tests
 
 ### 🟡 Medium Priority: Hash Computation Consistency
 
@@ -457,6 +465,66 @@ export SPONSORED_FPC_ADDRESS=0x280e5686a148059543f4d0968f9a18cd4992520fcd887444b
 
 ---
 
-**Last Updated:** After Aztec tooling installation (Nov 2025)  
-**Next Update:** After hash mismatch resolution and real SDK integration
+## Real Aztec Client Usage
+
+### Creating a Client
+
+```typescript
+import { createAztecClient } from '@hidden-garden/core-logic';
+
+// Real client (default if PXE_URL is set)
+const client = createAztecClient('real', {
+  pxeUrl: 'http://localhost:8080',
+  contractAddress: process.env.PRIVATE_IDENTITY_GARDEN_ADDRESS, // optional
+});
+
+// Mock client (for testing without devnet)
+const mockClient = createAztecClient('mock');
+```
+
+### Environment Variables
+
+- `PXE_URL`: Aztec PXE endpoint (default: `http://localhost:8080`)
+- `AZTEC_CLIENT_MODE`: `'mock'` or `'real'` (default: `'real'` if PXE_URL set)
+- `PRIVATE_IDENTITY_GARDEN_ADDRESS`: Contract address if already deployed
+
+### Using the Client
+
+```typescript
+// Initialize (connects to devnet, loads account, deploys/connects contract)
+await client.initialize();
+
+// Get user address
+const address = await client.getAddress();
+
+// Add quest completion (by quest ID - recommended)
+const result = await client.addQuestCompletionByQuestId('aztec_concept_quiz', 100);
+
+// Or by quest ID hash
+const questIdHash = computeQuestIdHash('aztec_concept_quiz');
+const result2 = await client.addQuestCompletion(questIdHash, 100);
+
+// Generate tier proof
+const proofResult = await client.proveAztecBuilderTier(1, 60);
+```
+
+### Switching Between Mock and Real
+
+The factory function automatically selects the appropriate client:
+
+```typescript
+// If PXE_URL is set and mode is 'real' (or default), uses RealAztecClient
+// Otherwise, falls back to MockAztecClient
+
+// Force mock mode
+const mock = createAztecClient('mock');
+
+// Force real mode (requires PXE_URL)
+const real = createAztecClient('real', { pxeUrl: 'http://localhost:8080' });
+```
+
+---
+
+**Last Updated:** After RealAztecClient implementation (Nov 2025)  
+**Next Update:** After contract compilation and artifact loading implementation
 

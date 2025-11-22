@@ -130,14 +130,20 @@ You're saying:
 ✅ **Implemented:**
 - Quest validation (first quest working)
 - Quest ID hash computation
-- Aztec client interface (with mock implementation)
+- Aztec client interface with both mock and real implementations
 - Complete UI flow for quest → Aztec → L1
 - L1 contract integration (wagmi)
+- Real Aztec client implementation (`RealAztecClient`)
+- Factory function for client creation (`createAztecClient`)
 
-⚠️ **Mock Implementation:**
-- Aztec SDK calls are mocked (`MockAztecClient`)
-- Real Aztec SDK integration needed for production
-- Proof generation is simulated
+⚠️ **Partial Implementation:**
+- **For quest `aztec_concept_quiz`:** Real Aztec devnet integration is implemented
+  - `RealAztecClient` connects to Aztec devnet
+  - Contract deployment/loading (requires compiled contract artifact)
+  - Quest completion storage via `addQuestCompletionByQuestId()`
+  - Tier proof generation via `proveAztecBuilderTier()`
+- **Mock mode still available:** Use `createAztecClient('mock')` for testing without devnet
+- **Contract artifact loading:** Requires contract to be compiled first with `pnpm aztec:compile`
 
 ## Next Steps
 
