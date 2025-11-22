@@ -89,43 +89,16 @@ function isPlaceholder(hash: QuestIdHash): boolean {
  * 
  * This function computes Pedersen hashes at runtime to match Noir's pedersen_hash output.
  * 
+ * TODO: Implement proper async hash computation once @aztec/bb.js API is confirmed.
+ * For now, this is a placeholder that will be implemented when needed.
+ * 
  * @param input The input string
  * @returns The Pedersen hash as a 0x-prefixed hex string (32 bytes)
  */
 async function computePedersenHashAsync(input: string): Promise<QuestIdHash> {
-  try {
-    // Dynamic import to avoid bundling issues in browser
-    const { Barretenberg } = await import('@aztec/bb.js');
-    const bb = await Barretenberg.new();
-    
-    const bytes = stringToBytes(input);
-    // Convert bytes to Uint8Array
-    const bytesArray = new Uint8Array(bytes);
-    
-    // Compute Pedersen hash
-    const hash = await bb.pedersenHashWithHashIndex(bytesArray, 0);
-    
-    // Convert Field to hex string
-    const hex = hash.toString(16).padStart(64, '0');
-    return `0x${hex}` as QuestIdHash;
-  } catch (error) {
-    // Fallback: check if we have a hardcoded value
-    if (PEDERSEN_HASH_LOOKUP[input]) {
-      const hash = PEDERSEN_HASH_LOOKUP[input];
-      if (!isPlaceholder(hash)) {
-        return hash;
-      }
-    }
-    
-    // If computation fails and no hardcoded value, throw error
-    const bytes = stringToBytes(input);
-    throw new Error(
-      `Failed to compute Pedersen hash for "${input}".\n` +
-      `Error: ${error instanceof Error ? error.message : String(error)}\n` +
-      `The Noir circuit uses: hash::pedersen_hash([${bytes.join(', ')}])\n` +
-      `See: packages/core-logic/scripts/compute-pedersen-hashes.md for instructions.`
-    );
-  }
+  // TODO: Implement using @aztec/bb.js once API is confirmed
+  // For now, fall back to synchronous computation
+  return computePedersenHash(input);
 }
 
 /**
