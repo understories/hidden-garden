@@ -113,4 +113,5 @@ export function formatDisplayName(entry: PublicSkillTier): string {
 }
 
 export { mockLeaderboardApi };
+export type { PublicSkillTier, UserPublicSkill };
 
