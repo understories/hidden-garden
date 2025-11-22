@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@aztec/aztec.js": "3.0.0-devnet.5",
+    "@aztec/accounts": "3.0.0-devnet.5",
     "ethers": "^6.15.0"
   },
   "_aztecVersionInfo": {
