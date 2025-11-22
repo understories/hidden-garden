@@ -1,0 +1,11 @@
+{
+  "name": "@hidden-garden/private-skill-tree",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "nargo build",
+    "test": "nargo test",
+    "check": "nargo check"
+  }
+}
+
