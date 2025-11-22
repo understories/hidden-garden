@@ -9,6 +9,13 @@ export interface SkillReveal {
   created_at: number;
 }
 
+/**
+ * SkillReveal with optional ENS name enrichment
+ */
+export interface SkillRevealWithEns extends SkillReveal {
+  ensName?: string;
+}
+
 export interface SkillRevealInsert {
   user_address: string;
   skill_hash: string;
