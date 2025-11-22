@@ -333,7 +333,6 @@ export default function MyGardenPage() {
                     />
                   </label>
                 </div>
-                </div>
 
                 {/* Reveal Skill UI */}
                 {revealingSkillId === skill.id ? (
