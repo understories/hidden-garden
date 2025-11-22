@@ -358,3 +358,54 @@ export function listQuestsByTier(tier: TierNumber): QuestDefinition[] {
 export function listAllQuests(): QuestDefinition[] {
   return Object.values(questRegistry);
 }
+
+// ============================================================================
+// Developer Notes
+// ============================================================================
+
+/**
+ * CANONICAL SPECIFICATION
+ * 
+ * The curriculum document `/docs/aztecbat_curriculum.md` is the canonical
+ * specification for all quest definitions, tier requirements, and validation
+ * logic. This registry must stay in sync with that document.
+ * 
+ * WORKFLOW FOR CHANGES:
+ * 
+ * 1. Any new quests or tier changes must FIRST be added to the curriculum
+ *    document at `/docs/aztecbat_curriculum.md`.
+ * 
+ * 2. Then update this registry to reflect those changes:
+ *    - Add new quest entries to `questRegistry`
+ *    - Update tier mappings in `mapping.ts` if needed
+ *    - Update quest metadata (name, prompt, type, etc.)
+ * 
+ * 3. Update the Noir circuit if quest IDs or tier logic changes
+ * 
+ * VALIDATION FUNCTION IMPLEMENTATION
+ * 
+ * The `validate` functions in each quest definition are currently placeholders
+ * that throw errors. They will be implemented later with the following approach:
+ * 
+ * 1. **Logic/Syntax Puzzles** (multiple_choice, numeric_input, structured_text, puzzle_logic):
+ *    - Run local JavaScript validation checks
+ *    - Parse submissions based on puzzle type
+ *    - Apply validation logic as specified in the curriculum
+ *    - Return ValidationResult with success, score (0-100), and feedback
+ * 
+ * 2. **Devnet Transaction Puzzles** (devnet_tx):
+ *    - Call Aztec devnet RPC or backend services to verify transaction
+ *    - Query transaction receipt and verify success
+ *    - Optionally verify contract code or state changes
+ *    - Return ValidationResult based on transaction verification
+ * 
+ * 3. **Integration with Aztec QuestNote Flow**:
+ *    - Once validated, quest completions are stored in the user's Aztec vault
+ *    - The QuestNote struct (defined in the Noir contract) stores:
+ *      - quest_id_hash: hash of the quest ID
+ *      - category_hash: hash of the category ("aztec_builder")
+ *      - score: completion score (0-100)
+ *      - timestamp: Unix epoch timestamp
+ *    - These QuestNotes are used by the tier proof circuit to verify
+ *      tier completion and calculate average scores
+ */
