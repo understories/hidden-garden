@@ -6,6 +6,10 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "node": "hardhat node"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@types/node": "^24.10.1",
+    "hardhat": "^3.0.15"
   }
 }
-
