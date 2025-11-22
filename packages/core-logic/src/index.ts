@@ -52,6 +52,9 @@ export type { EnsPublicClient } from './ens';
 export * from './api';
 export type { UserIdentity, PublicSkillTier, UserPublicSkill, LeaderboardAPI } from './api';
 
+// Import UserIdentity for use in custom types below
+import type { UserIdentity } from './api';
+
 // ============================================================================
 // Custom Types (for UI compatibility)
 // ============================================================================
