@@ -7,5 +7,6 @@ export * from './api';
 
 // Export types (prioritize skillTree.ts version of SkillNode which has children)
 export type { AztecBuilderTierProofInputs } from './types';
-export type { SkillNode, normalizeSkillId } from './skillTree';
+export type { SkillNode } from './skillTree';
+export { normalizeSkillId } from './skillTree';
 
