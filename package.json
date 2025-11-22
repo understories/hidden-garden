@@ -1,0 +1,10 @@
+{
+  "name": "hidden-garden",
+  "private": true,
+  "scripts": {
+    "lint": "turbo lint",
+    "build": "turbo build",
+    "test": "turbo test"
+  }
+}
+
