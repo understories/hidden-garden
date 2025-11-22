@@ -1,6 +1,4 @@
-// TODO: Import from contracts.ts once it's created
-// import type { Address } from './contracts';
-export type Address = `0x${string}`;
+import type { Address } from './contracts';
 import { hashSkillName } from './skills';
 
 /**

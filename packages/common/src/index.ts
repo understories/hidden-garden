@@ -16,21 +16,17 @@ export type { SkillNode as SkillTreeNode } from './skillTree';
 // Contract Integration (from chain branch)
 // ============================================================================
 
-// TODO: Create contracts.ts file with contract addresses and ABIs
-// For now, these exports are commented out until contracts.ts is created
 // Re-export contract addresses and ABIs
-// export type { Address, SupportedChainId } from './contracts';
-// export {
-//   CHAINS,
-//   SELF_HUMAN_SBT_ADDRESS,
-//   SKILL_LEADERBOARD_ADDRESS,
-//   SelfHumanSBTAbi,
-//   SkillLeaderboardAbi,
-// } from './contracts';
-
-// Temporary type definitions until contracts.ts is created
-export type Address = `0x${string}`;
-export type SupportedChainId = number;
+export type { Address, SupportedChainId } from './contracts';
+export {
+  CHAINS,
+  SELF_HUMAN_SBT_ADDRESS,
+  SKILL_LEADERBOARD_ADDRESS,
+  SelfHumanSBTAbi,
+  SkillLeaderboardAbi,
+  getSelfHumanSBTAddress,
+  getSkillLeaderboardAddress,
+} from './contracts';
 
 // ============================================================================
 // Leaderboard Client (from chain branch)
