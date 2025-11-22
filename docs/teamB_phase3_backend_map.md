@@ -120,7 +120,97 @@ After completing Self verification flow:
 
 ---
 
-## 2. Skill Proofs / Leaderboard
+## 2. Skill → Proof → Leaderboard Flow
+
+### End-to-End Flow
+
+This section documents the complete flow for revealing a skill to the public leaderboard using ZK proofs.
+
+**Flow Overview:**
+1. User selects a skill and tier threshold on `/me` page
+2. Frontend generates proof using `SkillProofProvider` (Team A's stub for now)
+3. Frontend submits proof to `SkillLeaderboard` contract via wagmi
+4. Contract verifies proof and records skill tier on-chain
+5. UI shows success state and marks skill as "Revealed at Tier X"
+
+**Key Components:**
+
+**UI Component:**
+- **Location:** `apps/aztecbat-ui/app/me/page.tsx`
+- **Features:**
+  - "Reveal this skill" button for each skill
+  - Tier selection dropdown (1-5)
+  - Proof generation and submission flow
+  - Transaction status display (pending, success, error)
+  - "Revealed at Tier X" indicator after successful submission
+
+**Proof Provider:**
+- **Location:** `packages/game-engine/src/skillProofProvider.ts`
+- **Interface:** `SkillProofProvider.generateProof({ skillHash, minTier })`
+- **Current Implementation:** `StubSkillProofProvider` (Team A's stub)
+  - Returns fake proof data for development
+  - Simulates 500ms delay
+  - Returns `{ proofData: string, claimedTier: number }`
+- **Ownership:** Team A owns the implementation. This is a canonical integration boundary. Team A may update the internals (including replacing the stub with real proof generation in a separate package), but the interface remains stable. Team B must not modify or replace the implementation.
+
+**Contract Integration:**
+- **Contract:** `SkillLeaderboard.submitSkillTierWithProof`
+- **Location:** `packages/core-logic/src/contracts.ts`
+- **Function Signature:**
+  ```solidity
+  function submitSkillTierWithProof(
+    bytes32 skillHash,
+    uint8 minLevel,
+    bytes calldata proof,
+    bytes calldata publicInputs
+  ) external
+  ```
+- **Wagmi Hook:** `useWriteContract` from `wagmi`
+- **Transaction Tracking:** `useWaitForTransactionReceipt` from `wagmi`
+
+**Skill Hashing:**
+- **Function:** `hashSkillName(skillName: string)`
+- **Location:** `packages/core-logic/src/skills.ts`
+- **Method:** `keccak256(utf8(skillName))` - canonical hashing from Team A
+
+**Public Inputs Encoding:**
+- **Format:** `abi.encode(userAddress, skillHash, minLevel)`
+- **Implementation:** Uses `encodeAbiParameters` from `viem`
+- **Parameters:**
+  - `userAddress`: `address` (20 bytes)
+  - `skillHash`: `bytes32` (32 bytes)
+  - `minLevel`: `uint8` (1 byte)
+
+**State Management:**
+- Proof generation state: `proofGenerating`, `proofError`, `proofResult`
+- Transaction state: `submittingSkill`, `isWritePending`, `isConfirming`, `isConfirmed`
+- Revealed skills: `revealedSkills` (Record<skillId, tier>)
+
+**UX States:**
+- "Generating proof…" - During proof generation
+- "Waiting for wallet signature…" - During `writeContract` call
+- "Transaction pending…" - Waiting for transaction confirmation
+- "Published to leaderboard ✅" - On successful confirmation
+- "Transaction failed" - On error
+- "✅ Revealed at Tier X" - Persistent indicator after success
+
+**Files:**
+- `apps/aztecbat-ui/app/me/page.tsx` - Main UI component with reveal flow
+- `packages/game-engine/src/skillProofProvider.ts` - Proof provider interface and stub
+- `packages/core-logic/src/contracts.ts` - Contract ABIs and addresses
+- `packages/core-logic/src/skills.ts` - Skill hashing utility
+
+**Note:** This implementation uses:
+- ✅ Real `SkillLeaderboard` contract (on-chain)
+- ✅ Real wagmi/viem setup for contract interactions
+- ✅ Real transaction tracking and confirmation
+- ⚠️ Stub proof generation (Team A's `StubSkillProofProvider`) – canonical integration point; Team A may update the internals later, but the interface must stay stable and must not be replaced by Team B.
+
+**Rule:** `SkillProofProvider` implementation lives under Team A ownership. Team B (and this repo) MUST NOT replace the stub with a real prover. Real proof generation, when it exists, will come from a separate Team A package behind the same interface.
+
+---
+
+## 3. Skill Proofs / Leaderboard (Legacy Section)
 
 ### On-Chain Contract Calls
 
