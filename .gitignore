@@ -86,3 +86,10 @@ services/indexer/data/
 playground/dist/
 playground/node_modules/
 
+# Turbo build logs
+.turbo/*.log
+**/.turbo/*.log
+
+# Next.js dev logs
+.next/**/*.log
+
