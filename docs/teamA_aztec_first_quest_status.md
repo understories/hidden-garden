@@ -188,9 +188,12 @@ struct QuestNote {
 - ✅ Integration tests created (`tests/aztec_first_quest.test.ts`)
 
 **What's Pending:**
-- ⚠️ Contract artifact loading (requires compiled contract)
-- ⚠️ Contract deployment logic (needs artifact)
 - ⚠️ Proof extraction format (depends on Aztec SDK receipt structure)
+
+**What's Completed:**
+- ✅ Contract artifact loading (loads from `target/PrivateIdentityGarden.json` or `target/private_skill_tree.json`)
+- ✅ Contract deployment logic (deploys new contract if no address provided)
+- ✅ Contract connection (connects to existing contract if `AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS` is set)
 
 ### 🟡 High Priority: Contract Compilation & Deployment
 
@@ -201,12 +204,22 @@ struct QuestNote {
 - ✅ Compile script: `pnpm aztec:compile`
 - ✅ `RealAztecClient` has deployment/loading logic (placeholder)
 
-**What's Needed:**
-- ⚠️ Compile `main.nr` contract: Run `pnpm aztec:compile`
-- ⚠️ Load contract artifact in `RealAztecClient.initialize()`
-- ⚠️ Deploy contract to devnet (first time) or load existing address
-- ⚠️ Update `PRIVATE_IDENTITY_GARDEN_ADDRESS` environment variable after deployment
-- ⚠️ Verify contract functions are callable via integration tests
+**What's Done:**
+- ✅ `RealAztecClient.initialize()` loads contract artifact from `target/` directory
+- ✅ Auto-detects artifact location (checks multiple common paths)
+- ✅ Deploys new contract if no address provided
+- ✅ Connects to existing contract if `AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS` is set
+- ✅ Logs contract address for reuse
+
+**Environment Variables:**
+- `AZTEC_PXE_URL` (or `PXE_URL`) - Aztec devnet PXE endpoint (default: `http://localhost:8080`)
+- `AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS` (optional) - Existing contract address to reuse
+
+**Usage:**
+1. Compile contract: `pnpm aztec:compile`
+2. Start devnet: `pnpm aztec:devnet`
+3. Initialize client - it will auto-deploy or connect to existing contract
+4. Save the logged contract address to `AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS` for reuse
 
 ### 🟡 Medium Priority: Hash Computation Consistency
 
