@@ -226,8 +226,25 @@ export interface QuestDefinition {
 export interface PuzzleDefinition extends QuestDefinition {}
 
 /**
+ * Quest note model (as stored in the Aztec vault)
+ * Matches the QuestNote struct in the Noir contract
+ * Based on the curriculum specification at `/docs/aztecbat_curriculum.md`
+ */
+export interface QuestNoteModel {
+  /** Hashed quest identifier (computed from questId) */
+  questIdHash: QuestIdHash;
+  /** Hashed category identifier (e.g., hash("aztec_builder")) */
+  categoryHash: `0x${string}`;
+  /** Completion score (0-100) */
+  score: number;
+  /** Unix epoch timestamp (seconds since Jan 1, 1970) */
+  timestamp: number;
+}
+
+/**
  * Quest completion record
  * Represents a completed quest with score
+ * Used for client-side tracking and UI display
  */
 export interface QuestCompletion {
   /** Quest identifier */

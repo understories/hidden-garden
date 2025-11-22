@@ -29,6 +29,7 @@ export type {
   QuestDefinition,
   PuzzleDefinition, // Legacy alias for QuestDefinition
   // Quest completion
+  QuestNoteModel,
   QuestCompletion,
   TierRequirements,
   TierProofInputs,
