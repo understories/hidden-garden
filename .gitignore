@@ -63,6 +63,9 @@ typechain-types/
 # Next.js
 next-env.d.ts
 
+# Auto-generated contract configs
+packages/common/src/contracts.ts
+
 # Temporary files
 *.tmp
 *.temp
