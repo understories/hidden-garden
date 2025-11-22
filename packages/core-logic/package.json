@@ -6,9 +6,12 @@
   "types": "src/index.ts",
   "scripts": {
     "build": "tsc --noEmit",
-    "test": "echo \"No tests yet\" && exit 0"
+    "test": "echo \"No tests yet\" && exit 0",
+    "aztec:compile": "aztec-nargo compile",
+    "aztec:test": "aztec-nargo test"
   },
   "dependencies": {
+    "@aztec/aztec.js": "3.0.0-devnet.5",
     "ethers": "^6.15.0"
   },
   "devDependencies": {

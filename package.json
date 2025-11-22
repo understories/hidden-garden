@@ -10,7 +10,10 @@
     "dev:indexer": "pnpm --filter @hidden-garden/indexer dev",
     "dev:playground": "pnpm --filter @hidden-garden/playground dev",
     "e2e:skills": "ts-node --project scripts/tsconfig.json scripts/e2e-skill-test.ts",
-    "verify:sbt": "ts-node --project scripts/tsconfig.json scripts/verify-sbt.ts"
+    "verify:sbt": "ts-node --project scripts/tsconfig.json scripts/verify-sbt.ts",
+    "aztec:devnet": "aztec-up 3.0.0-devnet.5",
+    "aztec:compile": "pnpm --filter @hidden-garden/core-logic aztec:compile",
+    "aztec:test": "pnpm --filter @hidden-garden/core-logic aztec:test"
   },
   "dependencies": {
     "@types/node": "^24.10.1",
