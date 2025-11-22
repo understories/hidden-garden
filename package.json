@@ -7,7 +7,8 @@
     "build": "turbo build",
     "test": "turbo test",
     "dev:web": "pnpm --filter @hidden-garden/web dev",
-    "dev:indexer": "pnpm --filter @hidden-garden/indexer dev"
+    "dev:indexer": "pnpm --filter @hidden-garden/indexer dev",
+    "e2e:skills": "ts-node --project scripts/tsconfig.json scripts/e2e-skill-test.ts"
   },
   "dependencies": {
     "@types/node": "^24.10.1",
@@ -19,6 +20,8 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
+    "ethers": "^6.15.0",
+    "ts-node": "^10.9.2",
     "turbo": "^2.6.1"
   }
 }
