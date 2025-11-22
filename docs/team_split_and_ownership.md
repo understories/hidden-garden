@@ -15,6 +15,8 @@
   - Evaluation engine (quest validation interfaces)
   - Contract integration (`contracts.ts`)
   - Core types (`types.ts`, `utils.ts`)
+  - **Aztec client (`aztecClient.ts`):** `RealAztecClient` and `MockAztecClient` implementations
+  - **Quest hashing (`quests/hashing.ts`):** Pedersen hash utilities matching Noir circuit
 
 **Contracts:**
 - `packages/contracts-public/` - All Solidity contracts and deployment scripts
