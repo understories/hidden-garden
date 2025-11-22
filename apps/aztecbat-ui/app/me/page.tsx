@@ -6,6 +6,7 @@ import { normalizeSkillId, shortenAddress, getEnsName } from '@hidden-garden/cor
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
 import { mainnetPublicClient } from '../../lib/viemClients';
+import { startSelfVerificationFlow } from '../../lib/selfVerification';
 
 const initialSkills: SkillNode[] = [
   {
@@ -167,8 +168,8 @@ export default function MyGardenPage() {
           <button
             type="button"
             onClick={() => {
-              // TODO: Implement Self verification flow
-              console.log('Verify with Self clicked');
+              if (!address) return;
+              startSelfVerificationFlow(address as `0x${string}`);
             }}
             disabled={!isConnected || verificationStatus === 'checking'}
             className="px-4 py-2 rounded border text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
