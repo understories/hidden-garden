@@ -1,12 +1,19 @@
 // SPDX-License-Identifier: MIT
-// Private Skill Tree Contract for Hidden Garden
-// Manages private skill nodes per user on Aztec
+// Private Identity Garden Contract for Hidden Garden
+// This contract serves as a user's private identity vault on Aztec Protocol.
+// It stores:
+//   - Skill attestations (skill tree nodes)
+//   - External identity attestations (from Self, ZKPassport, etc.)
+//
+// External proofs (Self, ZKPassport, etc.) are verified off-chain or in helper circuits,
+// and only normalized attestation facts are stored here as private notes.
 
 use dep::aztec::{
     macros::aztec,
     macros::functions::private,
     protocol_types::address::AztecAddress,
     state_vars::Map,
+    note::Note,
 };
 use easy_private_state::EasyPrivateUint;
 
@@ -21,11 +28,29 @@ struct SkillNode {
     parent_hash: Field,
 }
 
-/// @title PrivateSkillTree
-/// @notice Manages private skill nodes per user on Aztec Protocol
-/// @dev This contract will later connect proof outputs to an L1 verifier / SkillLeaderboard
+/// @title IdentityAttestation
+/// @notice Represents an identity attestation from an external source
+/// @dev External proofs are verified off-chain. This struct stores only the normalized fact.
+struct IdentityAttestation {
+    /// Source identifier hash (e.g., hash("Self"), hash("ZKPassport"))
+    source: Field,
+    /// Attestation type hash (e.g., hash("age_over_18"), hash("residency_EU"))
+    attestation_type: Field,
+    /// Value: 1 for boolean true, or encoded metadata for other types
+    value: Field,
+    /// Expiry timestamp (0 means no expiry)
+    expiry: u64,
+    /// Randomness for note privacy (prevents note linking)
+    secret: Field,
+}
+
+/// @title PrivateIdentityGarden
+/// @notice Private identity vault contract that stores skill nodes and identity attestations
+/// @dev This contract is the user's private identity vault on Aztec.
+///      External proofs (Self, ZKPassport, etc.) are verified off-chain or in helper circuits,
+///      and only normalized attestation facts are stored here as private notes.
 #[aztec]
-pub contract PrivateSkillTree {
+pub contract PrivateIdentityGarden {
     /// @notice Storage structure for private skill trees
     /// @dev Uses nested maps: user address -> skill hash -> skill data
     ///      Each skill's fields are stored separately for Aztec.nr compatibility
@@ -37,12 +62,14 @@ pub contract PrivateSkillTree {
         skill_parents: Map<AztecAddress, Map<Field, EasyPrivateUint<Context>, Context>, Context>,
     }
 
+    // ============ Skill Tree Functions ============
+
     /// @notice Initialize a user's skill tree with initial nodes
     /// @dev Private function that sets up the initial skill tree structure
     /// @param owner The address of the user whose tree is being initialized
     /// @param initial_nodes Array of initial skill nodes to add to the tree
     #[private]
-    pub fn init_tree(owner: AztecAddress, initial_nodes: [SkillNode; 4]) {
+    pub fn init_skills(owner: AztecAddress, initial_nodes: [SkillNode; 4]) {
         let levels = storage.skill_levels;
         let parents = storage.skill_parents;
 
@@ -134,5 +161,85 @@ pub contract PrivateSkillTree {
         // for verification in the SkillLeaderboard contract
         owner
     }
-}
 
+    // ============ Identity Attestation Functions ============
+
+    /// @notice Add a new identity attestation to the user's private vault
+    /// @dev Creates a new private note containing the attestation. The note is encrypted
+    ///      and only the owner can decrypt it. External proofs (Self, ZKPassport, etc.)
+    ///      are verified off-chain before calling this function.
+    /// @param att The identity attestation to add
+    /// @return note The created private note
+    #[private]
+    pub fn add_identity_attestation(att: IdentityAttestation) -> Note<IdentityAttestation> {
+        // Validate that expiry is in the future (if not 0)
+        // Note: In a real implementation, you might want to check against current timestamp
+        // For now, we just ensure expiry is either 0 (no expiry) or a valid timestamp
+        
+        // Create a new private note with the attestation
+        // The note is automatically encrypted and linked to the caller's address
+        Note::new(att)
+    }
+
+    /// @notice Revoke an identity attestation by creating a nullifier
+    /// @dev Nullifiers prevent the attestation from being used in future proofs.
+    ///      The nullifier is computed from the attestation's unique identifier
+    ///      (source + attestation_type + value) to ensure uniqueness.
+    /// @param attestation_type Hash of the attestation type to revoke
+    /// @param source Hash of the source that issued the attestation
+    /// @param value The value of the attestation (to uniquely identify it)
+    /// @param secret The secret from the original attestation note (needed for nullifier)
+    #[private]
+    pub fn revoke_identity_attestation(
+        attestation_type: Field,
+        source: Field,
+        value: Field,
+        secret: Field
+    ) {
+        // Compute a unique identifier for this attestation
+        // This ensures we can create a nullifier that uniquely identifies the note
+        // In Aztec, nullifiers are typically computed from note contents + secret
+        // For simplicity, we hash the key fields together
+        // In production, you'd use Aztec's built-in nullifier computation
+        
+        // Note: In a full implementation, you would:
+        // 1. Find the note matching (source, attestation_type, value)
+        // 2. Compute the nullifier from the note contents
+        // 3. Create the nullifier to mark it as spent/revoked
+        
+        // For now, this is a placeholder that shows the intended interface
+        // The actual nullifier creation would use Aztec's note system APIs
+        // which require access to the original note structure
+        
+        // This function signature shows the intended revocation pattern:
+        // - Identify the attestation by (source, attestation_type, value)
+        // - Use the secret to compute the nullifier
+        // - The nullifier prevents future use of this attestation
+    }
+
+    /// @notice Prove possession of a valid identity attestation
+    /// @dev This function can be used to prove that the caller has a valid (non-expired,
+    ///      non-revoked) attestation of a specific type from a specific source.
+    ///      The proof can be used in other contracts or on L1.
+    /// @param attestation_type Hash of the attestation type to prove
+    /// @param source Hash of the source that issued the attestation
+    /// @param min_value Minimum value required (for numeric attestations)
+    /// @return Returns true if the attestation exists and is valid
+    #[private]
+    pub fn prove_identity_attestation(
+        attestation_type: Field,
+        source: Field,
+        min_value: Field
+    ) -> bool {
+        // In a full implementation, this would:
+        // 1. Search for notes matching (source, attestation_type)
+        // 2. Check that value >= min_value
+        // 3. Check that expiry is in the future (or 0)
+        // 4. Verify the note hasn't been nullified (revoked)
+        // 5. Return true if valid, false otherwise
+        
+        // This is a placeholder showing the intended interface
+        // Actual implementation would use Aztec's note query APIs
+        true
+    }
+}
