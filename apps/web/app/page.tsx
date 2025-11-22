@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <main
@@ -15,6 +17,9 @@ export default function Home() {
       <p style={{ fontSize: '1.5rem', color: '#666' }}>
         A privacy-preserving skill tree and leaderboard.
       </p>
+      <Link href="/leaderboard/rust" className="text-blue-600 underline">
+        View Rust leaderboard
+      </Link>
     </main>
   );
 }
