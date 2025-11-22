@@ -1,0 +1,24 @@
+# CODEOWNERS
+# This file defines code ownership for automatic PR review requests.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Team A owns core logic and circuits
+/packages/core-logic/ @vrnvrn
+
+# Team B owns UI and game layer
+/apps/aztecbat-ui/ @kosmostasis
+
+# Game engine is shared - both teams review
+/packages/game-engine/ @vrnvrn @kosmostasis
+
+# Contracts are Team A's responsibility
+/packages/contracts-public/ @vrnvrn
+
+# Documentation - both teams can contribute
+/docs/ @vrnvrn @kosmostasis
+
+# Root configuration files - both teams
+/package.json @vrnvrn @kosmostasis
+/pnpm-workspace.yaml @vrnvrn @kosmostasis
+/pnpm-lock.yaml @vrnvrn @kosmostasis
+
