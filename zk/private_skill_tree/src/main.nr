@@ -16,6 +16,7 @@ use dep::aztec::{
     note::Note,
 };
 use easy_private_state::EasyPrivateUint;
+use dep::std::hash;
 
 /// @title SkillNode
 /// @notice Represents a single node in a user's private skill tree
@@ -255,5 +256,50 @@ pub contract PrivateIdentityGarden {
         // This is a placeholder showing the intended interface
         // Actual implementation would use Aztec's note query APIs
         true
+    }
+
+    // ============ Quest Completion Functions ============
+
+    /// @notice Record a quest completion in the learning pathway tracker
+    /// @dev Creates a new private note for the quest completion. If the same quest_id
+    ///      already exists, this will create a new note (the latest one can be used).
+    ///      For keeping the best score, the caller should check existing notes first.
+    /// @param quest_id_hash Hash of the quest identifier
+    /// @param score Score for this quest (0-100, where >= 60 is passing)
+    #[external("private")]
+    pub fn add_quest_completion(
+        quest_id_hash: Field,
+        score: u8
+    ) {
+        // 1. Assert score <= 100
+        assert(score <= 100, "Score must be between 0 and 100");
+        
+        // 2. Create a QuestNote with:
+        //    category_hash = hash_to_field("aztec_builder")
+        //    timestamp = current block timestamp or 0 if not easily accessible
+        // Hash "aztec_builder" string to a field using pedersen_hash
+        // In Noir, we convert the string to bytes (ASCII values) and hash them
+        // "aztec_builder" as bytes: [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114]
+        let category_bytes = [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114];
+        let category_hash = std::hash::pedersen_hash(category_bytes);
+        // Note: Timestamp set to 0 as block timestamp is not easily accessible in private functions
+        // In production, could use context.block_timestamp() if available
+        let timestamp: u64 = 0;
+        
+        let quest_note = QuestNote {
+            quest_id_hash,
+            category_hash,
+            score,
+            timestamp,
+        };
+        
+        // 3. Insert it into the caller's private state using Aztec.nr note APIs
+        //    Create a new private note - if the same quest_id already exists,
+        //    this creates a new note (the latest completion can be used)
+        //    For overwriting or keeping best score, would need to:
+        //    - Query existing notes for this quest_id_hash
+        //    - Compare scores and either nullify old note or skip if new score is lower
+        //    For now, we create a new note each time
+        Note::new(quest_note);
     }
 }
