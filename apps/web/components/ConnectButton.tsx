@@ -2,8 +2,7 @@
 
 import * as React from 'react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import type { EnsPublicClient } from '@hidden-garden/common';
-import { shortenAddress, getEnsName } from '@hidden-garden/common';
+import { shortenAddress } from '@hidden-garden/common';
 import { mainnetPublicClient } from '../lib/viemClients';
 
 export const ConnectButton: React.FC = () => {
@@ -25,12 +24,14 @@ export const ConnectButton: React.FC = () => {
 
       setEnsLoading(true);
       try {
-        const ensClient = mainnetPublicClient as unknown as EnsPublicClient;
-        const name = await getEnsName(ensClient, address as `0x${string}`);
+        const name = await mainnetPublicClient.getEnsName({
+          address: address as `0x${string}`,
+        });
         if (!cancelled) {
           setEnsName(name);
         }
       } catch (err) {
+        console.error('ENS resolution error:', err);
         if (!cancelled) {
           setEnsName(null);
         }
