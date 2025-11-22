@@ -3,13 +3,13 @@ import type { PublicSkillTier } from '@hidden-garden/common';
 import { mockLeaderboardApi } from '../../../lib/mockLeaderboardClient';
 
 type LeaderboardPageProps = {
-  params: {
+  params: Promise<{
     skillName: string;
-  };
+  }>;
 };
 
 export default async function LeaderboardPage({ params }: LeaderboardPageProps) {
-  const rawSkillName = params.skillName;
+  const { skillName: rawSkillName } = await params;
   const skillName = decodeURIComponent(rawSkillName);
   const entries: PublicSkillTier[] = await mockLeaderboardApi.getLeaderboard(skillName);
 
