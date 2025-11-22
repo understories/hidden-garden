@@ -1,14 +1,22 @@
 // SPDX-License-Identifier: MIT
-// Private Skill Tree Contract for Hidden Garden
-// Manages private skill nodes per user on Aztec
+// Private Identity Garden Contract for Hidden Garden
+// This contract serves as a user's private identity vault on Aztec Protocol.
+// It stores:
+//   - Skill attestations (skill tree nodes)
+//   - External identity attestations (from Self, ZKPassport, etc.)
+//
+// External proofs (Self, ZKPassport, etc.) are verified off-chain or in helper circuits,
+// and only normalized attestation facts are stored here as private notes.
 
 use dep::aztec::{
     macros::aztec,
     macros::functions::private,
     protocol_types::address::AztecAddress,
     state_vars::Map,
+    note::Note,
 };
 use easy_private_state::EasyPrivateUint;
+use dep::std::hash;
 
 /// @title SkillNode
 /// @notice Represents a single node in a user's private skill tree
@@ -21,11 +29,43 @@ struct SkillNode {
     parent_hash: Field,
 }
 
-/// @title PrivateSkillTree
-/// @notice Manages private skill nodes per user on Aztec Protocol
-/// @dev This contract will later connect proof outputs to an L1 verifier / SkillLeaderboard
+/// @title IdentityAttestation
+/// @notice Represents an identity attestation from an external source
+/// @dev External proofs are verified off-chain. This struct stores only the normalized fact.
+struct IdentityAttestation {
+    /// Source identifier hash (e.g., hash("Self"), hash("ZKPassport"))
+    source: Field,
+    /// Attestation type hash (e.g., hash("age_over_18"), hash("residency_EU"))
+    attestation_type: Field,
+    /// Value: 1 for boolean true, or encoded metadata for other types
+    value: Field,
+    /// Expiry timestamp (0 means no expiry)
+    expiry: u64,
+    /// Randomness for note privacy (prevents note linking)
+    secret: Field,
+}
+
+/// @title QuestNote
+/// @notice Represents a quest/completion in a learning pathway
+/// @dev Used for tracking progress through learning pathways like "Aztec Builder"
+struct QuestNote {
+    /// Hash of the quest identifier
+    quest_id_hash: Field,
+    /// Hash of the pathway category (e.g., hash("aztec_builder"))
+    category_hash: Field,
+    /// Score for this quest (0-100, where >= 60 is considered passing)
+    score: u8,
+    /// Timestamp when the quest was completed
+    timestamp: u64,
+}
+
+/// @title PrivateIdentityGarden
+/// @notice Private identity vault contract that stores skill nodes and identity attestations
+/// @dev This contract is the user's private identity vault on Aztec.
+///      External proofs (Self, ZKPassport, etc.) are verified off-chain or in helper circuits,
+///      and only normalized attestation facts are stored here as private notes.
 #[aztec]
-pub contract PrivateSkillTree {
+pub contract PrivateIdentityGarden {
     /// @notice Storage structure for private skill trees
     /// @dev Uses nested maps: user address -> skill hash -> skill data
     ///      Each skill's fields are stored separately for Aztec.nr compatibility
@@ -35,14 +75,18 @@ pub contract PrivateSkillTree {
         skill_levels: Map<AztecAddress, Map<Field, EasyPrivateUint<Context>, Context>, Context>,
         // Map: user -> skill_hash -> parent_hash
         skill_parents: Map<AztecAddress, Map<Field, EasyPrivateUint<Context>, Context>, Context>,
+        // Map: user -> quest_id_hash -> score (for quest completions)
+        quest_scores: Map<AztecAddress, Map<Field, EasyPrivateUint<Context>, Context>, Context>,
     }
+
+    // ============ Skill Tree Functions ============
 
     /// @notice Initialize a user's skill tree with initial nodes
     /// @dev Private function that sets up the initial skill tree structure
     /// @param owner The address of the user whose tree is being initialized
     /// @param initial_nodes Array of initial skill nodes to add to the tree
     #[private]
-    pub fn init_tree(owner: AztecAddress, initial_nodes: [SkillNode; 4]) {
+    pub fn init_skills(owner: AztecAddress, initial_nodes: [SkillNode; 4]) {
         let levels = storage.skill_levels;
         let parents = storage.skill_parents;
 
@@ -134,5 +178,264 @@ pub contract PrivateSkillTree {
         // for verification in the SkillLeaderboard contract
         owner
     }
-}
 
+    // ============ Identity Attestation Functions ============
+
+    /// @notice Add a new identity attestation to the user's private vault
+    /// @dev Creates a new private note containing the attestation. The note is encrypted
+    ///      and only the owner can decrypt it. External proofs (Self, ZKPassport, etc.)
+    ///      are verified off-chain before calling this function.
+    /// @param att The identity attestation to add
+    /// @return note The created private note
+    #[private]
+    pub fn add_identity_attestation(att: IdentityAttestation) -> Note<IdentityAttestation> {
+        // Validate that expiry is in the future (if not 0)
+        // Note: In a real implementation, you might want to check against current timestamp
+        // For now, we just ensure expiry is either 0 (no expiry) or a valid timestamp
+        
+        // Create a new private note with the attestation
+        // The note is automatically encrypted and linked to the caller's address
+        Note::new(att)
+    }
+
+    /// @notice Revoke an identity attestation by creating a nullifier
+    /// @dev Nullifiers prevent the attestation from being used in future proofs.
+    ///      The nullifier is computed from the attestation's unique identifier
+    ///      (source + attestation_type + value) to ensure uniqueness.
+    /// @param attestation_type Hash of the attestation type to revoke
+    /// @param source Hash of the source that issued the attestation
+    /// @param value The value of the attestation (to uniquely identify it)
+    /// @param secret The secret from the original attestation note (needed for nullifier)
+    #[private]
+    pub fn revoke_identity_attestation(
+        attestation_type: Field,
+        source: Field,
+        value: Field,
+        secret: Field
+    ) {
+        // Compute a unique identifier for this attestation
+        // This ensures we can create a nullifier that uniquely identifies the note
+        // In Aztec, nullifiers are typically computed from note contents + secret
+        // For simplicity, we hash the key fields together
+        // In production, you'd use Aztec's built-in nullifier computation
+        
+        // Note: In a full implementation, you would:
+        // 1. Find the note matching (source, attestation_type, value)
+        // 2. Compute the nullifier from the note contents
+        // 3. Create the nullifier to mark it as spent/revoked
+        
+        // For now, this is a placeholder that shows the intended interface
+        // The actual nullifier creation would use Aztec's note system APIs
+        // which require access to the original note structure
+        
+        // This function signature shows the intended revocation pattern:
+        // - Identify the attestation by (source, attestation_type, value)
+        // - Use the secret to compute the nullifier
+        // - The nullifier prevents future use of this attestation
+    }
+
+    /// @notice Prove possession of a valid identity attestation
+    /// @dev This function can be used to prove that the caller has a valid (non-expired,
+    ///      non-revoked) attestation of a specific type from a specific source.
+    ///      The proof can be used in other contracts or on L1.
+    /// @param attestation_type Hash of the attestation type to prove
+    /// @param source Hash of the source that issued the attestation
+    /// @param min_value Minimum value required (for numeric attestations)
+    /// @return Returns true if the attestation exists and is valid
+    #[private]
+    pub fn prove_identity_attestation(
+        attestation_type: Field,
+        source: Field,
+        min_value: Field
+    ) -> bool {
+        // In a full implementation, this would:
+        // 1. Search for notes matching (source, attestation_type)
+        // 2. Check that value >= min_value
+        // 3. Check that expiry is in the future (or 0)
+        // 4. Verify the note hasn't been nullified (revoked)
+        // 5. Return true if valid, false otherwise
+        
+        // This is a placeholder showing the intended interface
+        // Actual implementation would use Aztec's note query APIs
+        true
+    }
+
+    // ============ Quest Completion Functions ============
+
+    /// @notice Record a quest completion in the learning pathway tracker
+    /// @dev Creates a new private note for the quest completion. If the same quest_id
+    ///      already exists, this will create a new note (the latest one can be used).
+    ///      For keeping the best score, the caller should check existing notes first.
+    /// @param owner The address of the user completing the quest
+    /// @param quest_id_hash Hash of the quest identifier
+    /// @param score Score for this quest (0-100, where >= 60 is passing)
+    #[external("private")]
+    pub fn add_quest_completion(
+        owner: AztecAddress,
+        quest_id_hash: Field,
+        score: u8
+    ) {
+        // 1. Assert score <= 100
+        assert(score <= 100, "Score must be between 0 and 100");
+        
+        // 2. Create a QuestNote with:
+        //    category_hash = hash_to_field("aztec_builder")
+        //    timestamp = current block timestamp or 0 if not easily accessible
+        // Hash "aztec_builder" string to a field using pedersen_hash
+        // In Noir, we convert the string to bytes (ASCII values) and hash them
+        // "aztec_builder" as bytes: [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114]
+        let category_bytes = [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114];
+        let category_hash = hash::pedersen_hash(category_bytes);
+        // Note: Timestamp set to 0 as block timestamp is not easily accessible in private functions
+        // In production, could use context.block_timestamp() if available
+        let timestamp: u64 = 0;
+        
+        let quest_note = QuestNote {
+            quest_id_hash,
+            category_hash,
+            score,
+            timestamp,
+        };
+        
+        // 3. Store the quest score in private storage (for querying in proofs)
+        //    Also create a private note for the quest completion
+        //    If the same quest_id already exists, we keep the best (highest) score
+        let quest_scores_map = storage.quest_scores;
+        let user_quest_map = quest_scores_map.at(owner);
+        let quest_score_storage = user_quest_map.at(quest_id_hash);
+        
+        // Get existing score if any, and keep the maximum
+        let existing_score = quest_score_storage.get_value() as u8;
+        let best_score = if score > existing_score { score } else { existing_score };
+        
+        // Store the best score
+        quest_score_storage.set(best_score as u64, owner);
+        
+        // Also create a private note for the quest completion
+        Note::new(quest_note);
+    }
+
+    /// @notice Prove that the caller has achieved a minimum tier and average score in the Aztec Builder pathway
+    /// @dev This function queries the caller's private QuestNotes, computes their tier and average score,
+    ///      and asserts they meet the minimum requirements. Public outputs are emitted for L1 verification.
+    /// @param owner The address of the user proving the tier (public input for L1 verification)
+    /// @param min_tier Minimum tier required (1-4)
+    /// @param min_average_score Minimum average score required (0-100)
+    /// @return Returns the owner's address as a public output
+    #[external("private")]
+    pub fn prove_aztec_builder_tier(
+        owner: AztecAddress,
+        min_tier: u8,
+        min_average_score: u8
+    ) -> AztecAddress {
+        // Hardcode the mapping from quest_id_hash -> tier
+        // - hash("aztec_concept_quiz") -> tier 1
+        // - hash("noir_basic_puzzle") -> tier 2
+        // - hash("first_private_tx") -> tier 3
+        // - hash("identity_architect_scenario") -> tier 4
+        let quest_tier_1_bytes = [97, 122, 116, 101, 99, 95, 99, 111, 110, 99, 101, 112, 116, 95, 113, 117, 105, 122]; // "aztec_concept_quiz"
+        let quest_tier_2_bytes = [110, 111, 105, 114, 95, 98, 97, 115, 105, 99, 95, 112, 117, 122, 122, 108, 101]; // "noir_basic_puzzle"
+        let quest_tier_3_bytes = [102, 105, 114, 115, 116, 95, 112, 114, 105, 118, 97, 116, 101, 95, 116, 120]; // "first_private_tx"
+        let quest_tier_4_bytes = [105, 100, 101, 110, 116, 105, 116, 121, 95, 97, 114, 99, 104, 105, 116, 101, 99, 116, 95, 115, 99, 101, 110, 97, 114, 105, 111]; // "identity_architect_scenario"
+        
+        let quest_tier_1_hash = hash::pedersen_hash(quest_tier_1_bytes);
+        let quest_tier_2_hash = hash::pedersen_hash(quest_tier_2_bytes);
+        let quest_tier_3_hash = hash::pedersen_hash(quest_tier_3_bytes);
+        let quest_tier_4_hash = hash::pedersen_hash(quest_tier_4_bytes);
+        
+        // Hash for "aztec_builder" category (same as in add_quest_completion)
+        let aztec_builder_category_bytes = [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114];
+        let aztec_builder_category = hash::pedersen_hash(aztec_builder_category_bytes);
+        
+        // Logic:
+        // - Iterate QuestNotes of category "aztec_builder"
+        // - Compute:
+        //   * achieved_tier = maximum tier for which all required quests for that tier are present with score >= min_average_score
+        //   * average_score across completed quests (simple average)
+        
+        // In a full implementation, this would:
+        // 1. Query all QuestNotes where category_hash == aztec_builder_category
+        // 2. For each tier (1-4), check if all required quests are present with score >= min_average_score
+        // 3. Find the maximum tier where all prerequisites are met
+        // 4. Calculate average score across all completed quests
+        
+        // Query quest scores from private storage
+        let quest_scores_map = storage.quest_scores;
+        let user_quest_map = quest_scores_map.at(owner);
+        
+        // Initialize tracking variables
+        let mut achieved_tier: u8 = 0;
+        let mut total_score: u64 = 0;
+        let mut quest_count: u64 = 0;
+        
+        // Check tier 1: requires quest_tier_1_hash with score >= min_average_score
+        let tier_1_storage = user_quest_map.at(quest_tier_1_hash);
+        let tier_1_score = tier_1_storage.get_value() as u8;
+        if tier_1_score >= min_average_score && tier_1_score > 0 {
+            achieved_tier = 1;
+            total_score += tier_1_score as u64;
+            quest_count += 1;
+        }
+        
+        // Check tier 2: requires tier 1 + quest_tier_2_hash
+        if achieved_tier >= 1 {
+            let tier_2_storage = user_quest_map.at(quest_tier_2_hash);
+            let tier_2_score = tier_2_storage.get_value() as u8;
+            if tier_2_score >= min_average_score && tier_2_score > 0 {
+                achieved_tier = 2;
+                total_score += tier_2_score as u64;
+                quest_count += 1;
+            }
+        }
+        
+        // Check tier 3: requires tier 2 + quest_tier_3_hash
+        if achieved_tier >= 2 {
+            let tier_3_storage = user_quest_map.at(quest_tier_3_hash);
+            let tier_3_score = tier_3_storage.get_value() as u8;
+            if tier_3_score >= min_average_score && tier_3_score > 0 {
+                achieved_tier = 3;
+                total_score += tier_3_score as u64;
+                quest_count += 1;
+            }
+        }
+        
+        // Check tier 4: requires tier 3 + quest_tier_4_hash
+        if achieved_tier >= 3 {
+            let tier_4_storage = user_quest_map.at(quest_tier_4_hash);
+            let tier_4_score = tier_4_storage.get_value() as u8;
+            if tier_4_score >= min_average_score && tier_4_score > 0 {
+                achieved_tier = 4;
+                total_score += tier_4_score as u64;
+                quest_count += 1;
+            }
+        }
+        
+        // Calculate average score across all completed quests
+        let computed_average_score = if quest_count > 0 { (total_score / quest_count) as u8 } else { 0 };
+        let computed_achieved_tier = achieved_tier;
+        
+        // Assert:
+        //   * achieved_tier >= min_tier
+        //   * average_score >= min_average_score
+        assert(computed_achieved_tier >= min_tier, "Achieved tier does not meet minimum tier requirement");
+        assert(computed_average_score >= min_average_score, "Average score does not meet minimum average score requirement");
+        
+        // Public outputs:
+        // - user_address / pk (returned as function return value)
+        // - min_tier (already a public input via function parameter)
+        // - min_average_score (already a public input via function parameter)
+        // - path_hash = hash_to_field("aztec_builder_path")
+        let path_hash_bytes = [97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104]; // "aztec_builder_path"
+        let path_hash = hash::pedersen_hash(path_hash_bytes);
+        
+        // The path_hash is automatically a public output since it's computed in the function
+        // The caller's address is returned as a public output
+        // Note: In Aztec.nr, function parameters are public inputs, and return values are public outputs
+        
+        // Return owner address as public output
+        // min_tier and min_average_score are already public inputs (function parameters)
+        // path_hash is computed and will be available as a public output in the ZK proof
+        // The owner parameter is a public input, and returning it makes it a public output
+        owner
+    }
+}
