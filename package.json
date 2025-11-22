@@ -11,9 +11,12 @@
     "dev:playground": "pnpm --filter @hidden-garden/playground dev",
     "e2e:skills": "ts-node --project scripts/tsconfig.json scripts/e2e-skill-test.ts",
     "verify:sbt": "ts-node --project scripts/tsconfig.json scripts/verify-sbt.ts",
-    "aztec:devnet": "aztec-up 3.0.0-devnet.5",
+    "aztec:version": "aztec --version || echo '⚠️  aztec CLI not installed. Install with: bash -i <(curl -s https://install.aztec.network)'",
+    "aztec:up-devnet": "aztec-up 3.0.0-devnet.5 || (echo '⚠️  aztec-up failed, trying fallback version...' && aztec-up 3.0.0-devnet.4 || echo '❌ Failed to start devnet. Check: https://docs.aztec.network/devnet')",
+    "aztec:devnet": "pnpm aztec:up-devnet",
     "aztec:compile": "pnpm --filter @hidden-garden/core-logic aztec:compile",
-    "aztec:test": "pnpm --filter @hidden-garden/core-logic aztec:test"
+    "aztec:test": "pnpm --filter @hidden-garden/core-logic aztec:test",
+    "test:integration": "jest --testPathPattern=tests/integration --config packages/core-logic/jest.config.js"
   },
   "dependencies": {
     "@types/node": "^24.10.1",
