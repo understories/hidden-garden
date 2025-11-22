@@ -44,6 +44,20 @@ struct IdentityAttestation {
     secret: Field,
 }
 
+/// @title QuestNote
+/// @notice Represents a quest/completion in a learning pathway
+/// @dev Used for tracking progress through learning pathways like "Aztec Builder"
+struct QuestNote {
+    /// Hash of the quest identifier
+    quest_id_hash: Field,
+    /// Hash of the pathway category (e.g., hash("aztec_builder"))
+    category_hash: Field,
+    /// Score for this quest (0-100, where >= 60 is considered passing)
+    score: u8,
+    /// Timestamp when the quest was completed
+    timestamp: u64,
+}
+
 /// @title PrivateIdentityGarden
 /// @notice Private identity vault contract that stores skill nodes and identity attestations
 /// @dev This contract is the user's private identity vault on Aztec.
