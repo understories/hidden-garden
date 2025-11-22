@@ -7,6 +7,9 @@
   "scripts": {
     "build": "echo 'No build step needed - TypeScript source files'"
   },
+  "dependencies": {
+    "@hidden-garden/core-logic": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.9.3"
   }
