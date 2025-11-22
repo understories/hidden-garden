@@ -10,11 +10,7 @@ import {
   type ValidationResult,
   type QuestId,
 } from '@hidden-garden/game-engine';
-import type {
-  QuestSubmission,
-  ValidationResult,
-  QuestId,
-} from '@hidden-garden/core-logic';
+import { computeQuestIdHash } from '@hidden-garden/core-logic';
 
 // Dev guard
 const isDevEnabled = process.env.NEXT_PUBLIC_ENABLE_DEV_UI === 'true';
@@ -263,7 +259,10 @@ export default function AztecBatStatusPage() {
                   >
                     <td style={{ padding: '0.75rem', color }}>{emoji}</td>
                     <td style={{ padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.9rem' }}>
-                      {quest.questId}
+                      <div>{quest.questId}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.25rem' }}>
+                        Hash: {computeQuestIdHash(quest.questId).slice(0, 10)}...
+                      </div>
                     </td>
                     <td style={{ padding: '0.75rem' }}>{quest.name}</td>
                     <td style={{ padding: '0.75rem' }}>Tier {quest.tier}</td>
