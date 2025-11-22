@@ -2,10 +2,8 @@
 
 import * as React from 'react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
-
-function shortenAddress(address: string): string {
-  return `${address.slice(0, 6)}…${address.slice(-4)}`;
-}
+import { shortenAddress, getEnsName } from '@hidden-garden/common';
+import { mainnetPublicClient } from '../lib/viemClients';
 
 export const ConnectButton: React.FC = () => {
   const { address, isConnected } = useAccount();
