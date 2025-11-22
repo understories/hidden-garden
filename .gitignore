@@ -82,3 +82,7 @@ services/indexer/data/
 # Misc
 .turbo/
 
+# Playground build output
+playground/dist/
+playground/node_modules/
+
