@@ -42,6 +42,11 @@ export default function MyGardenPage() {
   // Track if user has manually completed verification (for hackathon demo)
   const [verificationCompleted, setVerificationCompleted] = React.useState(false);
 
+  // Track which skill is being revealed (skillId or null)
+  const [revealingSkillId, setRevealingSkillId] = React.useState<string | null>(null);
+  // Track selected tier for the skill being revealed
+  const [selectedTier, setSelectedTier] = React.useState<number>(3);
+
   React.useEffect(() => {
     let cancelled = false;
 
@@ -252,7 +257,7 @@ export default function MyGardenPage() {
             {skills.map((skill) => (
               <div
                 key={skill.id}
-                className="border rounded-md p-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+                className="border rounded-md p-3 flex flex-col gap-3"
               >
                 <div>
                   <div className="font-medium">{skill.name}</div>
@@ -286,6 +291,77 @@ export default function MyGardenPage() {
                     />
                   </label>
                 </div>
+                </div>
+
+                {/* Reveal Skill UI */}
+                {revealingSkillId === skill.id ? (
+                  <div className="border-t pt-3 mt-2 space-y-2 bg-gray-50 p-3 rounded">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Choose tier threshold:</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRevealingSkillId(null);
+                          setSelectedTier(3);
+                        }}
+                        className="text-xs text-gray-500 hover:text-gray-700"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <select
+                        value={selectedTier}
+                        onChange={(e) => setSelectedTier(Number(e.target.value))}
+                        className="border rounded px-2 py-1 text-sm"
+                      >
+                        {[1, 2, 3, 4, 5].map((tier) => (
+                          <option key={tier} value={tier}>
+                            Tier {tier}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // TODO: Implement proof generation and submission
+                          console.log('Generate proof & publish for:', {
+                            skillId: skill.id,
+                            skillName: skill.name,
+                            tier: selectedTier,
+                          });
+                          // Close dialog after submission starts
+                          setRevealingSkillId(null);
+                          setSelectedTier(3);
+                        }}
+                        className="px-3 py-1 rounded border text-sm font-medium bg-blue-600 text-white hover:bg-blue-700"
+                      >
+                        Generate proof & publish
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-t pt-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRevealingSkillId(skill.id);
+                        setSelectedTier(3); // Reset to default
+                      }}
+                      disabled={!isConnected || !isVerified}
+                      className="text-xs px-3 py-1.5 rounded border text-sm font-medium bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={
+                        !isConnected
+                          ? 'Connect wallet to reveal skills'
+                          : !isVerified
+                          ? 'Verify with Self to reveal skills'
+                          : 'Reveal this skill on the leaderboard'
+                      }
+                    >
+                      Reveal this skill
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
