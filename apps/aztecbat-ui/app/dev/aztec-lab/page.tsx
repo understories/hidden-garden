@@ -727,49 +727,15 @@ export default function AztecLabPage() {
                 <input
                   type="checkbox"
                   checked={humanOnlyFilter}
-                  onChange={async (e) => {
+                  onChange={(e) => {
                     const checked = e.target.checked;
                     setHumanOnlyFilter(checked);
                     
+                    // Filter entries based on human verification status
+                    // Entries are already enriched with isHumanVerified from the orchestrator
                     if (checked && revealResult) {
-                      // Enrich leaderboard with SBT status and filter
-                      setEnrichingLeaderboard(true);
-                      try {
-                        const chainId = parseInt(revealChainId, 10);
-                        const chainConfig = CHAINS[chainId as any];
-                        if (!chainConfig) {
-                          throw new Error(`Chain ID ${chainId} is not supported`);
-                        }
-                        
-                        const rpcUrl = chainConfig.rpcUrl || `https://rpc.ankr.com/eth_sepolia`;
-                        const provider = new ethers.JsonRpcProvider(rpcUrl);
-                        
-                        // Enrich entries with human verification status
-                        const enrichedEntries = await Promise.all(
-                          revealResult.leaderboard.map(async (entry) => {
-                            try {
-                              const sbtAddress = getSelfHumanSBTAddress(chainId);
-                              if (!sbtAddress) {
-                                return { ...entry, isHumanVerified: false };
-                              }
-                              const sbtContract = new ethers.Contract(sbtAddress, SelfHumanSBTAbi, provider);
-                              const isHumanVerified = await sbtContract.hasValidSBT(entry.user_address);
-                              return { ...entry, isHumanVerified };
-                            } catch (error) {
-                              return { ...entry, isHumanVerified: false };
-                            }
-                          })
-                        );
-                        
-                        // Filter to only human-verified entries
-                        const filtered = enrichedEntries.filter((entry) => entry.isHumanVerified === true);
-                        setFilteredLeaderboard(filtered);
-                      } catch (error) {
-                        console.error('Failed to enrich leaderboard:', error);
-                        setFilteredLeaderboard(revealResult.leaderboard);
-                      } finally {
-                        setEnrichingLeaderboard(false);
-                      }
+                      const filtered = revealResult.leaderboard.filter((entry) => entry.isHumanVerified === true);
+                      setFilteredLeaderboard(filtered);
                     } else {
                       // Show all entries
                       setFilteredLeaderboard(revealResult?.leaderboard || []);
@@ -778,9 +744,14 @@ export default function AztecLabPage() {
                   style={{ width: 'auto' }}
                 />
                 <span>
-                  <strong>Show only human-verified</strong>
+                  <strong>[{humanOnlyFilter ? 'x' : ' '}] Humans only (require Self SBT)</strong>
                 </span>
               </label>
+              {!humanOnlyFilter && (
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '1.5rem' }}>
+                  [ ] Include agents
+                </span>
+              )}
               {enrichingLeaderboard && (
                 <span style={{ color: '#666', fontSize: '0.9rem' }}>Checking SBT status...</span>
               )}
@@ -820,9 +791,9 @@ export default function AztecLabPage() {
                       <td style={{ padding: '0.5rem', border: '1px solid #ddd' }}>{entry.tier}</td>
                       <td style={{ padding: '0.5rem', border: '1px solid #ddd' }}>
                         {entry.isHumanVerified ? (
-                          <span style={{ color: '#4caf50' }}>✅ Human</span>
+                          <span style={{ color: '#4caf50' }}>✅ Human (Self SBT)</span>
                         ) : (
-                          <span style={{ color: '#999' }}>🤖 Anon</span>
+                          <span style={{ color: '#999' }}>🤖 Agent / Anon</span>
                         )}
                       </td>
                       <td style={{ padding: '0.5rem', border: '1px solid #ddd' }}>{entry.ensName || '-'}</td>
