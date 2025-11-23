@@ -49,7 +49,7 @@ export default function SkillCanopyPage() {
             }
           `}
         >
-          Skill Tree
+          Skill Forest
         </Link>
         <Link
           href="/skill-canopy"
