@@ -73,22 +73,13 @@ export async function POST(request: NextRequest) {
 
     // Dev UI always uses REAL Aztec - no mock mode
     // This ensures we're demonstrating real Aztec privacy
-    let aztecMode: 'mock' | 'real' = 'real';
-    
-    // Check if Aztec SDK is available
-    try {
-      await import('@aztec/aztec.js');
-    } catch (error) {
-      throw new Error(
-        '@aztec/aztec.js is not available. ' +
-        'Install with: pnpm add @aztec/aztec.js @aztec/accounts/testing ' +
-        'Aztec devnet must be running for the dev UI to work.'
-      );
-    }
+    // Note: We don't check for @aztec/aztec.js here - let createAztecClient handle it
+    // The check happens in aztecClient.ts loadAztecSDK() which handles ESM imports properly
 
     console.log('[publish-and-fetch] Aztec mode: REAL (dev UI always uses real Aztec)');
 
     // Create Aztec client (always real mode)
+    // This will handle SDK loading and provide clear errors if needed
     const aztecClient = createAztecClient('real', {
       pxeUrl: process.env.NEXT_PUBLIC_PXE_URL || 'http://localhost:8080',
     });
