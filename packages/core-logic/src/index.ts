@@ -42,7 +42,12 @@ export type {
 // Leaderboard Client
 // ============================================================================
 export type { SkillHash, LeaderboardEntry, UserSkill, LeaderboardClientConfig } from './leaderboardClient';
-export { LeaderboardClient, getAztecBuilderLeaderboard } from './leaderboardClient';
+export {
+  LeaderboardClient,
+  MockLeaderboardClient,
+  getAztecBuilderLeaderboard,
+  checkIndexerReachable,
+} from './leaderboardClient';
 
 // ============================================================================
 // Skill Utilities
