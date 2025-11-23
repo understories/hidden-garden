@@ -111,7 +111,8 @@ export async function publishAndFetchAztecBuilderLeaderboard(
   // 3. Polling loop to wait for indexer to ingest the event
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      const leaderboard = await client.getLeaderboard(skillHash as `0x${string}`);
+      // Always enrich entries with human verification status (not just when filtering)
+      const leaderboard = await client.getLeaderboard(skillHash as `0x${string}`, false, chainId);
 
       // Check if user's entry is in the leaderboard
       const found = leaderboard.some(
