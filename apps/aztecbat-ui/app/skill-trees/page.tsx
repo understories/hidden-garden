@@ -186,22 +186,24 @@ function getTreeSize(size: TreeSize): {
   }
 }
 
-// Convert isometric grid position to screen coordinates
-function gridToIsometric(gridX: number, gridY: number, tileSize: number = 120): { x: number; y: number } {
+// Convert isometric grid position to screen coordinates (increased spacing for planets)
+function gridToIsometric(gridX: number, gridY: number, tileSize: number = 180): { x: number; y: number } {
   const isoX = (gridX - gridY) * (tileSize * 0.5);
   const isoY = (gridX + gridY) * (tileSize * 0.25);
   return { x: isoX, y: isoY };
 }
 
-// Explorer cluster component
+// Explorer cluster component with orbital animation
 function ExplorerCluster({
   cluster,
   centerX,
   centerY,
+  orbitSpeed = 1,
 }: {
   cluster: ExplorerCluster;
   centerX: number;
   centerY: number;
+  orbitSpeed?: number;
 }) {
   const colors = getTreeColors(cluster.preference);
   const masteryColors = {
@@ -211,21 +213,27 @@ function ExplorerCluster({
     4: 'from-purple-300/40 to-purple-500/40', // Master
   };
 
-  // Position cluster around the skill organism
-  const angleRad = (cluster.angle * Math.PI) / 180;
-  const x = centerX + Math.cos(angleRad) * cluster.distance;
-  const y = centerY + Math.sin(angleRad) * cluster.distance;
+  // Orbital animation - clusters orbit around the planet
+  const baseAngle = cluster.angle;
+  const orbitDuration = 20 + (cluster.distance / 10); // Slower for outer orbits
 
   // Size based on number of explorers
-  const clusterSize = Math.max(20, Math.min(40, cluster.size / 20));
+  const clusterSize = Math.max(18, Math.min(35, cluster.size / 25));
+
+  // Use CSS custom properties for orbital animation
+  const orbitStyle: Record<string, string> = {
+    '--orbit-angle': `${baseAngle}deg`,
+    '--orbit-distance': `${cluster.distance}px`,
+    '--orbit-duration': `${orbitDuration}s`,
+  };
 
   return (
     <div
-      className="absolute group/cluster"
+      className="absolute group/cluster orbit-container"
       style={{
-        left: `${x}px`,
-        top: `${y}px`,
-        transform: 'translate(-50%, -50%)',
+        left: `${centerX}px`,
+        top: `${centerY}px`,
+        ...orbitStyle,
       }}
     >
       {/* Cluster glow */}
@@ -264,8 +272,8 @@ function ExplorerCluster({
         ))}
       </div>
 
-      {/* Cluster tooltip */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 backdrop-blur-sm text-white text-xs rounded opacity-0 invisible group-hover/cluster:opacity-100 group-hover/cluster:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-30">
+      {/* Cluster tooltip - always visible but subtle */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/60 dark:bg-black/70 backdrop-blur-sm text-white text-xs rounded opacity-60 group-hover/cluster:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-30 border border-white/10">
         <div className="font-medium">{cluster.size} explorers</div>
         <div className="text-gray-300">
           {getTierName(cluster.masteryLevel)} • {cluster.questsCompleted} quests
@@ -397,15 +405,15 @@ function BioluminescentOrganism({
           </div>
         )}
 
-        {/* Name appears on hover - like discovering a species */}
+        {/* Info cloud - always visible but more prominent on hover */}
         <div
           className={`absolute left-1/2 -translate-x-1/2 mt-4 text-center transition-all duration-300 ${
             isHovered
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-2 pointer-events-none'
+              ? 'opacity-100 translate-y-0 scale-105'
+              : 'opacity-70 translate-y-0 scale-100'
           }`}
         >
-          <div className="px-3 py-1.5 bg-black/70 dark:bg-black/80 backdrop-blur-sm text-white text-xs font-medium rounded-full shadow-lg border border-white/10">
+          <div className="px-3 py-1.5 bg-black/70 dark:bg-black/80 backdrop-blur-sm text-white text-xs font-medium rounded-full shadow-lg border border-white/10 group-hover:bg-black/90 group-hover:border-white/20">
             {skillName}
           </div>
           <div className="text-xs text-gray-300 dark:text-gray-400 mt-1.5">
@@ -413,7 +421,7 @@ function BioluminescentOrganism({
           </div>
           {overlaps && overlaps.length > 0 && (
             <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              Overlaps with {overlaps.length} skill{overlaps.length > 1 ? 's' : ''}
+              Connected to {overlaps.length} planet{overlaps.length > 1 ? 's' : ''}
             </div>
           )}
         </div>
@@ -422,11 +430,11 @@ function BioluminescentOrganism({
   );
 }
 
-// Connection lines showing skill overlaps
-function ConnectionLine({
+// Power transmission lines between planets - glowing, animated
+function PowerTransmissionLine({
   from,
   to,
-  opacity = 0.3,
+  opacity = 0.4,
 }: {
   from: { x: number; y: number };
   to: { x: number; y: number };
@@ -452,7 +460,17 @@ function ConnectionLine({
         opacity,
       }}
     >
-      <div className="h-px bg-gradient-to-r from-white/20 via-cyan-300/30 to-white/20 w-full" />
+      {/* Base glow line */}
+      <div className="absolute h-0.5 bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent w-full animate-pulse-glow" />
+      
+      {/* Animated power pulse - traveling along the line */}
+      <div className="absolute h-1 bg-gradient-to-r from-transparent via-white/80 to-transparent w-32 animate-power-flow" />
+      
+      {/* Reverse power pulse */}
+      <div className="absolute h-1 bg-gradient-to-r from-transparent via-cyan-300/60 to-transparent w-32 animate-power-flow-reverse" />
+      
+      {/* Outer glow */}
+      <div className="absolute h-1 bg-gradient-to-r from-cyan-400/20 via-cyan-300/40 to-cyan-400/20 w-full blur-sm" />
     </div>
   );
 }
@@ -461,9 +479,9 @@ export default function SkillTreesPage() {
   return (
     <main className="max-w-7xl mx-auto space-y-6 py-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">Hidden Forest</h1>
+        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">Knowledge Planets</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Explore the bioluminescent organisms that grow from shared learning. Each glow tells a story of privacy and discovery.
+          Each skill is a planet in this cosmic forest. Explorer clusters orbit around knowledge domains, connected by glowing power transmission lines.
         </p>
       </div>
 
@@ -484,17 +502,17 @@ export default function SkillTreesPage() {
           </div>
         </div>
         <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
-          Hover to discover. Size reflects engagement. Glow reveals privacy patterns. Lines connect overlapping skills—where learners explore multiple subjects. Color zones show privacy preference clusters across the forest.
+          Hover planets to see details. Planet size reflects engagement. Clusters orbit showing explorer groups. Glowing lines transmit power between connected planets. Color zones show privacy preference clusters.
         </p>
       </div>
 
       {/* Isometric Forest Canvas */}
       <div className="relative min-h-[800px] rounded-lg overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 border border-gray-800 dark:border-gray-700">
-        {/* Isometric grid background */}
+        {/* Isometric grid background - spaced for planets */}
         <div className="absolute inset-0 opacity-10">
           {[...Array(8)].map((_, x) =>
             [...Array(6)].map((_, y) => {
-              const iso = gridToIsometric(x, y, 120);
+              const iso = gridToIsometric(x, y, 180);
               return (
                 <div
                   key={`${x}-${y}`}
@@ -502,8 +520,8 @@ export default function SkillTreesPage() {
                   style={{
                     left: `calc(50% + ${iso.x}px)`,
                     top: `calc(40% + ${iso.y}px)`,
-                    width: '120px',
-                    height: '60px',
+                    width: '180px',
+                    height: '90px',
                     transform: 'translate(-50%, -50%) rotate(45deg) skew(-15deg, 15deg)',
                     clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
                   }}
@@ -546,18 +564,18 @@ export default function SkillTreesPage() {
           <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-slate-900/60 to-transparent" />
         </div>
 
-        {/* Connection lines showing skill overlaps */}
+        {/* Power transmission lines between planets */}
         <div className="absolute inset-0 w-full h-full min-h-[800px]">
           {mockSkillTrees.map((tree) =>
             tree.overlaps?.map((overlapId) => {
               const targetTree = mockSkillTrees.find((t) => t.skillId === overlapId);
               if (!targetTree) return null;
               return (
-                <ConnectionLine
+                <PowerTransmissionLine
                   key={`${tree.skillId}-${overlapId}`}
                   from={tree.gridPos}
                   to={targetTree.gridPos}
-                  opacity={0.2}
+                  opacity={0.5}
                 />
               );
             })
