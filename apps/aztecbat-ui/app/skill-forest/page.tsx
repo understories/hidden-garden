@@ -64,7 +64,7 @@ const mockSkillTrees = [
     quests: [
       { id: 'quest-1', name: 'Quest 1', participantCount: 200, privacyMode: 'mixed' as const },
     ],
-    treeType: 'conifer' as const,
+    treeType: 'mushroom' as const,
   },
   {
     skillId: 'noir-basics',
@@ -75,7 +75,7 @@ const mockSkillTrees = [
     quests: [
       { id: 'quest-1', name: 'Quest 1', participantCount: 520, privacyMode: 'public-heavy' as const },
     ],
-    treeType: 'mushroom' as const,
+    treeType: 'conifer' as const,
   },
 ];
 
