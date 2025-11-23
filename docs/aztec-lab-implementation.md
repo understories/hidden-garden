@@ -267,3 +267,17 @@ The API routes show:
 - ✅ Console logging for debugging
 - ✅ Error handling implemented
 
+---
+
+## Real-Mode Dry Run
+
+**⚠️ Important:** Before demo, do a single full pass in real mode to verify everything works.
+
+See: [`docs/REAL_MODE_DRY_RUN.md`](./REAL_MODE_DRY_RUN.md) for complete instructions.
+
+**Quick checklist:**
+1. Set `NEXT_PUBLIC_USE_REAL_AZTEC=true` in `.env.local`
+2. Start Aztec devnet, Hardhat, indexer (optional)
+3. Walk golden path: Complete quest → Selective reveal → Verify tx + leaderboard
+4. If successful once, **freeze** - no more backend changes before demo
+
