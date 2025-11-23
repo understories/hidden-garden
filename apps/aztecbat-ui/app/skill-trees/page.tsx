@@ -272,8 +272,8 @@ function ExplorerCluster({
         ))}
       </div>
 
-      {/* Cluster tooltip - always visible but subtle */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/60 dark:bg-black/70 backdrop-blur-sm text-white text-xs rounded opacity-60 group-hover/cluster:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-30 border border-white/10">
+      {/* Cluster tooltip - visible only on hover */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 dark:bg-black/80 backdrop-blur-sm text-white text-xs rounded opacity-0 invisible group-hover/cluster:opacity-100 group-hover/cluster:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-30 border border-white/10">
         <div className="font-medium">{cluster.size} explorers</div>
         <div className="text-gray-300">
           {getTierName(cluster.masteryLevel)} • {cluster.questsCompleted} quests
@@ -405,12 +405,12 @@ function BioluminescentOrganism({
           </div>
         )}
 
-        {/* Info cloud - always visible but more prominent on hover */}
+        {/* Info cloud - visible only on hover */}
         <div
           className={`absolute left-1/2 -translate-x-1/2 mt-4 text-center transition-all duration-300 ${
             isHovered
               ? 'opacity-100 translate-y-0 scale-105'
-              : 'opacity-70 translate-y-0 scale-100'
+              : 'opacity-0 translate-y-2 scale-100 pointer-events-none'
           }`}
         >
           <div className="px-3 py-1.5 bg-black/70 dark:bg-black/80 backdrop-blur-sm text-white text-xs font-medium rounded-full shadow-lg border border-white/10 group-hover:bg-black/90 group-hover:border-white/20">
