@@ -19,7 +19,10 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
+      <body
+        className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors"
+        suppressHydrationWarning
+      >
         <WalletProvider>
           <header className="w-full border-b border-gray-200 dark:border-gray-700 mb-4 bg-white dark:bg-gray-900">
             <div className="max-w-4xl mx-auto flex items-center justify-between p-4">
