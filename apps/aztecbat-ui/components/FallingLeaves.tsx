@@ -3,7 +3,7 @@
  *
  * Ghibli-style falling leaves animation for landing page background.
  * Soft, organic shapes with gentle colors inspired by Studio Ghibli.
- * Leaves are colored according to skill-tree privacy modes and sized based on data.
+ * Leaves are colored according to skill-forest privacy modes and sized based on data.
  */
 
 'use client';
