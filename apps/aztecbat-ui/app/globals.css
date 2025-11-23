@@ -38,3 +38,19 @@ body {
   }
 }
 
+/* Floating animation for forest particles */
+@keyframes float {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0px);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-10px);
+    opacity: 0.6;
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
