@@ -144,6 +144,7 @@ export async function POST(request: NextRequest) {
       txHash: result.txHash,
       skillHash: result.skillHash,
       leaderboardEntries: result.leaderboard.length,
+      isHumanVerified: result.isHumanVerified,
     });
 
     return NextResponse.json({
@@ -151,6 +152,7 @@ export async function POST(request: NextRequest) {
       txHash: result.txHash,
       skillHash: result.skillHash,
       leaderboard: result.leaderboard,
+      isHumanVerified: result.isHumanVerified,
     });
   } catch (error) {
     console.error('[publish-and-fetch] Error:', error);
