@@ -42,7 +42,7 @@ export function AchievementCard({
   const date = new Date(dateRevealed);
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800/50 hover:shadow-sm transition-shadow">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800/50 hover:shadow-sm hover:scale-[1.01] transition-all duration-200 ease-out">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
