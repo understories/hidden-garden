@@ -10,7 +10,6 @@ type LeaderboardEntryProps = {
   address: string;
   tier: number;
   proofOfHuman: boolean;
-  viewMode: 'white-hat' | 'black-hat';
   onClick?: () => void;
 };
 
@@ -40,7 +39,6 @@ export function LeaderboardEntry({
   address,
   tier,
   proofOfHuman,
-  viewMode,
   onClick,
 }: LeaderboardEntryProps) {
   const tierName = getTierName(tier);
@@ -79,12 +77,12 @@ export function LeaderboardEntry({
         {proofOfHuman ? (
           <span className="inline-flex items-center gap-1 text-xs text-green-700 dark:text-green-400">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-            {viewMode === 'white-hat' ? 'Verified Human' : 'Human Only'}
+            Verified Human
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
             <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-            {viewMode === 'white-hat' ? 'Open to All' : 'Agent Allowed'}
+            Open to All
           </span>
         )}
       </td>
