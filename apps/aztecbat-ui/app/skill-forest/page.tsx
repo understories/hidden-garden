@@ -13,7 +13,7 @@ import { SkillTreeTile } from '../../components/SkillTreeTile';
 const mockSkillTrees = [
   {
     skillId: 'aztec-protocol',
-    skillName: 'Aztec Noir Advanced',
+    skillName: 'Aztec Noir Basics',
     participantCount: 1247,
     privacyMode: 'mostly-private' as const,
     privacyStats: { public: 15, mixed: 15, private: 70 },
@@ -73,7 +73,7 @@ const mockSkillTrees = [
   },
   {
     skillId: 'noir-basics',
-    skillName: 'Aztec Noir Basics',
+    skillName: 'Aztec Noir Advanced',
     participantCount: 1123,
     privacyMode: 'public-heavy' as const,
     privacyStats: { public: 75, mixed: 15, private: 10 },
