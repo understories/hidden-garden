@@ -98,6 +98,8 @@ import type { UserIdentity } from './api';
 // ============================================================================
 export type { SkillProfile, ExternalBadge, QuestSummary } from './types';
 export { getSkillProfile } from './skillProfile';
+export type { PublicSkillProfile } from './publicProfile';
+export { getPublicSkillProfile } from './publicProfile';
 
 // ============================================================================
 // Leaderboard Orchestrator
