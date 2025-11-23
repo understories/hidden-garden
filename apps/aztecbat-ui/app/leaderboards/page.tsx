@@ -5,6 +5,7 @@
  */
 
 import Link from 'next/link';
+import { Avatar } from '../../components/Avatar';
 
 // Mock skills data - in production this would come from the backend
 const mockSkills = [
@@ -127,6 +128,11 @@ export default function LeaderboardsPage() {
                             <span className="text-gray-500 dark:text-gray-400 font-medium w-8">
                               #{entry.rank}
                             </span>
+                            <Avatar 
+                              displayName={entry.displayName} 
+                              address={entry.displayName} 
+                              size="sm" 
+                            />
                             <span className="text-gray-900 dark:text-gray-100">
                               {entry.displayName}
                             </span>
