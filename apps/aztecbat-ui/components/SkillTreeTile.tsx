@@ -29,7 +29,6 @@ type SkillTreeTileProps = {
   };
   quests?: Quest[];
   treeType?: 'conifer' | 'round' | 'mushroom';
-  treePrivacy?: 'public-heavy' | 'mixed' | 'private-heavy';
 };
 
 function getPrivacyGradient(privacyMode: PrivacyMode): string {
@@ -89,7 +88,6 @@ export function SkillTreeTile({
   privacyStats,
   quests = [],
   treeType,
-  treePrivacy,
 }: SkillTreeTileProps) {
   const gradientClasses = getPrivacyGradient(privacyMode);
   const borderClasses = getPrivacyBorder(privacyMode);
@@ -102,14 +100,14 @@ export function SkillTreeTile({
     private: privacyMode === 'mostly-private' ? 70 : privacyMode === 'mixed' ? 20 : 10,
   };
 
-  // Helper to convert skill privacy mode to quest privacy mode
+  // Helper to convert skill privacy mode to tree privacy mode
   const convertPrivacyMode = (mode: PrivacyMode): 'public-heavy' | 'mixed' | 'private-heavy' => {
     return mode === 'mostly-private' ? 'private-heavy' : mode;
   };
 
-  // If treeType and treePrivacy are provided, show single tree
+  // If treeType is provided, show single tree
   // Otherwise, show multiple trees (one per quest) for backward compatibility
-  const showSingleTree = treeType !== undefined && treePrivacy !== undefined;
+  const showSingleTree = treeType !== undefined;
   
   // Default quests if not provided
   const defaultQuests: Quest[] = quests.length > 0 ? quests : [
@@ -118,8 +116,11 @@ export function SkillTreeTile({
     { id: 'quest-3', name: 'Quest 3', participantCount: Math.floor(participantCount * 0.25), privacyMode: convertPrivacyMode(privacyMode) },
   ];
 
-  // Determine tree size based on participant count
-  const treeSize = participantCount > 1000 ? 'lg' : participantCount > 500 ? 'md' : 'sm';
+  // All trees are the same size (medium)
+  const treeSize = 'md';
+  
+  // Use skill's privacy mode to determine tree color (predominant reveal type)
+  const treePrivacy = convertPrivacyMode(privacyMode);
 
   return (
     <div className="relative group">
@@ -131,28 +132,30 @@ export function SkillTreeTile({
         <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 dark:from-white/0 dark:to-white/10 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300 rounded-xl" />
         
         <div className="relative z-10">
-          <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-white dark:group-hover:text-white transition-colors duration-300">
-                {skillName}
-              </h3>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-white dark:group-hover:text-white transition-colors duration-300">
+                  {skillName}
+                </h3>
+                {/* Tree next to the name */}
+                {showSingleTree && (
+                  <TreeIcon
+                    type={treeType}
+                    privacy={treePrivacy}
+                    size={treeSize}
+                  />
+                )}
+              </div>
               <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-200 dark:group-hover:text-gray-300 transition-colors duration-300">
                 {participantCount.toLocaleString()} participants
               </p>
             </div>
           </div>
           
-          {/* Single tree or multiple trees */}
-          {showSingleTree ? (
-            <div className="flex items-end justify-center">
-              <TreeIcon
-                type={treeType}
-                privacy={treePrivacy}
-                size={treeSize}
-              />
-            </div>
-          ) : (
-            <div className="flex items-end justify-center gap-3 flex-wrap">
+          {/* Multiple trees (if not showing single tree) */}
+          {!showSingleTree && (
+            <div className="flex items-end justify-center gap-3 flex-wrap mt-4">
               {defaultQuests.map((quest, index) => (
                 <div key={quest.id} className="flex flex-col items-center">
                   <TreeIcon
