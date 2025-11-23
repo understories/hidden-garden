@@ -150,96 +150,7 @@ function ForceDirectedPreview() {
   );
 }
 
-// Layout Option 2: Isometric Grid (Game-like, Organized)
-function IsometricGridPreview() {
-  const gridCols = 3;
-  const gridRows = 2;
-  const tileSize = 100;
-  const spacing = 20;
-
-  return (
-    <div className="relative w-full h-[400px] border-2 border-gray-300 dark:border-gray-700 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden flex items-center justify-center">
-      <div className="relative" style={{ transform: 'rotateX(60deg) rotateZ(-45deg) scale(0.8)' }}>
-        {/* Center silver tree */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-          <div className="w-20 h-20 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center shadow-xl border-2 border-white dark:border-gray-700">
-            <span className="text-3xl">🌳</span>
-          </div>
-        </div>
-
-        {/* Grid of skill trees */}
-        {mockSkills.map((skill, index) => {
-          const row = Math.floor(index / gridCols);
-          const col = index % gridCols;
-          const x = (col - 1) * (tileSize + spacing);
-          const y = (row - 0.5) * (tileSize + spacing);
-          const privacy = convertPrivacyMode(skill.privacyMode);
-
-          return (
-            <div
-              key={skill.skillId}
-              className="absolute cursor-pointer hover:scale-110 transition-transform"
-              style={{
-                left: `calc(50% + ${x}px)`,
-                top: `calc(50% + ${y}px)`,
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
-              {renderCustomTree(skill.customTreeType, privacy, 'sm')}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// Layout Option 3: Radial Clusters (Skills grouped around center)
-function RadialClustersPreview() {
-  const centerX = 50; // percentage
-  const centerY = 50; // percentage
-  const radius = 35; // percentage
-  const angleStep = (2 * Math.PI) / mockSkills.length;
-
-  return (
-    <div className="relative w-full h-[400px] border-2 border-gray-300 dark:border-gray-700 rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
-      {/* Center silver tree */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-        <div className="w-20 h-20 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center shadow-xl border-2 border-white dark:border-gray-700">
-          <span className="text-3xl">🌳</span>
-        </div>
-        <div className="absolute -inset-4 bg-gray-300/40 rounded-full blur-lg animate-pulse" />
-      </div>
-
-      {/* Skill trees in a circle */}
-      {mockSkills.map((skill, index) => {
-        const angle = index * angleStep - Math.PI / 2; // Start from top
-        const x = centerX + radius * Math.cos(angle);
-        const y = centerY + radius * Math.sin(angle);
-        const privacy = convertPrivacyMode(skill.privacyMode);
-
-        return (
-          <div
-            key={skill.skillId}
-            className="absolute cursor-pointer hover:scale-110 transition-transform"
-            style={{
-              left: `${x}%`,
-              top: `${y}%`,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            {renderCustomTree(skill.customTreeType, privacy, 'sm')}
-          </div>
-        );
-      })}
-
-      {/* Cluster background zones (subtle) */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 rounded-full border-2 border-amber-200/30 dark:border-amber-800/30" />
-    </div>
-  );
-}
-
-// Layout Option 4: Organic Forest (Natural clustering, varied spacing)
+// Layout Option 2: Organic Forest (Natural clustering, varied spacing)
 function OrganicForestPreview() {
   // Organic, varied positions (would be calculated with clustering algorithm in real implementation)
   const positions = [
@@ -302,22 +213,6 @@ export default function LayoutPreviewPage() {
       cons: ['Can be less organized', 'May require zoom for clarity'],
     },
     {
-      id: 'isometric',
-      name: 'Isometric Grid',
-      description: 'Game-like, organized tile-based layout. Clean and structured, reminiscent of strategy games.',
-      component: IsometricGridPreview,
-      pros: ['Highly organized', 'Easy to scan', 'Familiar game aesthetic'],
-      cons: ['Less organic', 'May feel rigid'],
-    },
-    {
-      id: 'radial',
-      name: 'Radial Clusters',
-      description: 'Skills arranged in a circle around the center tree, with clustering by privacy mode.',
-      component: RadialClustersPreview,
-      pros: ['Clear center focus', 'Easy to see all skills', 'Good for clustering'],
-      cons: ['Less space-efficient', 'May feel circular/constrained'],
-    },
-    {
       id: 'organic',
       name: 'Organic Forest',
       description: 'Natural, varied spacing with soft cluster zones. Mimics a real forest with natural groupings.',
@@ -336,7 +231,7 @@ export default function LayoutPreviewPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
         {layouts.map((layout) => {
           const LayoutComponent = layout.component;
           const isSelected = selectedLayout === layout.id;
