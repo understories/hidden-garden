@@ -177,7 +177,7 @@ const mockUserData: Array<{
   };
 });
 
-// Generate path for a vine based on direction
+// Generate organic ivy-like path with tendrils and natural curves
 function generateVinePath(
   startX: number,
   startY: number,
@@ -190,44 +190,50 @@ function generateVinePath(
   const v2 = variation * 0.3;
   const v3 = variation * 0.7;
   const v4 = variation * 0.4;
+  const v5 = variation * 0.6;
   
-  const midX1 = startX + (endX - startX) * 0.25;
-  const midX2 = startX + (endX - startX) * 0.5;
-  const midX3 = startX + (endX - startX) * 0.75;
-  const midY1 = startY + (endY - startY) * 0.25;
-  const midY2 = startY + (endY - startY) * 0.5;
-  const midY3 = startY + (endY - startY) * 0.75;
+  const midX1 = startX + (endX - startX) * 0.2;
+  const midX2 = startX + (endX - startX) * 0.4;
+  const midX3 = startX + (endX - startX) * 0.6;
+  const midX4 = startX + (endX - startX) * 0.8;
+  const midY1 = startY + (endY - startY) * 0.2;
+  const midY2 = startY + (endY - startY) * 0.4;
+  const midY3 = startY + (endY - startY) * 0.6;
+  const midY4 = startY + (endY - startY) * 0.8;
   
+  // Create more organic, ivy-like paths with multiple curves
   switch (direction) {
     case 'horizontal':
       return `M ${startX} ${startY} 
-        C ${midX1} ${startY + v1}, ${midX2} ${startY + v2}, ${midX3} ${startY + v3}
-        S ${endX} ${endY + v4}, ${endX} ${endY}`;
+        C ${midX1} ${startY + v1}, ${midX2} ${startY - v2}, ${midX3} ${startY + v3}
+        C ${midX4} ${startY - v4}, ${endX - 20} ${endY + v5}, ${endX} ${endY}`;
     
     case 'vertical':
       return `M ${startX} ${startY} 
-        C ${startX + v1} ${midY1}, ${startX + v2} ${midY2}, ${startX + v3} ${midY3}
-        S ${endX + v4} ${endY}, ${endX} ${endY}`;
+        C ${startX + v1} ${midY1}, ${startX - v2} ${midY2}, ${startX + v3} ${midY3}
+        C ${startX - v4} ${midY4}, ${endX + v5} ${endY - 20}, ${endX} ${endY}`;
     
     case 'diagonal-up':
       return `M ${startX} ${startY} 
-        C ${midX1} ${midY1 + v1}, ${midX2} ${midY2 + v2}, ${midX3} ${midY3 + v3}
-        S ${endX} ${endY + v4}, ${endX} ${endY}`;
+        C ${midX1} ${midY1 + v1}, ${midX2} ${midY2 - v2}, ${midX3} ${midY3 + v3}
+        C ${midX4} ${midY4 - v4}, ${endX - 15} ${endY + v5}, ${endX} ${endY}`;
     
     case 'diagonal-down':
       return `M ${startX} ${startY} 
-        C ${midX1} ${midY1 - v1}, ${midX2} ${midY2 - v2}, ${midX3} ${midY3 - v3}
-        S ${endX} ${endY - v4}, ${endX} ${endY}`;
+        C ${midX1} ${midY1 - v1}, ${midX2} ${midY2 + v2}, ${midX3} ${midY3 - v3}
+        C ${midX4} ${midY4 + v4}, ${endX - 15} ${endY - v5}, ${endX} ${endY}`;
     
     case 'curved':
-      // More organic curved path
-      const curve1X = startX + (endX - startX) * 0.33;
-      const curve1Y = startY + (endY - startY) * 0.33 + v1;
-      const curve2X = startX + (endX - startX) * 0.67;
-      const curve2Y = startY + (endY - startY) * 0.67 + v2;
+      // Organic ivy tendril-like path
+      const curve1X = startX + (endX - startX) * 0.25;
+      const curve1Y = startY + (endY - startY) * 0.25 + v1;
+      const curve2X = startX + (endX - startX) * 0.5;
+      const curve2Y = startY + (endY - startY) * 0.5 - v2;
+      const curve3X = startX + (endX - startX) * 0.75;
+      const curve3Y = startY + (endY - startY) * 0.75 + v3;
       return `M ${startX} ${startY} 
-        Q ${curve1X} ${curve1Y}, ${midX2} ${midY2 + v3}
-        T ${endX} ${endY + v4}`;
+        Q ${curve1X} ${curve1Y}, ${curve2X} ${curve2Y}
+        Q ${curve3X} ${curve3Y}, ${endX} ${endY}`;
     
     default:
       return `M ${startX} ${startY} L ${endX} ${endY}`;
@@ -311,13 +317,14 @@ export function IvyBackground() {
           
           return (
             <g key={config.id} className={`ivy-vine-${config.id}`}>
-              {/* Base vine path */}
+              {/* Base vine path - thicker main stem */}
               <path
                 d={generateVinePath(config.startX, config.startY, config.endX, config.endY, config.direction, config.pathVariation)}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={config.strokeWidth}
+                strokeWidth={config.strokeWidth * 1.2}
                 strokeLinecap="round"
+                strokeLinejoin="round"
                 className={`${colors.light} dark:${colors.dark}`}
                 style={{
                   filter: `blur(${config.blur}px)`,
@@ -332,16 +339,16 @@ export function IvyBackground() {
                 />
               </path>
 
-              {/* Lightning pulse effect - travels along the vine */}
+              {/* Subtle growth pulse - like sap flowing through ivy */}
               <path
                 d={generateVinePath(config.startX, config.startY, config.endX, config.endY, config.direction, config.pathVariation)}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={config.strokeWidth * 2}
+                strokeWidth={config.strokeWidth * 1.5}
                 strokeLinecap="round"
                 className={`${colors.lightSecondary} dark:${colors.darkSecondary}`}
                 style={{
-                  filter: `blur(${config.blur * 2}px)`,
+                  filter: `blur(${config.blur * 1.5}px)`,
                   opacity: 0,
                 }}
               >
@@ -351,62 +358,115 @@ export function IvyBackground() {
                   dur={`${config.duration}s`}
                   repeatCount="indefinite"
                 />
-                {/* Lightning pulse animation */}
+                {/* Subtle growth pulse - slower and more organic */}
                 <animate
                   attributeName="opacity"
-                  values={`0;0;0.8;1;0.8;0;0`}
-                  dur={`${config.lightningDuration}s`}
+                  values={`0;0;0.6;0.8;0.6;0;0`}
+                  dur={`${config.lightningDuration * 1.5}s`}
                   repeatCount="indefinite"
                   begin={`${config.lightningDelay}s`}
                 />
-                {/* Lightning travels along path using stroke-dasharray */}
+                {/* Growth travels along path */}
                 <animate
                   attributeName="stroke-dasharray"
                   values={`0,${pathLength};${pathLength * 0.5},${pathLength * 0.5};${pathLength},0;0,${pathLength}`}
-                  dur={`${config.lightningDuration}s`}
+                  dur={`${config.lightningDuration * 1.5}s`}
                   repeatCount="indefinite"
                   begin={`${config.lightningDelay}s`}
                 />
               </path>
 
-              {/* Leaves based on user data */}
+              {/* Ivy leaves - heart-shaped and clustered at nodes */}
               {userData && userData.positions.map((position, leafIndex) => {
                 const point = getPointOnPath(config.startX, config.startY, config.endX, config.endY, config.direction, config.pathVariation, position);
-                const leafSize = Math.min(userData.userCount / 10, 5); // Size based on user count
-                const rotation = (leafIndex * 45) % 360; // Vary rotation
+                const leafSize = Math.min(userData.userCount / 10, 6);
+                const rotation = (leafIndex * 60) % 360;
+                const leafOffset = (leafIndex % 3) * 8 - 8; // Cluster leaves at nodes
+                
+                // Heart-shaped ivy leaf path
+                const leafPath = `
+                  M ${point.x} ${point.y + leafOffset}
+                  C ${point.x - leafSize * 0.5} ${point.y + leafOffset - leafSize * 0.3},
+                    ${point.x - leafSize} ${point.y + leafOffset - leafSize * 0.8},
+                    ${point.x - leafSize * 0.3} ${point.y + leafOffset - leafSize * 1.2}
+                  C ${point.x} ${point.y + leafOffset - leafSize * 1.4},
+                    ${point.x} ${point.y + leafOffset - leafSize * 1.4},
+                    ${point.x + leafSize * 0.3} ${point.y + leafOffset - leafSize * 1.2}
+                  C ${point.x + leafSize} ${point.y + leafOffset - leafSize * 0.8},
+                    ${point.x + leafSize * 0.5} ${point.y + leafOffset - leafSize * 0.3},
+                    ${point.x} ${point.y + leafOffset}
+                  Z
+                `;
                 
                 return (
-                  <ellipse
-                    key={`leaf-${config.id}-${leafIndex}`}
-                    cx={point.x}
-                    cy={point.y}
-                    rx={leafSize}
-                    ry={leafSize * 1.5}
-                    className={`${colors.lightSecondary} dark:${colors.darkSecondary}`}
-                    fill="currentColor"
-                    opacity={config.opacity * 0.6}
-                    transform={`rotate(${rotation} ${point.x} ${point.y})`}
+                  <g key={`leaf-${config.id}-${leafIndex}`}>
+                    <path
+                      d={leafPath}
+                      className={`${colors.lightSecondary} dark:${colors.darkSecondary}`}
+                      fill="currentColor"
+                      opacity={config.opacity * 0.7}
+                      transform={`rotate(${rotation} ${point.x} ${point.y + leafOffset})`}
+                      style={{
+                        filter: `blur(${config.blur * 0.3}px)`,
+                      }}
+                    >
+                      {/* Gentle leaf animation */}
+                      <animate
+                        attributeName="opacity"
+                        values={`${config.opacity * 0.7};${config.opacity * 0.95};${config.opacity * 0.7}`}
+                        dur={`${4 + (leafIndex % 3)}s`}
+                        repeatCount="indefinite"
+                        begin={`${leafIndex * 0.25}s`}
+                      />
+                      <animateTransform
+                        attributeName="transform"
+                        type="rotate"
+                        values={`${rotation} ${point.x} ${point.y + leafOffset};${rotation + 8} ${point.x} ${point.y + leafOffset};${rotation} ${point.x} ${point.y + leafOffset}`}
+                        dur={`${5 + (leafIndex % 2)}s`}
+                        repeatCount="indefinite"
+                        begin={`${leafIndex * 0.3}s`}
+                      />
+                    </path>
+                    {/* Leaf vein detail */}
+                    <line
+                      x1={point.x}
+                      y1={point.y + leafOffset}
+                      x2={point.x}
+                      y2={point.y + leafOffset - leafSize * 1.2}
+                      stroke="currentColor"
+                      strokeWidth="0.5"
+                      opacity={config.opacity * 0.5}
+                      transform={`rotate(${rotation} ${point.x} ${point.y + leafOffset})`}
+                      style={{
+                        filter: `blur(${config.blur * 0.2}px)`,
+                      }}
+                    />
+                  </g>
+                );
+              })}
+              
+              {/* Small tendrils branching off main vine */}
+              {userData && userData.positions.length > 0 && userData.positions.slice(0, 3).map((position, tendrilIndex) => {
+                const basePoint = getPointOnPath(config.startX, config.startY, config.endX, config.endY, config.direction, config.pathVariation, position);
+                const tendrilLength = 15 + (tendrilIndex * 5);
+                const tendrilAngle = (tendrilIndex * 120) % 360;
+                const endX = basePoint.x + Math.cos((tendrilAngle * Math.PI) / 180) * tendrilLength;
+                const endY = basePoint.y + Math.sin((tendrilAngle * Math.PI) / 180) * tendrilLength;
+                
+                return (
+                  <path
+                    key={`tendril-${config.id}-${tendrilIndex}`}
+                    d={`M ${basePoint.x} ${basePoint.y} Q ${basePoint.x + (endX - basePoint.x) * 0.5} ${basePoint.y + (endY - basePoint.y) * 0.5 + 5}, ${endX} ${endY}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={config.strokeWidth * 0.6}
+                    strokeLinecap="round"
+                    className={`${colors.light} dark:${colors.dark}`}
+                    opacity={config.opacity * 0.5}
                     style={{
-                      filter: `blur(${config.blur * 0.5}px)`,
+                      filter: `blur(${config.blur * 0.8}px)`,
                     }}
-                  >
-                    {/* Gentle leaf animation */}
-                    <animate
-                      attributeName="opacity"
-                      values={`${config.opacity * 0.6};${config.opacity * 0.9};${config.opacity * 0.6}`}
-                      dur={`${3 + (leafIndex % 3)}s`}
-                      repeatCount="indefinite"
-                      begin={`${leafIndex * 0.2}s`}
-                    />
-                    <animateTransform
-                      attributeName="transform"
-                      type="rotate"
-                      values={`${rotation} ${point.x} ${point.y};${rotation + 5} ${point.x} ${point.y};${rotation} ${point.x} ${point.y}`}
-                      dur={`${4 + (leafIndex % 2)}s`}
-                      repeatCount="indefinite"
-                      begin={`${leafIndex * 0.3}s`}
-                    />
-                  </ellipse>
+                  />
                 );
               })}
             </g>
