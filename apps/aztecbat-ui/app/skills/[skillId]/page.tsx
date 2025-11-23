@@ -3,8 +3,8 @@
 /**
  * Skill Detail Page
  *
- * Shows details for a specific skill and provides the "Attempt challenge" entry point.
- * This is step 1 of the user flow: Attempt Challenge (Private Compute)
+ * Shows details for a specific skill and provides the "Start quest" entry point.
+ * This is step 1 of the user flow: Start Quest (Private Compute)
  */
 
 import { useEffect, useState } from 'react';
@@ -57,7 +57,7 @@ export default function SkillDetailPage({ params, searchParams }: SkillDetailPag
   const skill = skillId ? mockSkills[skillId] : null;
   const skillName = skill?.name || skillId;
 
-  const handleAttemptChallenge = () => {
+  const handleStartQuest = () => {
     router.push(`/proof?skillId=${encodeURIComponent(skillId)}`);
   };
 
@@ -89,18 +89,23 @@ export default function SkillDetailPage({ params, searchParams }: SkillDetailPag
 
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800/50">
         <div className="space-y-4">
+          <div className="border-l-4 border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-r-lg p-4 mb-4">
+            <p className="text-xs text-blue-800 dark:text-blue-200 leading-relaxed">
+              We store quest completions privately in Aztec; this local list mirrors what lives there, but the only thing we reveal publicly is the ZK proof of tier.
+            </p>
+          </div>
           <div>
             <h2 className="text-lg font-semibold mb-2">Ready to begin?</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Start the challenge to test your knowledge. Your result will be private by default,
+              Start the quest to test your knowledge. Your result will be private by default,
               and you can choose what to reveal publicly.
             </p>
           </div>
           <button
-            onClick={handleAttemptChallenge}
+            onClick={handleStartQuest}
             className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
           >
-            Attempt Challenge
+            Start Quest
           </button>
         </div>
       </div>
