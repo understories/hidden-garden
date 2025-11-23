@@ -64,6 +64,16 @@ export default function AztecLabPage() {
   const [filteredLeaderboard, setFilteredLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [enrichingLeaderboard, setEnrichingLeaderboard] = useState<boolean>(false);
 
+  // Public Profile Modal
+  const [publicProfileAddress, setPublicProfileAddress] = useState<string | null>(null);
+  const [publicProfile, setPublicProfile] = useState<{
+    address: string;
+    humanVerified: boolean;
+    aztecBuilderTier: number | null;
+    aztecBuilderSkillHash: string | null;
+  } | null>(null);
+  const [loadingPublicProfile, setLoadingPublicProfile] = useState(false);
+
   // Cryptographic Computations Section
   const [cryptoQuestId, setCryptoQuestId] = useState<string>('aztec_concept_quiz');
   const [cryptoCategory, setCryptoCategory] = useState<string>('aztec_builder');
@@ -131,10 +141,8 @@ export default function AztecLabPage() {
     setQuestStorageResult(null);
 
     try {
-      // Create Aztec client (mock mode for now)
-      const useRealAztec = process.env.NEXT_PUBLIC_USE_REAL_AZTEC === 'true';
-      const aztecMode = useRealAztec ? 'real' : 'mock';
-      const aztecClient = createAztecClient(aztecMode, {
+      // Dev UI always uses real Aztec
+      const aztecClient = createAztecClient('real', {
         pxeUrl: process.env.NEXT_PUBLIC_PXE_URL || 'http://localhost:8080',
       });
 
@@ -311,8 +319,8 @@ export default function AztecLabPage() {
           borderRadius: '4px',
           border: '1px solid #81c784'
         }}>
-          <strong>🔐 Real Aztec Mode:</strong> This UI uses <strong>real Aztec client</strong> by default to demonstrate privacy-preserving cryptographic operations. 
-          Set <code>NEXT_PUBLIC_USE_MOCK_AZTEC=true</code> to use mock mode.
+          <strong>🔐 Real Aztec Mode:</strong> This dev UI <strong>always uses real Aztec</strong> to demonstrate privacy-preserving cryptographic operations. 
+          Ensure Aztec devnet is running at <code>http://localhost:8080</code>.
         </div>
       </div>
 
