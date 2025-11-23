@@ -226,5 +226,125 @@ describe('Quest Validation', () => {
       expect(result.score).toBe(100);
     });
   });
+
+  describe('aztec_privacy_basics', () => {
+    const quest = getQuestDefinition('aztec_privacy_basics');
+    
+    it('should exist in registry', () => {
+      expect(quest).toBeDefined();
+      expect(quest?.questId).toBe('aztec_privacy_basics');
+      expect(quest?.type).toBe('multiple_choice');
+      expect(quest?.tier).toBe(1);
+    });
+
+    it('should accept correct answer (option 0)', () => {
+      const submission: MultipleChoiceSubmission = { selectedOptionId: '0' };
+      const result = quest!.validate(submission);
+      
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+      
+      expect(result.success).toBe(true);
+      expect(result.score).toBe(100);
+      expect(result.feedback).toContain('Correct');
+    });
+
+    it('should accept correct answer (option A)', () => {
+      const submission: MultipleChoiceSubmission = { selectedOptionId: 'A' };
+      const result = quest!.validate(submission);
+      
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+      
+      expect(result.success).toBe(true);
+      expect(result.score).toBe(100);
+    });
+
+    it('should reject incorrect answer', () => {
+      const submission: MultipleChoiceSubmission = { selectedOptionId: '1' };
+      const result = quest!.validate(submission);
+      
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+      
+      expect(result.success).toBe(false);
+      expect(result.score).toBe(0);
+    });
+  });
+
+  describe('aztec_notes_concept', () => {
+    const quest = getQuestDefinition('aztec_notes_concept');
+    
+    it('should exist in registry', () => {
+      expect(quest).toBeDefined();
+      expect(quest?.questId).toBe('aztec_notes_concept');
+      expect(quest?.type).toBe('multiple_choice');
+      expect(quest?.tier).toBe(1);
+    });
+
+    it('should accept correct answer (option 0)', () => {
+      const submission: MultipleChoiceSubmission = { selectedOptionId: '0' };
+      const result = quest!.validate(submission);
+      
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+      
+      expect(result.success).toBe(true);
+      expect(result.score).toBe(100);
+      expect(result.feedback).toContain('Correct');
+    });
+
+    it('should reject incorrect answer', () => {
+      const submission: MultipleChoiceSubmission = { selectedOptionId: '1' };
+      const result = quest!.validate(submission);
+      
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+      
+      expect(result.success).toBe(false);
+      expect(result.score).toBe(0);
+    });
+  });
+
+  describe('aztec_public_vs_private', () => {
+    const quest = getQuestDefinition('aztec_public_vs_private');
+    
+    it('should exist in registry', () => {
+      expect(quest).toBeDefined();
+      expect(quest?.questId).toBe('aztec_public_vs_private');
+      expect(quest?.type).toBe('multiple_choice');
+      expect(quest?.tier).toBe(1);
+    });
+
+    it('should accept correct answer (option 0)', () => {
+      const submission: MultipleChoiceSubmission = { selectedOptionId: '0' };
+      const result = quest!.validate(submission);
+      
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+      
+      expect(result.success).toBe(true);
+      expect(result.score).toBe(100);
+      expect(result.feedback).toContain('Correct');
+    });
+
+    it('should reject incorrect answer', () => {
+      const submission: MultipleChoiceSubmission = { selectedOptionId: '1' };
+      const result = quest!.validate(submission);
+      
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+      
+      expect(result.success).toBe(false);
+      expect(result.score).toBe(0);
+    });
+  });
 });
 
