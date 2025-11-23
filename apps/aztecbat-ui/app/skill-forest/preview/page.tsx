@@ -13,6 +13,7 @@ import {
   BaseTree,
   BioluminescentMushroom,
   MiniShrub,
+  SilverPineTree,
   unusedColors,
 } from '../../../components/CustomTreeIcons';
 
@@ -170,6 +171,28 @@ export default function TreePreviewPage() {
         </div>
       </section>
 
+      {/* Silver Pine Tree - Center Tree */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+          7. Silver Pine Tree (Center Tree)
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Majestic pine tree for the center of the forest. Silver/metallic colors with a regal, commanding presence.
+        </p>
+        <div className="flex items-end gap-6 p-6 bg-gray-900 rounded-lg justify-center">
+          <div className="text-center">
+            {/* Custom size: 2x of (largest size * 0.75) = 2 * (64 * 0.75) = 96px */}
+            <div style={{ width: '96px', height: '128px', margin: '0 auto' }}>
+              <SilverPineTree size="xl" />
+            </div>
+            <p className="text-xs text-gray-400 mt-2">Center Tree (96px)</p>
+          </div>
+        </div>
+        <div className="text-xs text-gray-500 dark:text-gray-500 italic">
+          Size: 2x of (largest regular tree × 0.75) = 2 × (64px × 0.75) = 96px
+        </div>
+      </section>
+
       {/* All Trees Together - Forest Preview */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
@@ -180,6 +203,13 @@ export default function TreePreviewPage() {
         </p>
         <div className="p-8 bg-gray-900 rounded-lg">
           <div className="flex flex-wrap items-end gap-4 justify-center">
+            {/* Center tree */}
+            <div className="flex-shrink-0">
+              <div style={{ width: '96px', height: '128px' }}>
+                <SilverPineTree size="xl" />
+              </div>
+            </div>
+            {/* Regular trees around it */}
             <SpringCanopyTree privacy="public-heavy" size="md" />
             <AutumnBlendTree privacy="mixed" size="md" />
             <MoonlitBranchesTree privacy="private-heavy" size="md" />
