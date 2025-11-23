@@ -1,11 +1,9 @@
 /**
  * PXE Health Check Utility
  * 
- * Validates PXE connection and provides helpful error messages.
- * Follows Aztec starter patterns for connection validation.
+ * Validates PXE connection using JSON-RPC calls.
+ * For Aztec 3 sandbox, the PXE/node speaks JSON-RPC on the root URL.
  */
-
-import type { PXE } from '@aztec/aztec.js/node';
 
 export interface PXEHealthCheckResult {
   healthy: boolean;
@@ -17,41 +15,68 @@ export interface PXEHealthCheckResult {
 }
 
 /**
- * Check if PXE is healthy and reachable
+ * Check if PXE is healthy and reachable using JSON-RPC
  * 
- * @param pxe PXE client instance
- * @param pxeUrl PXE URL for error messages
- * @param timeout Timeout in milliseconds (default: 10000)
+ * For Aztec 3 sandbox, the PXE/node speak JSON-RPC on the root URL.
+ * A simple node_getBlockNumber call is enough to verify it's alive.
+ * 
+ * @param pxeUrl PXE URL to check
+ * @param timeout Timeout in milliseconds (default: 5000)
  * @returns Health check result
  */
 export async function checkPXEHealth(
-  pxe: PXE,
   pxeUrl: string,
-  timeout: number = 10000
+  timeout: number = 5000
 ): Promise<PXEHealthCheckResult> {
   const startTime = Date.now();
   
+  const payload = {
+    jsonrpc: "2.0",
+    id: 1,
+    method: "node_getBlockNumber",
+    params: [],
+  };
+
+  let res: Response;
   try {
-    // Try to get node info as a health check
-    // In Aztec v3, we can check if the node is responsive
-    // This is a simple check - if we can call a method, the node is up
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
     
-    // Note: In Aztec v3, the exact health check API may vary
-    // This is a placeholder that will be improved based on actual SDK API
-    const nodeInfo = await Promise.race([
-      // Try to get a simple property or call a method
-      Promise.resolve(pxe).then(() => {
-        // If we can access pxe, it's at least initialized
-        return { status: 'ok' };
-      }),
-      // Timeout after specified duration
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Health check timeout')), timeout)
-      ),
-    ]);
+    res = await fetch(pxeUrl, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
     
+    clearTimeout(timeoutId);
+  } catch (err) {
     const responseTime = Date.now() - startTime;
+    const errorMsg = err instanceof Error ? err.message : String(err);
     
+    return {
+      healthy: false,
+      error: `Failed to reach Aztec PXE at ${pxeUrl}: ${errorMsg}`,
+      details: {
+        pxeUrl,
+        responseTime,
+      },
+    };
+  }
+
+  const responseTime = Date.now() - startTime;
+
+  // For the hackathon, treat ANY non-network response as "PXE is up".
+  // If we get 200 and a JSON-RPC result, even better.
+  if (!res.ok) {
+    // Log a warning but don't block the demo.
+    console.warn(
+      `[aztec] PXE responded with status ${res.status}, continuing anyway for demo.`,
+    );
+    
+    // Still return healthy since we got a response (not a network error)
     return {
       healthy: true,
       details: {
@@ -59,12 +84,35 @@ export async function checkPXEHealth(
         responseTime,
       },
     };
-  } catch (error) {
-    const responseTime = Date.now() - startTime;
+  }
+
+  try {
+    const json = (await res.json()) as any;
+    if (json?.error) {
+      console.warn("[aztec] PXE JSON-RPC error in health check:", json.error);
+      // Still consider it healthy if we got a JSON-RPC response
+      return {
+        healthy: true,
+        details: {
+          pxeUrl,
+          responseTime,
+        },
+      };
+    }
     
+    // Success - got a valid JSON-RPC response
     return {
-      healthy: false,
-      error: error instanceof Error ? error.message : String(error),
+      healthy: true,
+      details: {
+        pxeUrl,
+        responseTime,
+      },
+    };
+  } catch {
+    // If response isn't JSON, that's fine for this demo.
+    // We got a response, so PXE is up.
+    return {
+      healthy: true,
       details: {
         pxeUrl,
         responseTime,
@@ -101,7 +149,7 @@ export function getPXEErrorMessage(pxeUrl: string, error: unknown): string {
   const suggestions = [
     `Verify PXE URL is correct: ${pxeUrl}`,
     'Check if Aztec sandbox/devnet is running',
-    'For sandbox: Run `pnpm aztec:sandbox` or `docker run -it -p 8080:8080 aztecprotocol/sandbox:latest`',
+    'To start Aztec sandbox, run: `aztec start --sandbox` in a separate terminal.',
     'For devnet: Run `aztec start --devnet` or check your AZTEC_ENV configuration',
     'Check network connectivity and firewall settings',
     'Verify the PXE service is listening on the expected port',
@@ -113,4 +161,3 @@ export function getPXEErrorMessage(pxeUrl: string, error: unknown): string {
     `Troubleshooting steps:\n${suggestions.map(s => `  - ${s}`).join('\n')}`
   );
 }
-
