@@ -121,29 +121,46 @@ const mockSkillTrees = [
 type PrivacyMode = 'public-heavy' | 'mixed' | 'mostly-private';
 type TreeSize = 'small' | 'medium' | 'large' | 'xlarge';
 
+// Ghibli-style colors
+function getGhibliColor(privacyMode: PrivacyMode): string {
+  switch (privacyMode) {
+    case 'public-heavy':
+      return '#7dd87d'; // Soft spring green
+    case 'mixed':
+      return '#f4a460'; // Soft sandy amber
+    case 'mostly-private':
+      return '#87ceeb'; // Soft sky blue
+  }
+}
+
 function getTreeColors(privacyMode: PrivacyMode): {
   trunk: string;
   foliage: string;
   glow: string;
+  color: string;
 } {
+  const color = getGhibliColor(privacyMode);
   switch (privacyMode) {
     case 'public-heavy':
       return {
-        trunk: 'bg-emerald-600 dark:bg-emerald-500',
-        foliage: 'from-emerald-400 via-cyan-400 to-teal-400',
-        glow: 'shadow-emerald-400/40 dark:shadow-emerald-400/50',
+        trunk: '#8b6f47', // Soft brown
+        foliage: color,
+        glow: 'drop-shadow(0 2px 4px rgba(125, 216, 125, 0.3))',
+        color: color,
       };
     case 'mixed':
       return {
-        trunk: 'bg-amber-600 dark:bg-amber-500',
-        foliage: 'from-amber-400 via-orange-400 to-yellow-400',
-        glow: 'shadow-amber-400/40 dark:shadow-amber-400/50',
+        trunk: '#8b6f47', // Soft brown
+        foliage: color,
+        glow: 'drop-shadow(0 2px 4px rgba(244, 164, 96, 0.3))',
+        color: color,
       };
     case 'mostly-private':
       return {
-        trunk: 'bg-indigo-600 dark:bg-indigo-500',
-        foliage: 'from-blue-400 via-indigo-400 to-purple-400',
-        glow: 'shadow-indigo-400/30 dark:shadow-indigo-400/40',
+        trunk: '#6b7a8a', // Soft gray-blue
+        foliage: color,
+        glow: 'drop-shadow(0 2px 4px rgba(135, 206, 235, 0.3))',
+        color: color,
       };
   }
 }
@@ -193,7 +210,7 @@ function gridToIsometric(gridX: number, gridY: number, tileSize: number = 240): 
   return { x: isoX, y: isoY };
 }
 
-// Explorer cluster component with orbital animation
+// Explorer cluster component with orbital animation (Ghibli style)
 function ExplorerCluster({
   cluster,
   centerX,
@@ -207,10 +224,10 @@ function ExplorerCluster({
 }) {
   const colors = getTreeColors(cluster.preference);
   const masteryColors = {
-    1: 'from-amber-400/40 to-amber-600/40', // Bronze
-    2: 'from-gray-300/40 to-gray-500/40', // Silver
-    3: 'from-yellow-300/40 to-yellow-500/40', // Gold
-    4: 'from-purple-300/40 to-purple-500/40', // Master
+    1: 'rgba(244, 164, 96, 0.4)', // Bronze - soft amber
+    2: 'rgba(192, 192, 192, 0.4)', // Silver - soft gray
+    3: 'rgba(255, 215, 0, 0.4)', // Gold - soft yellow
+    4: 'rgba(186, 85, 211, 0.4)', // Master - soft purple
   };
 
   // Orbital animation - clusters orbit around the planet
@@ -236,55 +253,59 @@ function ExplorerCluster({
         ...orbitStyle,
       }}
     >
-      {/* Cluster glow */}
+      {/* Cluster glow - soft Ghibli style */}
       <div
-        className={`absolute rounded-full bg-gradient-to-br ${colors.foliage} opacity-30 blur-md transition-all duration-500 group-hover/cluster:opacity-50 group-hover/cluster:scale-125`}
+        className="absolute rounded-full opacity-20 blur-md transition-all duration-500 group-hover/cluster:opacity-30 group-hover/cluster:scale-125"
         style={{
           width: `${clusterSize * 2}px`,
           height: `${clusterSize * 2}px`,
           left: '50%',
           top: '50%',
           transform: 'translate(-50%, -50%)',
+          backgroundColor: colors.color,
         }}
       />
 
       {/* Cluster core - mastery level indicator */}
       <div
-        className={`relative rounded-full bg-gradient-to-br ${masteryColors[cluster.masteryLevel as keyof typeof masteryColors]} border-2 ${colors.foliage.includes('emerald') ? 'border-emerald-400/50' : colors.foliage.includes('amber') ? 'border-amber-400/50' : 'border-indigo-400/50'} shadow-lg transition-all duration-300 group-hover/cluster:scale-110 group-hover/cluster:brightness-125`}
+        className="relative rounded-full border-2 shadow-lg transition-all duration-300 group-hover/cluster:scale-110"
         style={{
           width: `${clusterSize}px`,
           height: `${clusterSize}px`,
+          backgroundColor: masteryColors[cluster.masteryLevel as keyof typeof masteryColors],
+          borderColor: `${colors.color}80`,
         }}
       >
         {/* Quest completion indicator - rings */}
         {[...Array(cluster.questsCompleted)].map((_, i) => (
           <div
             key={i}
-            className="absolute rounded-full border border-white/30"
+            className="absolute rounded-full border"
             style={{
               width: `${clusterSize + (i + 1) * 4}px`,
               height: `${clusterSize + (i + 1) * 4}px`,
               left: '50%',
               top: '50%',
               transform: 'translate(-50%, -50%)',
+              borderColor: `${colors.color}40`,
             }}
           />
         ))}
       </div>
 
       {/* Moon tooltip - visible on hover */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 dark:bg-black/90 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 invisible group-hover/cluster:opacity-100 group-hover/cluster:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-30 border border-white/20 shadow-xl">
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900/90 dark:bg-gray-800/90 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 invisible group-hover/cluster:opacity-100 group-hover/cluster:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-30 border border-gray-700 shadow-xl">
         <div className="font-semibold mb-1">Moon Cluster</div>
         <div className="font-medium mb-1.5">{cluster.size} explorers</div>
         <div className="space-y-0.5 text-gray-300">
           <div>Mastery: {getTierName(cluster.masteryLevel)}</div>
           <div>Quests: {cluster.questsCompleted} completed</div>
-          <div className="text-gray-400 text-xs mt-1 pt-1 border-t border-white/10">
+          <div className="text-gray-400 text-xs mt-1 pt-1 border-t border-gray-700">
             Privacy: {cluster.preference === 'public-heavy' ? 'Public' : cluster.preference === 'mixed' ? 'Mixed' : 'Private'}
           </div>
         </div>
         {/* Tooltip arrow */}
-        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-black/90 dark:bg-black/90 rotate-45 border-r border-b border-white/20" />
+        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-gray-900/90 dark:bg-gray-800/90 rotate-45 border-r border-b border-gray-700" />
       </div>
     </div>
   );
@@ -300,6 +321,87 @@ function getTierName(tier: number): string {
   return tierMap[tier] || `Tier ${tier}`;
 }
 
+// Center Sun component - clickable, links to /skills
+function CenterSun() {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  return (
+    <Link
+      href="/skills"
+      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 group cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 rounded-full transition-all duration-300"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      aria-label="View all skills"
+    >
+      {/* Expanding background glow */}
+      <div
+        className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-200/30 via-amber-200/20 to-orange-200/30 blur-3xl animate-expand-background"
+        style={{
+          width: isHovered ? '400px' : '300px',
+          height: isHovered ? '400px' : '300px',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
+      
+      {/* Sun core - Ghibli style soft yellow */}
+      <div
+        className="relative rounded-full bg-gradient-to-br from-yellow-200 via-amber-200 to-orange-200 shadow-lg transition-all duration-300 group-hover:scale-110"
+        style={{
+          width: '80px',
+          height: '80px',
+          filter: 'drop-shadow(0 4px 8px rgba(255, 215, 0, 0.4))',
+        }}
+      >
+        {/* Inner glow */}
+        <div
+          className="absolute inset-4 rounded-full bg-white/40 blur-sm"
+          style={{
+            width: '40px',
+            height: '40px',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
+      </div>
+      
+      {/* Sun rays - gentle pulsing */}
+      {[...Array(8)].map((_, i) => {
+        const angle = (i * 360) / 8;
+        return (
+          <div
+            key={i}
+            className="absolute rounded-full bg-gradient-to-r from-yellow-200/40 to-transparent"
+            style={{
+              width: '120px',
+              height: '4px',
+              left: '50%',
+              top: '50%',
+              transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+              transformOrigin: '0 50%',
+              animation: 'pulse 3s ease-in-out infinite',
+              animationDelay: `${i * 0.2}s`,
+            }}
+          />
+        );
+      })}
+      
+      {/* Tooltip */}
+      <div
+        className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-2 bg-gray-900/90 dark:bg-gray-800/90 backdrop-blur-sm text-white text-xs rounded-lg shadow-xl border border-gray-700 transition-all duration-200 pointer-events-none whitespace-nowrap ${
+          isHovered ? 'opacity-100 visible' : 'opacity-0 invisible'
+        }`}
+      >
+        <div className="font-semibold">All Skills</div>
+        <div className="text-gray-300 text-xs mt-1">Click to explore</div>
+        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-gray-900/90 dark:bg-gray-800/90 rotate-45 border-r border-b border-gray-700" />
+      </div>
+    </Link>
+  );
+}
+
 function BioluminescentOrganism({
   skillId,
   skillName,
@@ -310,7 +412,18 @@ function BioluminescentOrganism({
   gridPos,
   overlaps,
   explorerClusters,
-}: typeof mockSkillTrees[0]) {
+  centerX,
+  centerY,
+  orbitAngle,
+  orbitDistance,
+  orbitDuration,
+}: typeof mockSkillTrees[0] & {
+  centerX: number;
+  centerY: number;
+  orbitAngle: number;
+  orbitDistance: number;
+  orbitDuration: number;
+}) {
   const colors = getTreeColors(privacyMode);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -318,17 +431,16 @@ function BioluminescentOrganism({
   const organismSize = size === 'small' ? 50 : size === 'medium' ? 70 : size === 'large' ? 90 : 110;
   const pulseSize = organismSize * 1.4;
 
-  // Convert grid position to isometric coordinates
-  const isoPos = gridToIsometric(gridPos.x, gridPos.y, 240);
-
   return (
     <div
-      className="absolute group cursor-pointer z-10"
+      className="absolute group cursor-pointer z-10 planet-orbit"
       style={{
-        left: `calc(50% + ${isoPos.x}px)`,
-        top: `calc(40% + ${isoPos.y}px)`,
-        transform: 'translate(-50%, -50%)',
-      }}
+        left: '50%',
+        top: '50%',
+        '--orbit-duration': `${orbitDuration}s`,
+        '--orbit-distance': `${orbitDistance}px`,
+        '--initial-angle': `${orbitAngle}deg`,
+      } as React.CSSProperties}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -336,63 +448,54 @@ function BioluminescentOrganism({
         href={`/leaderboard/${skillId}`}
         className="block relative focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 dark:focus:ring-blue-500 rounded-full"
       >
-        {/* Outer glow pulse - breathing effect */}
+        {/* Outer glow pulse - soft Ghibli breathing effect */}
         <div
-          className={`absolute inset-0 rounded-full bg-gradient-to-br ${colors.foliage} opacity-20 blur-xl transition-all duration-2000 ease-in-out ${
-            isHovered ? 'animate-pulse' : ''
-          }`}
+          className="absolute inset-0 rounded-full opacity-15 blur-xl transition-all duration-2000 ease-in-out"
           style={{
             width: `${pulseSize}px`,
             height: `${pulseSize}px`,
             left: '50%',
             top: '50%',
             transform: 'translate(-50%, -50%)',
+            backgroundColor: colors.color,
+            animation: isHovered ? 'pulse 2s ease-in-out infinite' : 'none',
           }}
         />
 
-        {/* Main organism - organic blob shape */}
+        {/* Main organism - soft Ghibli planet */}
         <div
-          className={`relative rounded-full bg-gradient-to-br ${colors.foliage} ${colors.glow} shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:brightness-110`}
+          className="relative rounded-full shadow-lg transition-all duration-500 group-hover:scale-110"
           style={{
             width: `${organismSize}px`,
             height: `${organismSize}px`,
-            clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
+            backgroundColor: colors.color,
+            filter: colors.glow,
           }}
         >
           {/* Inner glow */}
           <div
-            className="absolute inset-4 rounded-full bg-gradient-to-tr opacity-60 blur-sm"
+            className="absolute rounded-full opacity-40 blur-sm"
             style={{
-              background: `linear-gradient(135deg, ${colors.foliage.split(' ')[0].replace('from-', '')}40, transparent)`,
+              width: `${organismSize * 0.6}px`,
+              height: `${organismSize * 0.6}px`,
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: 'rgba(255, 255, 255, 0.3)',
             }}
           />
 
           {/* Core light */}
           <div
-            className="absolute inset-1/2 rounded-full bg-white opacity-40 blur-md"
+            className="absolute rounded-full bg-white opacity-30 blur-md"
             style={{
               width: `${organismSize * 0.3}px`,
               height: `${organismSize * 0.3}px`,
+              left: '50%',
+              top: '50%',
               transform: 'translate(-50%, -50%)',
             }}
           />
-
-          {/* Floating particles around organism */}
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className={`absolute rounded-full bg-gradient-to-br ${colors.foliage} opacity-30 blur-sm animate-float`}
-              style={{
-                width: `${organismSize * 0.15}px`,
-                height: `${organismSize * 0.15}px`,
-                left: `${50 + (i - 1) * 30}%`,
-                top: `${50 + Math.sin(i) * 20}%`,
-                transform: 'translate(-50%, -50%)',
-                animationDelay: `${i * 0.5}s`,
-                animationDuration: '3s',
-              }}
-            />
-          ))}
         </div>
 
         {/* Explorer clusters orbiting the skill organism */}
@@ -417,7 +520,7 @@ function BioluminescentOrganism({
               : 'opacity-0 translate-y-2 scale-100 pointer-events-none'
           }`}
         >
-          <div className="px-3 py-1.5 bg-black/70 dark:bg-black/80 backdrop-blur-sm text-white text-xs font-medium rounded-full shadow-lg border border-white/10 group-hover:bg-black/90 group-hover:border-white/20">
+          <div className="px-3 py-1.5 bg-gray-900/70 dark:bg-gray-800/80 backdrop-blur-sm text-white text-xs font-medium rounded-full shadow-lg border border-gray-700 group-hover:bg-gray-900/90">
             {skillName}
           </div>
           <div className="text-xs text-gray-300 dark:text-gray-400 mt-1.5">
@@ -434,49 +537,18 @@ function BioluminescentOrganism({
   );
 }
 
-// Power transmission lines between planets - glowing, animated
+// Power transmission lines between planets - soft Ghibli style (removed for cleaner orbital view)
 function PowerTransmissionLine({
   from,
   to,
-  opacity = 0.4,
+  opacity = 0.2,
 }: {
   from: { x: number; y: number };
   to: { x: number; y: number };
   opacity?: number;
 }) {
-  const fromIso = gridToIsometric(from.x, from.y, 240);
-  const toIso = gridToIsometric(to.x, to.y, 240);
-
-  const length = Math.sqrt(
-    Math.pow(toIso.x - fromIso.x, 2) + Math.pow(toIso.y - fromIso.y, 2)
-  );
-  const angle = Math.atan2(toIso.y - fromIso.y, toIso.x - fromIso.x) * (180 / Math.PI);
-
-  return (
-    <div
-      className="absolute pointer-events-none"
-      style={{
-        left: `calc(50% + ${fromIso.x}px)`,
-        top: `calc(40% + ${fromIso.y}px)`,
-        width: `${length}px`,
-        transform: `rotate(${angle}deg)`,
-        transformOrigin: '0 50%',
-        opacity,
-      }}
-    >
-      {/* Base glow line */}
-      <div className="absolute h-0.5 bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent w-full animate-pulse-glow" />
-      
-      {/* Animated power pulse - traveling along the line */}
-      <div className="absolute h-1 bg-gradient-to-r from-transparent via-white/80 to-transparent w-32 animate-power-flow" />
-      
-      {/* Reverse power pulse */}
-      <div className="absolute h-1 bg-gradient-to-r from-transparent via-cyan-300/60 to-transparent w-32 animate-power-flow-reverse" />
-      
-      {/* Outer glow */}
-      <div className="absolute h-1 bg-gradient-to-r from-cyan-400/20 via-cyan-300/40 to-cyan-400/20 w-full blur-sm" />
-    </div>
-  );
+  // Lines are now subtle since planets orbit - keeping minimal for Ghibli aesthetic
+  return null; // Disabled for cleaner orbital view
 }
 
 export default function SkillTreesPage() {
@@ -521,30 +593,30 @@ export default function SkillTreesPage() {
   return (
     <main className="max-w-7xl mx-auto space-y-6 py-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">Knowledge Planets</h1>
+        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">Skill Orbits</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Each skill is a planet in this cosmic forest. Explorer clusters orbit around knowledge domains, connected by glowing power transmission lines.
+          Each skill orbits around the center sun. Click the sun to explore all skills. Explorer clusters orbit around each planet, creating a gentle dance of learning.
         </p>
       </div>
 
-      {/* Minimal Legend */}
-      <div className="border border-gray-800 dark:border-gray-700 rounded-lg p-4 bg-black/30 dark:bg-black/50 backdrop-blur-sm space-y-3">
+      {/* Minimal Legend - Ghibli style */}
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm space-y-3">
         <div className="flex items-center gap-6 text-xs">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gradient-to-br from-emerald-400 via-cyan-400 to-teal-400" />
-            <span className="text-gray-300 dark:text-gray-400">Public reveals</span>
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#7dd87d' }} />
+            <span className="text-gray-700 dark:text-gray-300">Public reveals</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gradient-to-br from-amber-400 via-orange-400 to-yellow-400" />
-            <span className="text-gray-300 dark:text-gray-400">Mixed</span>
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#f4a460' }} />
+            <span className="text-gray-700 dark:text-gray-300">Mixed</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400" />
-            <span className="text-gray-300 dark:text-gray-400">Private journeys</span>
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#87ceeb' }} />
+            <span className="text-gray-700 dark:text-gray-300">Private journeys</span>
           </div>
         </div>
-        <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
-          Hover planets to see details. Planet size reflects engagement. Clusters orbit showing explorer groups. Glowing lines transmit power between connected planets. Color zones show privacy preference clusters.
+        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+          Planets orbit around the center sun. Click the sun to explore all skills. Hover planets to see details. Planet size reflects engagement.
         </p>
       </div>
 
@@ -569,15 +641,20 @@ export default function SkillTreesPage() {
         </button>
       </div>
 
-      {/* Isometric Forest Canvas */}
+      {/* Ghibli-style Forest Canvas */}
       <div
-        className="relative min-h-[800px] rounded-lg overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 border border-gray-800 dark:border-gray-700 cursor-move"
+        className="relative min-h-[800px] rounded-lg overflow-hidden bg-gradient-to-b from-green-50 via-emerald-50 to-teal-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 cursor-move"
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
+        {/* Expanding background - Ghibli style */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-radial from-yellow-100/20 via-green-100/10 to-transparent dark:from-yellow-900/10 dark:via-green-900/5 dark:to-transparent animate-expand-background" />
+        </div>
+
         {/* Zoomable container */}
         <div
           className="absolute inset-0 origin-center transition-transform duration-200"
@@ -586,60 +663,40 @@ export default function SkillTreesPage() {
             transformOrigin: 'center center',
           }}
         >
-          {/* Isometric grid background - spaced for planets */}
-          <div className="absolute inset-0 opacity-10">
-            {[...Array(10)].map((_, x) =>
-              [...Array(8)].map((_, y) => {
-                const iso = gridToIsometric(x, y, 240);
-                return (
-                  <div
-                    key={`${x}-${y}`}
-                    className="absolute border border-cyan-500/10"
-                    style={{
-                      left: `calc(50% + ${iso.x}px)`,
-                      top: `calc(40% + ${iso.y}px)`,
-                      width: '240px',
-                      height: '120px',
-                      transform: 'translate(-50%, -50%) rotate(45deg) skew(-15deg, 15deg)',
-                      clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
-                    }}
-                  />
-                );
-              })
-            )}
-          </div>
+          {/* Center coordinates for orbital calculations - 50% of container */}
+          <div className="absolute left-1/2 top-1/2 w-0 h-0" id="center-sun" />
 
-          {/* Atmospheric depth layers */}
+          {/* Ghibli-style atmospheric layers */}
           <div className="absolute inset-0">
-          {/* Distant stars/particles */}
-          {[...Array(40)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute rounded-full bg-white opacity-20 animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${Math.random() * 2 + 1}px`,
-                height: `${Math.random() * 2 + 1}px`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${Math.random() * 2 + 2}s`,
-              }}
-            />
-          ))}
+            {/* Soft clouds/particles */}
+            {[...Array(20)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute rounded-full bg-white/20 dark:bg-white/10 blur-xl animate-float"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  width: `${Math.random() * 100 + 50}px`,
+                  height: `${Math.random() * 100 + 50}px`,
+                  animationDelay: `${Math.random() * 5}s`,
+                  animationDuration: `${Math.random() * 10 + 10}s`,
+                }}
+              />
+            ))}
 
-          {/* Privacy zones - color regions showing privacy preference clusters */}
-          <div className="absolute inset-0">
-            {/* Public zone (top-right) */}
-            <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-emerald-500/5 rounded-full blur-3xl" />
-            {/* Mixed zone (center) */}
-            <div className="absolute top-1/3 left-1/3 w-1/3 h-1/3 bg-amber-500/5 rounded-full blur-3xl" />
-            {/* Private zone (bottom-left) */}
-            <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-indigo-500/5 rounded-full blur-3xl" />
-          </div>
+            {/* Privacy zones - soft Ghibli colors */}
+            <div className="absolute inset-0">
+              {/* Public zone (top-right) */}
+              <div className="absolute top-0 right-0 w-1/3 h-1/3 rounded-full blur-3xl" style={{ backgroundColor: 'rgba(125, 216, 125, 0.1)' }} />
+              {/* Mixed zone (center) */}
+              <div className="absolute top-1/3 left-1/3 w-1/3 h-1/3 rounded-full blur-3xl" style={{ backgroundColor: 'rgba(244, 164, 96, 0.1)' }} />
+              {/* Private zone (bottom-left) */}
+              <div className="absolute bottom-0 left-0 w-1/3 h-1/3 rounded-full blur-3xl" style={{ backgroundColor: 'rgba(135, 206, 235, 0.1)' }} />
+            </div>
 
-          {/* Subtle fog/mist layers */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-900/10 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-slate-900/60 to-transparent" />
+            {/* Subtle mist layers */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-50/20 to-transparent dark:via-gray-800/20" />
+            <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-green-100/40 to-transparent dark:from-gray-900/60 dark:to-transparent" />
           </div>
 
           {/* Power transmission lines between planets */}
@@ -660,11 +717,29 @@ export default function SkillTreesPage() {
             )}
           </div>
 
-          {/* Bioluminescent Organisms */}
-          <div className="relative w-full h-full min-h-[800px]">
-          {mockSkillTrees.map((tree) => (
-            <BioluminescentOrganism key={tree.skillId} {...tree} />
-            ))}
+          {/* Center Sun */}
+          <CenterSun />
+
+          {/* Planets orbiting the sun */}
+          <div className="relative w-full h-full min-h-[800px]" style={{ position: 'relative' }}>
+            {mockSkillTrees.map((tree, index) => {
+              // Calculate orbital parameters - center is 50% of container
+              const baseDistance = 180 + (index * 40); // Staggered orbits
+              const baseAngle = (index * 360) / mockSkillTrees.length; // Evenly spaced
+              const orbitDuration = 30 + (index * 5); // Different speeds for visual interest
+              
+              return (
+                <BioluminescentOrganism
+                  key={tree.skillId}
+                  {...tree}
+                  centerX={0} // Will be calculated relative to center
+                  centerY={0}
+                  orbitAngle={baseAngle}
+                  orbitDistance={baseDistance}
+                  orbitDuration={orbitDuration}
+                />
+              );
+            })}
           </div>
 
           {/* Overlap clusters - visual indicators where skills intersect */}
