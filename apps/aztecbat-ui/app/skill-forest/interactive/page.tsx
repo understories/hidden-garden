@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import {
   SpringCanopyTree,
@@ -183,6 +183,48 @@ export default function InteractiveSkillForestPage() {
   const { positions, clusters } = useMemo(() => calculateConstellationPositions(mockSkillTrees), []);
   const [hoveredCluster, setHoveredCluster] = useState<string | null>(null);
   const [hoveredSkill, setHoveredSkill] = useState<string | null>(null);
+  
+  // Zoom and pan state
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle zoom with mouse wheel
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const newZoom = Math.max(0.5, Math.min(2, zoom * delta));
+    setZoom(newZoom);
+  }, [zoom]);
+
+  // Handle pan with mouse drag
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button === 0) { // Left mouse button
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+    }
+  }, [pan]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isDragging) {
+      setPan({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      });
+    }
+  }, [isDragging, dragStart]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Reset zoom and pan
+  const handleReset = useCallback(() => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }, []);
 
   return (
     <main className="max-w-7xl mx-auto space-y-6 py-8 px-4">
@@ -191,10 +233,44 @@ export default function InteractiveSkillForestPage() {
         <p className="text-gray-600 dark:text-gray-400">
           Explore the forest of skills in a constellation layout, clustered by privacy mode.
         </p>
+        <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+          💡 Scroll to zoom • Drag to pan • Hover clusters and trees for details
+        </p>
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={handleReset}
+          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg transition-colors text-sm font-medium"
+        >
+          Reset View
+        </button>
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          Zoom: {Math.round(zoom * 100)}%
+        </div>
       </div>
 
       {/* Constellation Visualization */}
-      <div className="relative w-full h-[700px] border-2 border-gray-300 dark:border-gray-700 rounded-lg bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
+      <div
+        ref={containerRef}
+        className="relative w-full h-[600px] md:h-[700px] border-2 border-gray-300 dark:border-gray-700 rounded-lg bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden cursor-move"
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        style={{
+          cursor: isDragging ? 'grabbing' : 'grab',
+        }}
+      >
+        <div
+          className="absolute inset-0 transition-transform duration-200 ease-out"
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: 'center center',
+          }}
+        >
         {/* Subtle starfield background */}
         {Array.from({ length: 30 }).map((_, i) => {
           const x = ((i * 17) % 100);
@@ -227,7 +303,7 @@ export default function InteractiveSkillForestPage() {
             <div key={privacyMode}>
               {/* Interactive hover zone */}
               <div
-                className="absolute rounded-full cursor-pointer transition-opacity duration-300"
+                className="absolute rounded-full cursor-pointer transition-all duration-300 ease-out"
                 style={{
                   left: `${centerX - zone.spread}%`,
                   top: `${centerY - zone.spread}%`,
@@ -238,6 +314,7 @@ export default function InteractiveSkillForestPage() {
                   borderWidth: '2px',
                   filter: 'blur(20px)',
                   opacity: isHovered ? 0.3 : 0.15,
+                  transform: isHovered ? 'scale(1.1)' : 'scale(1)',
                 }}
                 onMouseEnter={() => setHoveredCluster(privacyMode)}
                 onMouseLeave={() => setHoveredCluster(null)}
@@ -246,7 +323,7 @@ export default function InteractiveSkillForestPage() {
               {/* Cluster info panel */}
               {isHovered && (
                 <div
-                  className="absolute z-30 bg-white dark:bg-gray-800 rounded-lg shadow-xl border-2 p-4 min-w-[200px] pointer-events-none"
+                  className="absolute z-30 bg-white dark:bg-gray-800 rounded-lg shadow-xl border-2 p-4 min-w-[200px] pointer-events-none opacity-0 animate-[fadeIn_0.2s_ease-out_forwards]"
                   style={{
                     left: `${centerX + zone.spread + 2}%`,
                     top: `${centerY}%`,
@@ -324,7 +401,7 @@ export default function InteractiveSkillForestPage() {
         {/* Center silver tree */}
         <Link
           href="/skills"
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer hover:scale-105 transition-transform duration-300"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer hover:scale-110 transition-all duration-300 ease-out"
           aria-label="Navigate to Skills page"
         >
           <div className="relative">
@@ -346,7 +423,7 @@ export default function InteractiveSkillForestPage() {
             <div key={skill.skillId}>
               <Link
                 href={`/leaderboard/${skill.skillId}`}
-                className="absolute cursor-pointer hover:scale-110 transition-transform duration-300 z-20"
+                className="absolute cursor-pointer hover:scale-110 transition-all duration-300 ease-out z-20"
                 style={{
                   left: `${x}%`,
                   top: `${y}%`,
@@ -357,13 +434,13 @@ export default function InteractiveSkillForestPage() {
               >
                 {/* Enhanced glow on hover */}
                 <div
-                  className="absolute rounded-full blur-md -z-10 transition-opacity duration-300"
+                  className="absolute rounded-full blur-md -z-10 transition-all duration-300 ease-out"
                   style={{
                     width: '40px',
                     height: '40px',
                     left: '50%',
                     top: '50%',
-                    transform: 'translate(-50%, -50%)',
+                    transform: isHovered ? 'translate(-50%, -50%) scale(1.3)' : 'translate(-50%, -50%) scale(1)',
                     backgroundColor: privacyColor,
                     opacity: isHovered ? 0.4 : 0.2,
                   }}
@@ -375,7 +452,7 @@ export default function InteractiveSkillForestPage() {
               {/* Tree tooltip */}
               {isHovered && (
                 <div
-                  className="absolute z-30 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg shadow-xl p-3 min-w-[180px] pointer-events-none"
+                  className="absolute z-30 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg shadow-xl p-3 min-w-[180px] pointer-events-none opacity-0 animate-[fadeIn_0.2s_ease-out_forwards]"
                   style={{
                     left: `${x > 50 ? x - 5 : x + 5}%`,
                     top: `${y > 50 ? y - 5 : y + 5}%`,
@@ -416,6 +493,7 @@ export default function InteractiveSkillForestPage() {
             </div>
           );
         })}
+        </div>
       </div>
 
       {/* Legend */}
