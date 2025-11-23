@@ -7,6 +7,7 @@
 
 'use client';
 
+import Link from 'next/link';
 import { SkillTreeTile } from '../../components/SkillTreeTile';
 
 // Mock skill tree data - in production this would come from the backend
@@ -144,6 +145,17 @@ export default function SkillForestPage() {
             Each skill in this lunar forest grows from the way people learn in Aztec. Brighter trees reflect more public reveals; cooler tones signal more private paths. Your learning can stay private while still shaping the ecosystem. Every choice—whether to reveal or keep private—contributes to the forest's unique glow.
           </p>
         </div>
+      </div>
+
+      {/* Enter Interactive Forest Button */}
+      <div className="flex justify-center">
+        <Link
+          href="/skill-forest/interactive"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+        >
+          <span>🌲</span>
+          <span>Enter the Skill Forest</span>
+        </Link>
       </div>
 
       {/* Bioluminescent Forest Grid */}
