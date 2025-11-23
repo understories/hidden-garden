@@ -129,6 +129,9 @@ importers:
       ethers:
         specifier: ^6.15.0
         version: 6.15.0
+      testing:
+        specifier: link:@aztec/accounts/testing
+        version: link:@aztec/accounts/testing
     devDependencies:
       '@jest/globals':
         specifier: ^29.7.0
@@ -10404,7 +10407,7 @@ packages:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.0(typescript@5.9.3)(zod@3.25.76)
+      abitype: 1.1.0(typescript@5.9.3)(zod@3.22.4)
       eventemitter3: 5.0.1
       typescript: 5.9.3
     transitivePeerDependencies:
