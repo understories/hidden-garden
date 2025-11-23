@@ -18,13 +18,9 @@ import { ethers } from 'ethers';
  * - { ok: true, txHash, skillHash, leaderboard } on success
  * - { ok: false, error: string } on error
  * 
- * NOTE: This route currently operates in MOCK mode for local development.
- * To switch to real Aztec devnet:
- * 1. Set NEXT_PUBLIC_USE_REAL_AZTEC=true
- * 2. Ensure Aztec devnet is running (pnpm aztec:devnet)
- * 3. Set NEXT_PUBLIC_PXE_URL to your PXE URL (e.g., http://localhost:8080)
- * 4. For signer: Use a real private key from environment variable or
- *    implement a server-side wallet pattern
+ * Requires:
+ * - Aztec PXE running at PXE_URL (default: http://localhost:8080)
+ * - SERVER_PRIVATE_KEY environment variable set
  */
 export async function POST(request: NextRequest) {
   try {
@@ -71,17 +67,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Dev UI always uses REAL Aztec - no mock mode
-    // This ensures we're demonstrating real Aztec privacy
-    // Note: We don't check for @aztec/aztec.js here - let createAztecClient handle it
-    // The check happens in aztecClient.ts loadAztecSDK() which handles ESM imports properly
+    // Require real Aztec PXE connection
+    const pxeUrl = process.env.NEXT_PUBLIC_PXE_URL || 'http://localhost:8080';
+    
+    // Verify PXE is reachable before proceeding
+    try {
+      const response = await fetch(pxeUrl, { 
+        method: 'GET',
+        signal: AbortSignal.timeout(3000) // 3 second timeout
+      });
+      if (!response.ok) {
+        throw new Error(`PXE returned status ${response.status}`);
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Aztec PXE is not available at ${pxeUrl}. ` +
+        `Error: ${errorMsg}\n\n` +
+        `To start Aztec sandbox:\n` +
+        `  pnpm aztec:sandbox\n\n` +
+        `Or with Docker:\n` +
+        `  docker run -it -p 8080:8080 aztecprotocol/sandbox:latest\n\n` +
+        `Please ensure the Aztec sandbox is running before using this endpoint.`
+      );
+    }
 
-    console.log('[publish-and-fetch] Aztec mode: REAL (dev UI always uses real Aztec)');
+    console.log('[publish-and-fetch] Aztec mode: REAL');
 
-    // Create Aztec client (always real mode)
-    // This will handle SDK loading and provide clear errors if needed
+    // Create Aztec client (REAL MODE ONLY)
     const aztecClient = createAztecClient('real', {
-      pxeUrl: process.env.NEXT_PUBLIC_PXE_URL || 'http://localhost:8080',
+      pxeUrl,
     });
 
     // Create signer (always real for dev UI)
