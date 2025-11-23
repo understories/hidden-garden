@@ -96,7 +96,7 @@ import type { UserIdentity } from './api';
 // ============================================================================
 // Skill Profile
 // ============================================================================
-export type { SkillProfile, ExternalBadge } from './types';
+export type { SkillProfile, ExternalBadge, QuestSummary } from './types';
 export { getSkillProfile } from './skillProfile';
 
 // ============================================================================
