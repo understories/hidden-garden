@@ -131,18 +131,44 @@ User provided 3 reference images showing:
 
 ---
 
-## Next Steps Needed
-1. User to provide:
-   - Specific visual references or examples they like
-   - What aspects of current design are problematic
-   - Desired aesthetic direction
-   - Any design system or style guide references
+## Design Guidance (Latest)
 
-2. Potential approaches:
-   - Use SVG for tree shapes (more detailed than CSS)
-   - Study reference images more carefully for proportions
-   - Simplify to cleaner, more minimal approach
-   - Consider different layout (not isometric if it's not working)
+### Style Requirements
+- **Aesthetic:** "Lunar-punk bioluminescent forest"
+  - Dark background
+  - Glowing foliage
+  - Game-like, isometric-inspired tiles
+  - Clean, flat vector trees (not realistic)
+  - Clear, cute silhouettes
+
+### What's Wrong with Current `/skill-canopy`
+1. Trees are simple CSS shapes - unpolished and flat
+2. Isometric projection looks off - tiles don't feel like real islands
+3. Doesn't capture organic, lush look of reference tiles
+
+### Target Direction
+- **Use SVG for trees** - nicer shapes and gradients
+- **Simple "2.5D" tiles** - rectangles with slight perspective effect
+  - Dark edge + lighter top
+  - Each cluster = one island tile
+  - Each skill = a tree on that tile
+- **Leaf color encodes privacy:**
+  - Public-heavy: emerald/cyan
+  - Mixed: amber/orange
+  - Mostly-private: blue/purple
+- **Trees are clickable** → link to `/leaderboard/[skillId]`
+
+### Technical Constraints
+- Next.js App Router + React
+- Tailwind CSS only (no external graph/3D libraries)
+- Must support dark mode
+- Respect `prefers-reduced-motion`
+- Priority: High Power / High Ease ideas
+
+---
+
+## Next Steps
+Waiting for implementation commands.
 
 ---
 
