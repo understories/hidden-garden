@@ -18,7 +18,9 @@ hidden-garden/
 │
 └── docs/
     ├── team_split_and_ownership.md  # Ownership definitions
-    └── teamA_phase2_phase3_summary.md  # Team A handoff
+    ├── teamA_phase2_phase3_summary.md  # Team A handoff
+    ├── WHITE_HAT_OCTALYSIS_REFERENCE.md  # UX design principles
+    └── WHITE_HAT_UX_GUIDE.md  # Implementation guide for UI components
 ```
 
 ## Package Dependencies
