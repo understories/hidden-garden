@@ -11,6 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { loadAztecConfig } from './aztec/configLoader';
 import { setupWallet } from './aztec/utils/setupWallet';
+import { validatePXEUrl, getPXEErrorMessage } from './aztec/utils/pxeHealthCheck';
 
 // Aztec.js types - using type-only imports to avoid runtime dependency issues during build
 // The actual values will be imported dynamically at runtime
@@ -214,6 +215,14 @@ export class RealAztecClient implements AztecClient {
         );
       }
       
+      // Validate PXE URL format
+      if (!validatePXEUrl(pxeUrl)) {
+        throw new Error(
+          `RealAztecClient: Invalid PXE URL format: ${pxeUrl}. ` +
+          'Expected format: http://hostname:port or https://hostname:port'
+        );
+      }
+      
       // Load Aztec SDK modules FIRST (before using any SDK functions)
       const sdkLoaded = await loadAztecSDK();
       if (!sdkLoaded) {
@@ -238,21 +247,17 @@ export class RealAztecClient implements AztecClient {
         this.pxe = createPXEClient(pxeUrl);
       } catch (error) {
         throw new Error(
-          `RealAztecClient: Could not create Aztec node client for ${pxeUrl}. ` +
-          `Error: ${error instanceof Error ? error.message : String(error)}. ` +
-          `Make sure @aztec/aztec.js is installed and Aztec devnet is running.`
+          getPXEErrorMessage(pxeUrl, error)
         );
       }
       
       // Wait for node to be ready (in v3, waitForNode replaces waitForPXE)
+      // This validates the PXE connection
       try {
         await waitForPXE(this.pxe, this.aztecConfig.timeout);
       } catch (error) {
         throw new Error(
-          `RealAztecClient: Could not connect to Aztec node at ${pxeUrl}. ` +
-          `Is Aztec sandbox/devnet running? ` +
-          `Start it with: pnpm aztec:devnet or aztec start --sandbox. ` +
-          `Error: ${error instanceof Error ? error.message : String(error)}`
+          getPXEErrorMessage(pxeUrl, error)
         );
       }
 
