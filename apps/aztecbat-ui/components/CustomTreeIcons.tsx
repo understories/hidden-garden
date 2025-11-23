@@ -8,7 +8,7 @@
 
 import React from 'react';
 
-type PrivacyMode = 'public-heavy' | 'mixed' | 'private-heavy';
+export type PrivacyMode = 'public-heavy' | 'mixed' | 'private-heavy';
 
 type TreeIconProps = {
   privacy: PrivacyMode;
