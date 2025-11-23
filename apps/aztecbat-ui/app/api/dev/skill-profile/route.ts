@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSkillProfile } from '@hidden-garden/core-logic';
-import { listAllQuests } from '@hidden-garden/game-engine';
 
 /**
  * API Route: GET /api/dev/skill-profile
@@ -56,23 +55,10 @@ export async function GET(request: NextRequest) {
       indexerBaseUrl,
     });
 
-    // Populate questSummaries from quest registry if empty
-    // This mirrors what's stored privately in Aztec
-    if (!profile.questSummaries || profile.questSummaries.length === 0) {
-      const allQuests = listAllQuests();
-      profile.questSummaries = allQuests.map(quest => ({
-        id: quest.questId,
-        title: quest.name,
-        score: null,
-        status: 'not_started' as const,
-      }));
-    }
-
     console.log('[skill-profile] Success:', {
       humanVerified: profile.humanVerified,
       aztecBuilderTier: profile.aztecBuilderTier,
       allowAgents: profile.allowAgents,
-      questSummariesCount: profile.questSummaries?.length || 0,
     });
 
     return NextResponse.json({ ok: true, profile });
