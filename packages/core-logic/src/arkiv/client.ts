@@ -69,10 +69,22 @@ export const arkivPublicClient = rpcUrl
 // Note: If ARKIV_PRIVATE_KEY is set but invalid, this will throw at module load time
 export const arkivWalletClient =
   rpcUrl && process.env.ARKIV_PRIVATE_KEY
-    ? createWalletClient({
-        chain,
-        transport: http(rpcUrl),
-        account: privateKeyToAccount(readArkivPrivateKey()),
-      })
+    ? (() => {
+        // Debug logging in development (server-side only)
+        if (process.env.NODE_ENV === 'development') {
+          const raw = process.env.ARKIV_PRIVATE_KEY;
+          console.log('[Arkiv] ARKIV_PRIVATE_KEY present:', !!raw);
+          if (raw) {
+            console.log('[Arkiv] ARKIV_PRIVATE_KEY length:', raw.trim().length);
+            console.log('[Arkiv] ARKIV_PRIVATE_KEY startsWith0x:', raw.trim().startsWith('0x'));
+          }
+        }
+        
+        return createWalletClient({
+          chain,
+          transport: http(rpcUrl),
+          account: privateKeyToAccount(readArkivPrivateKey()),
+        });
+      })()
     : null;
 
