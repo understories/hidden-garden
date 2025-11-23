@@ -174,10 +174,18 @@ export async function submitTierProofWithSBTCheck(
     );
   }
 
-  const { proof, publicInputs: aztecPublicInputs } = proofResult.proof;
-
+  // Extract proof from result
+  const { proof } = proofResult.proof;
+  
+  // Extract raw return values if available (from the fixed aztecClient)
+  // These contain the public inputs from the Noir circuit
+  const rawReturnValues = (proofResult as any).rawReturnValues;
+  
   // 3. Encode public inputs for L1 contract
   // Format: abi.encode(userAddress, skillHash, minTier)
+  // CRITICAL FIX: We use the user's Ethereum address and skill hash for L1 encoding,
+  // NOT the Aztec address from the circuit. The circuit's public inputs are used for
+  // proof verification, but L1 needs the Ethereum address.
   const encodedPublicInputs = encodeTierProofPublicInputs(
     userAddress as Address,
     skillHash,
