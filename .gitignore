@@ -99,6 +99,7 @@ playground/node_modules/
 # Next.js dev logs
 .next/**/*.log
 
+<<<<<<< HEAD
 # Temporary documentation files (internal reference only)
 COMMIT_MESSAGES.md
 HASHING_REQUIREMENTS.md
@@ -123,3 +124,6 @@ docs/DEPLOYMENT_READINESS.md
 docs/VERCEL_DEPLOYMENT.md
 docs/VERCEL_DEPLOYMENT_ALIGNED.md
 
+=======
+docs/GITHUB_ABOUT_SECTION.md
+>>>>>>> cbf262d62a74aeaf975f3d338b78126292d291e9
