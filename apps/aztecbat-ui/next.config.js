@@ -47,12 +47,51 @@ const nextConfig = {
         }, {}),
       };
     }
+    
+    // Ignore test files and test dependencies from node_modules
+    // This prevents Next.js from trying to bundle test files from Aztec dependencies
+    const testDeps = ['tap', 'desm', 'fastbench', 'pino-elasticsearch', 'why-is-node-running'];
+    testDeps.forEach(dep => {
+      config.plugins.push(
+        new webpack.IgnorePlugin({
+          resourceRegExp: new RegExp(`^${dep.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
+        })
+      );
+    });
+    
+    // Ignore test directories and test files in node_modules
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        checkResource(resource, context) {
+          // Ignore test files and test directories in node_modules
+          if (context.includes('node_modules')) {
+            if (resource.includes('/test/') || 
+                resource.includes('/tests/') ||
+                resource.match(/\.(test|spec)\.(js|mjs|ts|tsx)$/)) {
+              return true;
+            }
+          }
+          return false;
+        },
+      })
+    );
+    
     return config;
   },
-  // Turbopack config (Next.js 16 uses Turbopack by default)
-  turbopack: {
-    // Turbopack handles Node.js module exclusions automatically
-    // No additional config needed for fs/path exclusion
+  // Use webpack instead of turbopack for better control over module resolution
+  // This helps with excluding test files from Aztec dependencies
+  experimental: {
+    turbo: {
+      resolveAlias: {
+        // Exclude test files
+        'tap': false,
+        'desm': false,
+        'fastbench': false,
+        'pino-elasticsearch': false,
+        'why-is-node-running': false,
+      },
+      resolveExtensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+    },
   },
 };
 
