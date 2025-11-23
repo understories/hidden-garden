@@ -26,6 +26,19 @@ export {
 } from './contracts';
 
 // ============================================================================
+// Tier Publisher (Self-Gated Tier Publishing)
+// ============================================================================
+export {
+  submitTierProofWithSBTCheck,
+  encodeTierProofPublicInputs,
+  checkSelfHumanSBT,
+} from './tierPublisher';
+export type {
+  SubmitTierProofParams,
+  SubmitTierProofResult,
+} from './tierPublisher';
+
+// ============================================================================
 // Leaderboard Client
 // ============================================================================
 export type { SkillHash, LeaderboardEntry, UserSkill, LeaderboardClientConfig } from './leaderboardClient';
