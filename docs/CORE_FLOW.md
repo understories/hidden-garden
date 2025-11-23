@@ -183,12 +183,39 @@ See `tests/integration/first_quest_aztec_flow.test.ts` for the full test suite.
 
 ✅ **Implemented:**
 - Quest validation (three quests working in aztec_builder path)
-- Quest ID hash computation with real Pedersen hashes
+- Quest ID hash computation with **real Pedersen hashes** (computed from Noir, hard-coded in TypeScript)
+- Hash consistency tests verifying TypeScript hashes match Noir circuit
 - Aztec client interface with both mock and real implementations
 - Complete UI flow for quest → Aztec → L1
 - L1 contract integration (wagmi)
 - Real Aztec client implementation (`RealAztecClient`)
 - Factory function for client creation (`createAztecClient`)
+
+### Hash Testing
+
+**How to run hash tests:**
+```bash
+# Test hash computation and consistency
+pnpm --filter @hidden-garden/core-logic test hashing hash_consistency
+
+# Verify all hash values match Noir circuit
+pnpm --filter @hidden-garden/core-logic test hash_consistency
+```
+
+**How to run integration tests:**
+```bash
+# Set up Aztec devnet (if not already running)
+pnpm aztec:devnet
+
+# Set environment variable
+export AZTEC_PXE_URL=http://localhost:8080
+
+# Run integration tests
+pnpm --filter @hidden-garden/core-logic test aztec_first_quest
+pnpm --filter @hidden-garden/core-logic test three_quests
+
+# Tests will skip cleanly if AZTEC_PXE_URL is not set
+```
 
 ⚠️ **Partial Implementation:**
 - **For three quests in aztec_builder path:** Real Aztec devnet integration is implemented
