@@ -14,8 +14,9 @@
     "aztec:version": "aztec --version || echo '⚠️  aztec CLI not installed'"
   },
   "dependencies": {
-    "@aztec/aztec.js": "3.0.0-devnet.5",
     "@aztec/accounts": "3.0.0-devnet.5",
+    "@aztec/aztec.js": "3.0.0-devnet.5",
+    "@aztec/bb.js": "^2.1.7",
     "ethers": "^6.15.0"
   },
   "_aztecVersionInfo": {
