@@ -10,7 +10,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
-// Mock skill tree data - in production this would come from the backend
+// Mock skill tree data with relationship/overlap information
 const mockSkillTrees = [
   {
     skillId: 'aztec-protocol',
@@ -18,7 +18,11 @@ const mockSkillTrees = [
     participantCount: 1247,
     privacyMode: 'mostly-private' as const,
     privacyStats: { public: 15, mixed: 15, private: 70 },
-    size: 'large' as const, // Tree size based on engagement
+    size: 'large' as const,
+    // Skills that overlap (users learning both)
+    overlaps: ['zero-knowledge-basics', 'advanced-circuits'],
+    // Isometric grid position
+    gridPos: { x: 2, y: 1 },
   },
   {
     skillId: 'rust-foundations',
@@ -27,6 +31,8 @@ const mockSkillTrees = [
     privacyMode: 'public-heavy' as const,
     privacyStats: { public: 70, mixed: 20, private: 10 },
     size: 'xlarge' as const,
+    overlaps: ['noir-basics', 'advanced-circuits'],
+    gridPos: { x: 4, y: 3 },
   },
   {
     skillId: 'zero-knowledge-basics',
@@ -35,6 +41,8 @@ const mockSkillTrees = [
     privacyMode: 'mixed' as const,
     privacyStats: { public: 40, mixed: 40, private: 20 },
     size: 'medium' as const,
+    overlaps: ['aztec-protocol', 'advanced-circuits', 'noir-basics'],
+    gridPos: { x: 1, y: 2 },
   },
   {
     skillId: 'advanced-circuits',
@@ -43,6 +51,8 @@ const mockSkillTrees = [
     privacyMode: 'mostly-private' as const,
     privacyStats: { public: 20, mixed: 20, private: 60 },
     size: 'medium' as const,
+    overlaps: ['aztec-protocol', 'rust-foundations', 'zero-knowledge-basics'],
+    gridPos: { x: 3, y: 2 },
   },
   {
     skillId: 'l1-l2-bridging',
@@ -51,6 +61,8 @@ const mockSkillTrees = [
     privacyMode: 'mixed' as const,
     privacyStats: { public: 35, mixed: 45, private: 20 },
     size: 'small' as const,
+    overlaps: ['rust-foundations'],
+    gridPos: { x: 5, y: 4 },
   },
   {
     skillId: 'noir-basics',
@@ -59,6 +71,8 @@ const mockSkillTrees = [
     privacyMode: 'public-heavy' as const,
     privacyStats: { public: 75, mixed: 15, private: 10 },
     size: 'large' as const,
+    overlaps: ['rust-foundations', 'zero-knowledge-basics'],
+    gridPos: { x: 4, y: 1 },
   },
 ];
 
@@ -130,6 +144,13 @@ function getTreeSize(size: TreeSize): {
   }
 }
 
+// Convert isometric grid position to screen coordinates
+function gridToIsometric(gridX: number, gridY: number, tileSize: number = 120): { x: number; y: number } {
+  const isoX = (gridX - gridY) * (tileSize * 0.5);
+  const isoY = (gridX + gridY) * (tileSize * 0.25);
+  return { x: isoX, y: isoY };
+}
+
 function BioluminescentOrganism({
   skillId,
   skillName,
@@ -137,21 +158,25 @@ function BioluminescentOrganism({
   privacyMode,
   privacyStats,
   size,
-  position,
-}: typeof mockSkillTrees[0] & { position: { x: number; y: number } }) {
+  gridPos,
+  overlaps,
+}: typeof mockSkillTrees[0]) {
   const colors = getTreeColors(privacyMode);
   const [isHovered, setIsHovered] = useState(false);
 
   // Organic shape sizes based on engagement
-  const organismSize = size === 'small' ? 60 : size === 'medium' ? 80 : size === 'large' ? 100 : 120;
-  const pulseSize = organismSize * 1.3;
+  const organismSize = size === 'small' ? 50 : size === 'medium' ? 70 : size === 'large' ? 90 : 110;
+  const pulseSize = organismSize * 1.4;
+
+  // Convert grid position to isometric coordinates
+  const isoPos = gridToIsometric(gridPos.x, gridPos.y);
 
   return (
     <div
-      className="absolute group cursor-pointer"
+      className="absolute group cursor-pointer z-10"
       style={{
-        left: `${position.x}%`,
-        top: `${position.y}%`,
+        left: `calc(50% + ${isoPos.x}px)`,
+        top: `calc(40% + ${isoPos.y}px)`,
         transform: 'translate(-50%, -50%)',
       }}
       onMouseEnter={() => setIsHovered(true)}
@@ -234,23 +259,53 @@ function BioluminescentOrganism({
           <div className="text-xs text-gray-300 dark:text-gray-400 mt-1.5">
             {participantCount.toLocaleString()} explorers
           </div>
+          {overlaps && overlaps.length > 0 && (
+            <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              Overlaps with {overlaps.length} skill{overlaps.length > 1 ? 's' : ''}
+            </div>
+          )}
         </div>
       </Link>
     </div>
   );
 }
 
-export default function SkillTreesPage() {
-  // Organic positions for organisms in the dark forest
-  const organismPositions = [
-    { x: 20, y: 30 },
-    { x: 75, y: 25 },
-    { x: 45, y: 55 },
-    { x: 15, y: 70 },
-    { x: 80, y: 65 },
-    { x: 50, y: 85 },
-  ];
+// Connection lines showing skill overlaps
+function ConnectionLine({
+  from,
+  to,
+  opacity = 0.3,
+}: {
+  from: { x: number; y: number };
+  to: { x: number; y: number };
+  opacity?: number;
+}) {
+  const fromIso = gridToIsometric(from.x, from.y);
+  const toIso = gridToIsometric(to.x, to.y);
 
+  const length = Math.sqrt(
+    Math.pow(toIso.x - fromIso.x, 2) + Math.pow(toIso.y - fromIso.y, 2)
+  );
+  const angle = Math.atan2(toIso.y - fromIso.y, toIso.x - fromIso.x) * (180 / Math.PI);
+
+  return (
+    <div
+      className="absolute pointer-events-none"
+      style={{
+        left: `calc(50% + ${fromIso.x}px)`,
+        top: `calc(40% + ${fromIso.y}px)`,
+        width: `${length}px`,
+        transform: `rotate(${angle}deg)`,
+        transformOrigin: '0 50%',
+        opacity,
+      }}
+    >
+      <div className="h-px bg-gradient-to-r from-white/20 via-cyan-300/30 to-white/20 w-full" />
+    </div>
+  );
+}
+
+export default function SkillTreesPage() {
   return (
     <main className="max-w-7xl mx-auto space-y-6 py-8">
       <div>
@@ -277,16 +332,39 @@ export default function SkillTreesPage() {
           </div>
         </div>
         <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
-          Hover to discover. Each organism's size reflects how many have explored it. The glow reveals privacy patterns—brighter for shared knowledge, cooler for private paths.
+          Hover to discover. Size reflects engagement. Glow reveals privacy patterns. Lines connect overlapping skills—where learners explore multiple subjects. Color zones show privacy preference clusters across the forest.
         </p>
       </div>
 
-      {/* Dark Forest Canvas */}
-      <div className="relative min-h-[700px] rounded-lg overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 border border-gray-800 dark:border-gray-700">
+      {/* Isometric Forest Canvas */}
+      <div className="relative min-h-[800px] rounded-lg overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 border border-gray-800 dark:border-gray-700">
+        {/* Isometric grid background */}
+        <div className="absolute inset-0 opacity-10">
+          {[...Array(8)].map((_, x) =>
+            [...Array(6)].map((_, y) => {
+              const iso = gridToIsometric(x, y, 120);
+              return (
+                <div
+                  key={`${x}-${y}`}
+                  className="absolute border border-cyan-500/10"
+                  style={{
+                    left: `calc(50% + ${iso.x}px)`,
+                    top: `calc(40% + ${iso.y}px)`,
+                    width: '120px',
+                    height: '60px',
+                    transform: 'translate(-50%, -50%) rotate(45deg) skew(-15deg, 15deg)',
+                    clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
+                  }}
+                />
+              );
+            })
+          )}
+        </div>
+
         {/* Atmospheric depth layers */}
         <div className="absolute inset-0">
           {/* Distant stars/particles */}
-          {[...Array(30)].map((_, i) => (
+          {[...Array(40)].map((_, i) => (
             <div
               key={i}
               className="absolute rounded-full bg-white opacity-20 animate-pulse"
@@ -301,25 +379,70 @@ export default function SkillTreesPage() {
             />
           ))}
 
+          {/* Privacy zones - color regions showing privacy preference clusters */}
+          <div className="absolute inset-0">
+            {/* Public zone (top-right) */}
+            <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-emerald-500/5 rounded-full blur-3xl" />
+            {/* Mixed zone (center) */}
+            <div className="absolute top-1/3 left-1/3 w-1/3 h-1/3 bg-amber-500/5 rounded-full blur-3xl" />
+            {/* Private zone (bottom-left) */}
+            <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-indigo-500/5 rounded-full blur-3xl" />
+          </div>
+
           {/* Subtle fog/mist layers */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-900/10 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-slate-900/50 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-slate-900/60 to-transparent" />
+        </div>
+
+        {/* Connection lines showing skill overlaps */}
+        <div className="absolute inset-0 w-full h-full min-h-[800px]">
+          {mockSkillTrees.map((tree) =>
+            tree.overlaps?.map((overlapId) => {
+              const targetTree = mockSkillTrees.find((t) => t.skillId === overlapId);
+              if (!targetTree) return null;
+              return (
+                <ConnectionLine
+                  key={`${tree.skillId}-${overlapId}`}
+                  from={tree.gridPos}
+                  to={targetTree.gridPos}
+                  opacity={0.2}
+                />
+              );
+            })
+          )}
         </div>
 
         {/* Bioluminescent Organisms */}
-        <div className="relative w-full h-full min-h-[700px]">
-          {mockSkillTrees.map((tree, index) => (
-            <BioluminescentOrganism
-              key={tree.skillId}
-              {...tree}
-              position={organismPositions[index] || { x: 50, y: 50 }}
-            />
+        <div className="relative w-full h-full min-h-[800px]">
+          {mockSkillTrees.map((tree) => (
+            <BioluminescentOrganism key={tree.skillId} {...tree} />
           ))}
         </div>
 
+        {/* Overlap clusters - visual indicators where skills intersect */}
+        {mockSkillTrees
+          .filter((tree) => tree.overlaps && tree.overlaps.length > 0)
+          .map((tree) => {
+            const iso = gridToIsometric(tree.gridPos.x, tree.gridPos.y);
+            return (
+              <div
+                key={`cluster-${tree.skillId}`}
+                className="absolute rounded-full border border-cyan-400/10 pointer-events-none"
+                style={{
+                  left: `calc(50% + ${iso.x}px)`,
+                  top: `calc(40% + ${iso.y}px)`,
+                  width: `${(tree.overlaps?.length || 0) * 20 + 100}px`,
+                  height: `${(tree.overlaps?.length || 0) * 20 + 100}px`,
+                  transform: 'translate(-50%, -50%)',
+                  animation: 'pulse 4s ease-in-out infinite',
+                }}
+              />
+            );
+          })}
+
         {/* Subtle instruction hint */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-600 text-center">
-          <span className="opacity-50">Hover to discover</span>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-600 text-center z-20">
+          <span className="opacity-50">Hover to discover • Lines show skill overlaps</span>
         </div>
       </div>
     </main>
