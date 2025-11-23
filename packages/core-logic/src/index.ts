@@ -99,6 +99,12 @@ export type { SkillProfile, ExternalBadge } from './types';
 export { getSkillProfile } from './skillProfile';
 
 // ============================================================================
+// Leaderboard Orchestrator
+// ============================================================================
+export type { PublishAndFetchParams, PublishAndFetchResult } from './leaderboardOrchestrator';
+export { publishAndFetchAztecBuilderLeaderboard } from './leaderboardOrchestrator';
+
+// ============================================================================
 // Custom Types (for UI compatibility)
 // ============================================================================
 export type SkillTier = {
