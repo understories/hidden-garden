@@ -85,26 +85,23 @@ export async function POST(request: NextRequest) {
     });
 
     // Create signer (always real for dev UI)
+    // CRITICAL: Never use hardcoded private keys
     let signer: ethers.Signer;
 
-    if (process.env.SERVER_PRIVATE_KEY) {
-      // Use private key from environment
-      const provider = new ethers.JsonRpcProvider(
-        process.env.RPC_URL || 'http://localhost:8545'
+    if (!process.env.SERVER_PRIVATE_KEY) {
+      throw new Error(
+        'SERVER_PRIVATE_KEY environment variable is required. ' +
+        'Never use hardcoded private keys in production code. ' +
+        'Set SERVER_PRIVATE_KEY in your .env.local file.'
       );
-      signer = new ethers.Wallet(process.env.SERVER_PRIVATE_KEY, provider);
-      console.log('[publish-and-fetch] Using signer from SERVER_PRIVATE_KEY');
-    } else {
-      // Fallback to Hardhat default for local dev
-      const provider = new ethers.JsonRpcProvider(
-        process.env.RPC_URL || 'http://localhost:8545'
-      );
-      signer = new ethers.Wallet(
-        '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', // Hardhat default
-        provider
-      );
-      console.log('[publish-and-fetch] Using Hardhat default signer');
     }
+
+    // Use private key from environment
+    const provider = new ethers.JsonRpcProvider(
+      process.env.RPC_URL || 'http://localhost:8545'
+    );
+    signer = new ethers.Wallet(process.env.SERVER_PRIVATE_KEY, provider);
+    console.log('[publish-and-fetch] Using signer from SERVER_PRIVATE_KEY');
 
     // Get indexer base URL
     const indexerBaseUrl =
