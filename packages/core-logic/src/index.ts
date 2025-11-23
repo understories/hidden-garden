@@ -93,6 +93,12 @@ export type { UserIdentity, PublicSkillTier, UserPublicSkill, LeaderboardAPI } f
 import type { UserIdentity } from './api';
 
 // ============================================================================
+// Skill Profile
+// ============================================================================
+export type { SkillProfile, ExternalBadge } from './types';
+export { getSkillProfile } from './skillProfile';
+
+// ============================================================================
 // Custom Types (for UI compatibility)
 // ============================================================================
 export type SkillTier = {
