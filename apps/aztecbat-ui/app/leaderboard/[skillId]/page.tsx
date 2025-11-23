@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { LeaderboardEntry } from '../../../components/LeaderboardEntry';
 
 type LeaderboardPageProps = {
@@ -80,8 +80,10 @@ function shortenAddress(address: string): string {
 
 export default function LeaderboardPage({ params }: LeaderboardPageProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [viewMode, setViewMode] = useState<'white-hat' | 'black-hat'>('white-hat');
   const [skillId, setSkillId] = useState<string>('');
+  const [showRevealedMessage, setShowRevealedMessage] = useState(false);
 
   // Handle async params
   useEffect(() => {
@@ -89,6 +91,18 @@ export default function LeaderboardPage({ params }: LeaderboardPageProps) {
       setSkillId(decodeURIComponent(p.skillId));
     });
   }, [params]);
+
+  // Check for revealed param
+  useEffect(() => {
+    if (searchParams.get('revealed') === 'true') {
+      setShowRevealedMessage(true);
+      // Remove the param from URL after showing message
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      // Auto-hide after 5 seconds
+      setTimeout(() => setShowRevealedMessage(false), 5000);
+    }
+  }, [searchParams]);
 
   // Get skill name from lookup
   const skill = skillId ? mockSkills[skillId] : null;
@@ -103,6 +117,15 @@ export default function LeaderboardPage({ params }: LeaderboardPageProps) {
 
   return (
     <main className="max-w-4xl mx-auto space-y-6 py-8">
+      {/* Success Message */}
+      {showRevealedMessage && (
+        <div className="border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 rounded-lg p-4 mb-6">
+          <p className="text-sm text-green-800 dark:text-green-200">
+            <strong>✓ Successfully revealed!</strong> Your achievement is now visible on this leaderboard and your profile. Your learning journey continues to grow.
+          </p>
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-2">
@@ -125,45 +148,60 @@ export default function LeaderboardPage({ params }: LeaderboardPageProps) {
       </div>
 
       {/* View Toggle */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="flex-1">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-            View Mode
-          </label>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setViewMode('white-hat')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                viewMode === 'white-hat'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-              }`}
-            >
-              White-Hat View
-            </button>
-            <button
-              onClick={() => setViewMode('black-hat')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                viewMode === 'black-hat'
-                  ? 'bg-orange-600 text-white shadow-sm'
-                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-              }`}
-            >
-              Black-Hat View
-              <span className="ml-1 text-xs opacity-75">(Educational)</span>
-            </button>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex-1">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+              View Mode
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setViewMode('white-hat')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  viewMode === 'white-hat'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                }`}
+              >
+                White-Hat View
+              </button>
+              <button
+                onClick={() => setViewMode('black-hat')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  viewMode === 'black-hat'
+                    ? 'bg-orange-600 text-white shadow-sm'
+                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                }`}
+              >
+                Black-Hat View
+                <span className="ml-1 text-xs opacity-75">(Educational)</span>
+              </button>
+            </div>
           </div>
+          {viewMode === 'black-hat' && (
+            <div className="ml-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded text-xs text-orange-800 dark:text-orange-200 max-w-xs">
+              <strong>Educational Mode:</strong> This view demonstrates how the same data could be
+              framed with more competitive language. We default to the empowering white-hat view.
+            </div>
+          )}
         </div>
-        {viewMode === 'black-hat' && (
-          <div className="ml-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded text-xs text-orange-800 dark:text-orange-200 max-w-xs">
-            <strong>Educational Mode:</strong> This view demonstrates how the same data could be
-            framed with more competitive language. We default to the empowering white-hat view.
-          </div>
-        )}
+        
+        {/* Helper Text */}
+        <div className="text-xs text-gray-500 dark:text-gray-400 px-1">
+          {viewMode === 'white-hat' ? (
+            <p>
+              <strong>White-hat view:</strong> Empowering framing focused on growth and mastery. This view celebrates your learning journey and progress.
+            </p>
+          ) : (
+            <p>
+              <strong>Black-hat view:</strong> Example of manipulative framing – same data, different emotion. This demonstrates how competitive language can create pressure and comparison.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Helper Text */}
-      <div className="text-sm text-gray-600 dark:text-gray-400">
+      <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
         {viewMode === 'white-hat' ? (
           <p>
             This leaderboard celebrates your journey of mastery. Each entry represents someone's
