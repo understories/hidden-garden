@@ -19,6 +19,7 @@ export interface LeaderboardEntry {
   timestamp: number;
   created_at: number;
   ensName?: string; // Optional ENS name if resolved
+  isHumanVerified?: boolean; // Whether the user has a valid SelfHumanSBT (optional, may be enriched client-side)
 }
 
 /**
@@ -56,9 +57,15 @@ export class LeaderboardClient {
   /**
    * Get leaderboard entries for a specific skill hash
    * @param skillHash The skill hash to query
+   * @param humanOnly If true, filter to only human-verified entries (requires enriching with SBT status)
+   * @param chainId Chain ID for SBT verification (required if humanOnly is true)
    * @returns Array of leaderboard entries, sorted by tier (descending)
    */
-  async getLeaderboard(skillHash: SkillHash): Promise<LeaderboardEntry[]> {
+  async getLeaderboard(
+    skillHash: SkillHash,
+    humanOnly?: boolean,
+    chainId?: number
+  ): Promise<LeaderboardEntry[]> {
     const url = `${this.baseUrl}/leaderboard?skillHash=${encodeURIComponent(skillHash)}`;
     const response = await fetch(url);
 
@@ -68,8 +75,45 @@ export class LeaderboardClient {
       );
     }
 
-    const data = await response.json();
-    return data as LeaderboardEntry[];
+    let entries = (await response.json()) as LeaderboardEntry[];
+
+    // If humanOnly filter is requested, enrich entries with SBT status and filter
+    if (humanOnly && chainId) {
+      const { checkSelfHumanSBT } = await import('./tierPublisher');
+      const { ethers } = await import('ethers');
+      const { CHAINS, getSelfHumanSBTAddress, SelfHumanSBTAbi } = await import('./contracts');
+      
+      const chainConfig = CHAINS[chainId as any];
+      if (!chainConfig) {
+        throw new Error(`Chain ID ${chainId} is not supported for SBT verification`);
+      }
+
+      const rpcUrl = chainConfig.rpcUrl || `https://rpc.ankr.com/eth_sepolia`;
+      const provider = new ethers.JsonRpcProvider(rpcUrl);
+      
+      // Enrich entries with human verification status
+      const enrichedEntries = await Promise.all(
+        entries.map(async (entry) => {
+          try {
+            const sbtAddress = getSelfHumanSBTAddress(chainId);
+            if (!sbtAddress) {
+              return { ...entry, isHumanVerified: false };
+            }
+            const sbtContract = new ethers.Contract(sbtAddress, SelfHumanSBTAbi, provider);
+            const isHumanVerified = await sbtContract.hasValidSBT(entry.user_address);
+            return { ...entry, isHumanVerified };
+          } catch (error) {
+            // If SBT check fails, assume not verified
+            return { ...entry, isHumanVerified: false };
+          }
+        })
+      );
+
+      // Filter to only human-verified entries
+      entries = enrichedEntries.filter((entry) => entry.isHumanVerified === true);
+    }
+
+    return entries;
   }
 
   /**
