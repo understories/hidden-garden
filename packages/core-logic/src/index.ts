@@ -46,17 +46,19 @@ export * from './quests/hashing';
 // ============================================================================
 // Aztec Client Interface
 // ============================================================================
-export {
+export type {
   AztecClient,
+  AztecClientMode,
+  AztecClientConfig,
+  ZKProof,
+  QuestCompletionResult,
+  TierProofResult,
+  AztecAddress,
+} from './aztecClient';
+export {
   RealAztecClient,
   MockAztecClient,
   createAztecClient,
-  type AztecClientMode,
-  type AztecClientConfig,
-  type ZKProof,
-  type QuestCompletionResult,
-  type TierProofResult,
-  type AztecAddress,
 } from './aztecClient';
 
 // ============================================================================
