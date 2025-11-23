@@ -188,6 +188,24 @@ export class RealAztecClient implements AztecClient {
         );
       }
       
+      // Load Aztec SDK modules FIRST (before using any SDK functions)
+      const sdkLoaded = await loadAztecSDK();
+      if (!sdkLoaded) {
+        throw new Error(
+          'Failed to load @aztec/aztec.js. Make sure it is installed. ' +
+          'Install with: pnpm add @aztec/aztec.js @aztec/accounts/testing. ' +
+          'Or use mock mode by setting NEXT_PUBLIC_USE_MOCK_AZTEC=true'
+        );
+      }
+
+      // Check if createPXEClient is available after loading SDK
+      if (!createPXEClient) {
+        throw new Error(
+          '@aztec/aztec.js is installed but createPXEClient is not available. ' +
+          'Make sure you have the latest version: pnpm add @aztec/aztec.js@latest'
+        );
+      }
+      
       // Create PXE client
       try {
         this.pxe = createPXEClient(pxeUrl);
@@ -209,12 +227,6 @@ export class RealAztecClient implements AztecClient {
           `Start it with: pnpm aztec:devnet or aztec start --sandbox. ` +
           `Error: ${error instanceof Error ? error.message : String(error)}`
         );
-      }
-      
-      // Load Aztec SDK modules
-      const sdkLoaded = await loadAztecSDK();
-      if (!sdkLoaded) {
-        throw new Error('Failed to load @aztec/aztec.js. Make sure it is installed.');
       }
 
       // Get test account wallets from sandbox
@@ -590,6 +602,7 @@ export function createAztecClient(
   config?: AztecClientConfig
 ): AztecClient {
   // Determine mode from environment or parameter
+  // Default to 'real' for demonstrating Aztec privacy, but check if SDK is available
   const clientMode = mode || (process.env.AZTEC_CLIENT_MODE as AztecClientMode) || 'real';
   
   if (clientMode === 'mock') {
@@ -605,6 +618,10 @@ export function createAztecClient(
     return new MockAztecClient();
   }
 
+  // Try to check if @aztec/aztec.js is available synchronously (for better error messages)
+  // Note: We can't actually load it synchronously, but we can provide a helpful error
+  // The actual check will happen in initialize()
+  
   return new RealAztecClient({
     ...config,
     pxeUrl,
