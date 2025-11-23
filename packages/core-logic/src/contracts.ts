@@ -47,6 +47,7 @@ export const CHAINS: Record<SupportedChainId, ChainConfig> = {
     chainId: 31337,
     name: 'Local (Hardhat)',
     rpcUrl: 'http://localhost:8545',
+    blockExplorerUrl: 'http://localhost:8545', // Hardhat node doesn't have explorer, but we can show RPC URL
     // Updated addresses from latest deployment (run: pnpm --filter @hidden-garden/contracts-public deploy:node)
     selfHumanSBT: '0x0165878A594ca255338adfa4d48449f69242Eb8F' as Address,
     skillLeaderboard: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853' as Address,
@@ -126,6 +127,34 @@ export function getSelfHumanSBTAddress(chainId: SupportedChainId): Address | und
  */
 export function getSkillLeaderboardAddress(chainId: SupportedChainId): Address | undefined {
   return CHAINS[chainId]?.skillLeaderboard;
+}
+
+/**
+ * Get blockchain explorer URL for a transaction hash
+ * 
+ * @param chainId Chain ID
+ * @param txHash Transaction hash
+ * @returns Explorer URL, or null if not available
+ */
+export function getExplorerTxUrl(chainId: SupportedChainId, txHash: string): string | null {
+  const chainConfig = CHAINS[chainId];
+  if (!chainConfig) {
+    return null;
+  }
+
+  const explorerUrl = chainConfig.blockExplorerUrl;
+  if (!explorerUrl) {
+    return null;
+  }
+
+  // For Hardhat local, there's no real explorer, so return null
+  if (chainId === 31337) {
+    return null; // Hardhat doesn't have a block explorer
+  }
+
+  // For other chains, construct the transaction URL
+  // Most explorers use: {baseUrl}/tx/{txHash}
+  return `${explorerUrl}/tx/${txHash}`;
 }
 
 /**
