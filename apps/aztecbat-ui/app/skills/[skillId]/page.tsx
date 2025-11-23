@@ -56,9 +56,17 @@ export default function SkillDetailPage({ params, searchParams }: SkillDetailPag
 
   const skill = skillId ? mockSkills[skillId] : null;
   const skillName = skill?.name || skillId;
+  const [selectedQuestId, setSelectedQuestId] = useState<string>('quest-1');
+
+  // Mock quests - in production this would come from the backend
+  const mockQuests = [
+    { id: 'quest-1', name: 'Quest 1', description: 'First quest in this skill path' },
+    { id: 'quest-2', name: 'Quest 2', description: 'Second quest in this skill path' },
+    { id: 'quest-3', name: 'Quest 3', description: 'Third quest in this skill path' },
+  ];
 
   const handleStartQuest = () => {
-    router.push(`/proof?skillId=${encodeURIComponent(skillId)}`);
+    router.push(`/proof?skillId=${encodeURIComponent(skillId)}&questId=${encodeURIComponent(selectedQuestId)}`);
   };
 
   return (
@@ -94,18 +102,55 @@ export default function SkillDetailPage({ params, searchParams }: SkillDetailPag
               We store quest completions privately in Aztec; this local list mirrors what lives there, but the only thing we reveal publicly is the ZK proof of tier.
             </p>
           </div>
+          
+          {/* Quest Selection */}
           <div>
-            <h2 className="text-lg font-semibold mb-2">Ready to begin?</h2>
+            <h2 className="text-lg font-semibold mb-3">Available Quests</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Start the quest to test your knowledge. Your result will be private by default,
-              and you can choose what to reveal publicly.
+              Select a quest to begin. Each quest completion is validated and stored privately in Aztec.
             </p>
+            <div className="space-y-2 mb-4">
+              {mockQuests.map((quest) => (
+                <label
+                  key={quest.id}
+                  className="block border-2 rounded-lg p-3 cursor-pointer transition-all hover:border-blue-300 dark:hover:border-blue-600"
+                  style={{
+                    borderColor: selectedQuestId === quest.id
+                      ? 'rgb(59 130 246)' // blue-500
+                      : 'rgb(229 231 235)', // gray-200
+                    backgroundColor: selectedQuestId === quest.id
+                      ? 'rgba(59 130 246 / 0.1)' // blue-50
+                      : 'transparent',
+                  }}
+                >
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="radio"
+                      name="quest-selection"
+                      value={quest.id}
+                      checked={selectedQuestId === quest.id}
+                      onChange={(e) => setSelectedQuestId(e.target.value)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                        {quest.name}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {quest.description}
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
           </div>
+
           <button
             onClick={handleStartQuest}
             className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
           >
-            Start Quest
+            Start {mockQuests.find(q => q.id === selectedQuestId)?.name || 'Quest'}
           </button>
         </div>
       </div>
