@@ -69,10 +69,57 @@ export const CHAINS: Record<SupportedChainId, ChainConfig> = {
 // ============================================================================
 
 /**
+ * Real Self SBT addresses by chain ID
+ * These are the production Self SBT contract addresses
+ * TODO: Update with actual deployed addresses after Self integration
+ */
+const REAL_SELF_SBT_ADDRESSES: Partial<Record<SupportedChainId, Address>> = {
+  // Add real Self SBT addresses here when deployed
+  // Example:
+  // 11155111: '0x...' as Address, // Sepolia
+  // 1: '0x...' as Address, // Mainnet
+};
+
+/**
  * Get SelfHumanSBT address for a given chain
+ * 
+ * Supports dev mode via SELF_MODE environment variable:
+ * - If NEXT_PUBLIC_SELF_MODE=dev: Uses NEXT_PUBLIC_DEV_SELF_SBT_ADDRESS
+ * - Otherwise: Uses real Self SBT address from CHAINS or REAL_SELF_SBT_ADDRESSES
+ * 
+ * @param chainId Chain ID to get address for
+ * @returns SelfHumanSBT contract address, or undefined if not configured
  */
 export function getSelfHumanSBTAddress(chainId: SupportedChainId): Address | undefined {
-  return CHAINS[chainId]?.selfHumanSBT;
+  // Check for dev mode (works in both browser and Node.js)
+  const selfMode = 
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_SELF_MODE) ||
+    (typeof process !== 'undefined' && process.env?.SELF_MODE);
+  
+  if (selfMode === 'dev') {
+    const devAddress = 
+      (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_DEV_SELF_SBT_ADDRESS) ||
+      (typeof process !== 'undefined' && process.env?.DEV_SELF_SBT_ADDRESS);
+    
+    if (devAddress) {
+      return devAddress as Address;
+    }
+    
+    // If dev mode is set but no dev address, fall back to CHAINS
+    console.warn(
+      `SELF_MODE=dev but NEXT_PUBLIC_DEV_SELF_SBT_ADDRESS not set. ` +
+      `Falling back to CHAINS[${chainId}].selfHumanSBT`
+    );
+  }
+  
+  // Real mode: check CHAINS first, then REAL_SELF_SBT_ADDRESSES
+  const chainAddress = CHAINS[chainId]?.selfHumanSBT;
+  if (chainAddress) {
+    return chainAddress;
+  }
+  
+  // Fall back to REAL_SELF_SBT_ADDRESSES if not in CHAINS
+  return REAL_SELF_SBT_ADDRESSES[chainId];
 }
 
 /**
