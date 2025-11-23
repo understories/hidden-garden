@@ -13,6 +13,7 @@ import {
   BaseTree,
   BioluminescentMushroom,
   MiniShrub,
+  unusedColors,
 } from '../../../components/CustomTreeIcons';
 
 export default function TreePreviewPage() {
@@ -195,6 +196,118 @@ export default function TreePreviewPage() {
         </div>
       </section>
 
+      {/* Color Palette Reference */}
+      <section className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-8">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+          Color Palette Reference
+        </h2>
+        
+        {/* Active Colors */}
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            Active Colors (In Use)
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-full" style={{ backgroundColor: '#7dd87d' }} />
+                <div>
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">Public-Heavy</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">Spring Green</div>
+                </div>
+              </div>
+              <div className="text-xs font-mono text-gray-600 dark:text-gray-400">#7dd87d</div>
+            </div>
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-full" style={{ backgroundColor: '#f4a460' }} />
+                <div>
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">Mixed</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">Amber</div>
+                </div>
+              </div>
+              <div className="text-xs font-mono text-gray-600 dark:text-gray-400">#f4a460</div>
+            </div>
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-full" style={{ backgroundColor: '#9370db' }} />
+                <div>
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">Private-Heavy</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">Violet</div>
+                </div>
+              </div>
+              <div className="text-xs font-mono text-gray-600 dark:text-gray-400">#9370db</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Unused Colors */}
+        <div className="space-y-3 mt-6">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            Unused Colors (For Reference)
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 border-dashed">
+              <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Public-Heavy (Unused)</div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full" style={{ backgroundColor: unusedColors['public-heavy'].cyan }} />
+                  <div className="text-xs">
+                    <span className="font-mono">#5dd5d5</span> - Cyan
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full" style={{ backgroundColor: unusedColors['public-heavy'].deeperCyan }} />
+                  <div className="text-xs">
+                    <span className="font-mono">#4dd0d0</span> - Deeper Cyan
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full" style={{ backgroundColor: unusedColors['public-heavy'].skyBlue }} />
+                  <div className="text-xs">
+                    <span className="font-mono">#87ceeb</span> - Sky Blue
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 border-dashed">
+              <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Mixed (Unused)</div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full" style={{ backgroundColor: unusedColors['mixed'].coralOrange }} />
+                  <div className="text-xs">
+                    <span className="font-mono">#ff8c69</span> - Coral Orange
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full" style={{ backgroundColor: unusedColors['mixed'].pink }} />
+                  <div className="text-xs">
+                    <span className="font-mono">#ff7f9f</span> - Pink
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 border-dashed">
+              <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Private-Heavy (Unused)</div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full" style={{ backgroundColor: unusedColors['private-heavy'].indigo }} />
+                  <div className="text-xs">
+                    <span className="font-mono">#6a5acd</span> - Indigo
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full" style={{ backgroundColor: unusedColors['private-heavy'].moonBlue }} />
+                  <div className="text-xs">
+                    <span className="font-mono">#87ceeb</span> - Moon Blue
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Design Notes */}
       <section className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-8">
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
@@ -202,12 +315,12 @@ export default function TreePreviewPage() {
         </h2>
         <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
           <p>
-            <strong>Color Palette:</strong> Soft Ghibli-inspired colors with bioluminescent gradients:
+            <strong>Active Color Palette:</strong> Simplified to one color per privacy preference for clarity:
           </p>
           <ul className="list-disc list-inside space-y-1 ml-4">
-            <li><strong>Public-Heavy:</strong> Spring green (#7dd87d) → Cyan (#5dd5d5) → Deeper cyan (#4dd0d0)</li>
-            <li><strong>Mixed:</strong> Sandy amber (#f4a460) → Coral orange (#ff8c69) → Soft pink (#ff7f9f)</li>
-            <li><strong>Private-Heavy:</strong> Sky blue (#87ceeb) → Violet (#9370db) → Indigo (#6a5acd)</li>
+            <li><strong>Public-Heavy:</strong> Spring green (#7dd87d)</li>
+            <li><strong>Mixed:</strong> Amber (#f4a460)</li>
+            <li><strong>Private-Heavy:</strong> Violet (#9370db)</li>
           </ul>
           <p className="mt-4">
             <strong>Technical Features:</strong>
