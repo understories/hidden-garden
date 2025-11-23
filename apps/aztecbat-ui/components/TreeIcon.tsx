@@ -14,33 +14,33 @@ type TreeIconProps = {
   className?: string;
 };
 
-// Get privacy-based colors for tree foliage
+// Get Ghibli-style privacy-based colors for tree foliage
 function getPrivacyColors(privacy: PrivacyMode): {
   foliage: string;
-  glow: string;
+  shadow: string;
   trunk: string;
 } {
   switch (privacy) {
     case 'public-heavy':
-      // Bright cyan/green glow
+      // Soft spring green (matching falling leaves)
       return {
-        foliage: 'fill-emerald-400 dark:fill-cyan-400',
-        glow: 'drop-shadow-[0_0_8px_rgba(16,185,129,0.6)] dark:drop-shadow-[0_0_12px_rgba(34,211,238,0.7)]',
-        trunk: 'fill-amber-800 dark:fill-amber-700',
+        foliage: '#7dd87d',
+        shadow: 'drop-shadow(0 2px 4px rgba(125, 216, 125, 0.3))',
+        trunk: '#8b6f47',
       };
     case 'mixed':
-      // Amber/orange
+      // Soft sandy amber
       return {
-        foliage: 'fill-amber-500 dark:fill-orange-400',
-        glow: 'drop-shadow-[0_0_8px_rgba(245,158,11,0.6)] dark:drop-shadow-[0_0_12px_rgba(251,146,60,0.7)]',
-        trunk: 'fill-amber-800 dark:fill-amber-700',
+        foliage: '#f4a460',
+        shadow: 'drop-shadow(0 2px 4px rgba(244, 164, 96, 0.3))',
+        trunk: '#8b6f47',
       };
     case 'private-heavy':
-      // Indigo/violet moonlit
+      // Soft sky blue
       return {
-        foliage: 'fill-indigo-400 dark:fill-violet-400',
-        glow: 'drop-shadow-[0_0_8px_rgba(99,102,241,0.6)] dark:drop-shadow-[0_0_12px_rgba(139,92,246,0.7)]',
-        trunk: 'fill-gray-700 dark:fill-gray-600',
+        foliage: '#87ceeb',
+        shadow: 'drop-shadow(0 2px 4px rgba(135, 206, 235, 0.3))',
+        trunk: '#6b7a8a',
       };
   }
 }
@@ -65,78 +65,105 @@ export function TreeIcon({ type = 'conifer', privacy, size = 'md', className = '
   const renderTree = () => {
     switch (type) {
       case 'conifer':
-        // Triangle/conifer tree
+        // Organic conifer tree - Ghibli style
         return (
           <svg
             width={baseSize}
             height={baseSize}
             viewBox="0 0 48 64"
-            className={`${sizeClasses.width} ${sizeClasses.height} ${colors.glow} ${className}`}
+            className={`${sizeClasses.width} ${sizeClasses.height} ${className}`}
+            style={{ filter: colors.shadow }}
             aria-label={`${type} tree`}
           >
             {/* Trunk */}
-            <rect x="22" y="48" width="4" height="16" className={colors.trunk} />
-            {/* Foliage layers - bottom to top */}
-            <polygon points="24,8 8,40 40,40" className={colors.foliage} />
-            <polygon points="24,16 12,36 36,36" className={colors.foliage} opacity="0.9" />
-            <polygon points="24,24 16,32 32,32" className={colors.foliage} opacity="0.8" />
+            <path
+              d="M 22 48 L 24 48 L 26 48 L 26 64 L 22 64 Z"
+              fill={colors.trunk}
+              fillOpacity="0.8"
+            />
+            {/* Organic foliage layers */}
+            <path
+              d="M 24 8 Q 10 20, 10 35 Q 10 40, 24 40 Q 38 40, 38 35 Q 38 20, 24 8 Z"
+              fill={colors.foliage}
+              fillOpacity="0.85"
+            />
+            <path
+              d="M 24 16 Q 14 24, 14 32 Q 14 36, 24 36 Q 34 36, 34 32 Q 34 24, 24 16 Z"
+              fill={colors.foliage}
+              fillOpacity="0.75"
+            />
+            <path
+              d="M 24 22 Q 18 26, 18 30 Q 18 32, 24 32 Q 30 32, 30 30 Q 30 26, 24 22 Z"
+              fill={colors.foliage}
+              fillOpacity="0.65"
+            />
           </svg>
         );
 
       case 'round':
-        // Rounded canopy tree
+        // Organic rounded canopy tree - Ghibli style
         return (
           <svg
             width={baseSize}
             height={baseSize}
             viewBox="0 0 48 64"
-            className={`${sizeClasses.width} ${sizeClasses.height} ${colors.glow} ${className}`}
+            className={`${sizeClasses.width} ${sizeClasses.height} ${className}`}
+            style={{ filter: colors.shadow }}
             aria-label={`${type} tree`}
           >
             {/* Trunk */}
-            <rect x="22" y="48" width="4" height="16" className={colors.trunk} />
-            {/* Rounded canopy */}
-            <circle cx="24" cy="36" r="16" className={colors.foliage} />
-            <circle cx="24" cy="36" r="12" className={colors.foliage} opacity="0.7" />
-            <circle cx="24" cy="36" r="8" className={colors.foliage} opacity="0.5" />
+            <path
+              d="M 22 48 Q 22 56, 24 56 Q 26 56, 26 48 L 26 64 L 22 64 Z"
+              fill={colors.trunk}
+              fillOpacity="0.8"
+            />
+            {/* Organic rounded canopy */}
+            <ellipse cx="24" cy="36" rx="18" ry="16" fill={colors.foliage} fillOpacity="0.85" />
+            <ellipse cx="24" cy="34" rx="14" ry="12" fill={colors.foliage} fillOpacity="0.7" />
+            <ellipse cx="24" cy="32" rx="10" ry="8" fill={colors.foliage} fillOpacity="0.6" />
           </svg>
         );
 
       case 'mushroom':
-        // Mushroom-shaped tree (palm-like)
+        // Organic mushroom/palm tree - Ghibli style
         return (
           <svg
             width={baseSize}
             height={baseSize}
             viewBox="0 0 48 64"
-            className={`${sizeClasses.width} ${sizeClasses.height} ${colors.glow} ${className}`}
+            className={`${sizeClasses.width} ${sizeClasses.height} ${className}`}
+            style={{ filter: colors.shadow }}
             aria-label={`${type} tree`}
           >
             {/* Trunk */}
-            <rect x="22" y="48" width="4" height="16" className={colors.trunk} />
-            {/* Mushroom cap */}
-            <ellipse cx="24" cy="32" rx="18" ry="12" className={colors.foliage} />
-            <ellipse cx="24" cy="28" rx="14" ry="10" className={colors.foliage} opacity="0.8" />
-            {/* Fronds/leaves */}
             <path
-              d="M 24 20 L 12 28 L 24 32 Z"
-              className={colors.foliage}
-              opacity="0.9"
+              d="M 22 48 Q 22 56, 24 56 Q 26 56, 26 48 L 26 64 L 22 64 Z"
+              fill={colors.trunk}
+              fillOpacity="0.8"
+            />
+            {/* Organic mushroom cap */}
+            <ellipse cx="24" cy="30" rx="20" ry="14" fill={colors.foliage} fillOpacity="0.85" />
+            <ellipse cx="24" cy="28" rx="16" ry="11" fill={colors.foliage} fillOpacity="0.75" />
+            {/* Organic fronds */}
+            <path
+              d="M 24 20 Q 12 24, 10 28 Q 10 30, 24 32"
+              fill={colors.foliage}
+              fillOpacity="0.8"
             />
             <path
-              d="M 24 20 L 36 28 L 24 32 Z"
-              className={colors.foliage}
-              opacity="0.9"
+              d="M 24 20 Q 36 24, 38 28 Q 38 30, 24 32"
+              fill={colors.foliage}
+              fillOpacity="0.8"
             />
             <path
-              d="M 24 20 L 8 24 L 24 32 Z"
-              className={colors.foliage}
-              opacity="0.7"
+              d="M 24 20 Q 8 22, 6 26 Q 6 28, 24 32"
+              fill={colors.foliage}
+              fillOpacity="0.7"
             />
             <path
-              d="M 24 20 L 40 24 L 24 32 Z"
-              className={colors.foliage}
-              opacity="0.7"
+              d="M 24 20 Q 40 22, 42 26 Q 42 28, 24 32"
+              fill={colors.foliage}
+              fillOpacity="0.7"
             />
           </svg>
         );
