@@ -10,6 +10,7 @@ import { computeQuestIdHash } from './quests/hashing';
 import * as fs from 'fs';
 import * as path from 'path';
 import { loadAztecConfig } from './aztec/configLoader';
+import { setupWallet } from './aztec/utils/setupWallet';
 
 // Aztec.js types - using type-only imports to avoid runtime dependency issues during build
 // The actual values will be imported dynamically at runtime
@@ -58,18 +59,8 @@ async function loadAztecSDK() {
     AztecAddress = aztecAddresses.AztecAddress;
     Contract = aztecContracts.Contract;
     
-    // For test accounts, we need to check the accounts/testing package
-    // This might have changed in v3 - we'll handle it gracefully
-    try {
-      // @ts-ignore - dynamic import may not be recognized by TypeScript
-      const aztecAccountsTesting = await import('@aztec/accounts/testing');
-      getDeployedTestAccountsWallets = aztecAccountsTesting.getDeployedTestAccountsWallets;
-    } catch (accountsError) {
-      // If accounts/testing doesn't exist or has changed, we'll need to use a different approach
-      // For now, we'll set it to null and handle it in initialize()
-      console.warn('@aztec/accounts/testing not available or API changed. Will use alternative account creation.');
-      getDeployedTestAccountsWallets = null;
-    }
+    // Account creation is now handled by setupWallet utility
+    // No need to load getDeployedTestAccountsWallets here
     
     return true;
   } catch (error) {
@@ -265,24 +256,17 @@ export class RealAztecClient implements AztecClient {
         );
       }
 
-      // Get test account wallets from sandbox
-      // In v3, getDeployedTestAccountsWallets might have changed or we need to use a different approach
-      if (!getDeployedTestAccountsWallets) {
-        throw new Error(
-          'getDeployedTestAccountsWallets is not available. ' +
-          'The @aztec/accounts/testing API may have changed in v3. ' +
-          'Please check the Aztec v3 documentation for the correct account creation pattern.'
-        );
-      }
+      // Setup wallet using environment-based account creation
+      // This replaces hardcoded keys and follows Aztec starter patterns
+      const aztecEnv = process.env.AZTEC_ENV || 'sandbox';
+      const accountWallet = await setupWallet({
+        pxe: this.pxe!,
+        privateKey: process.env.AZTEC_PRIVATE_KEY,
+        salt: process.env.AZTEC_ACCOUNT_SALT ? Number(process.env.AZTEC_ACCOUNT_SALT) : undefined,
+        env: aztecEnv,
+      });
       
-      // getDeployedTestAccountsWallets returns AccountWallet instances
-      const wallets = await getDeployedTestAccountsWallets(this.pxe);
-      if (wallets.length === 0) {
-        throw new Error('No test accounts found in Aztec sandbox. Make sure devnet is running.');
-      }
-      
-      // Use first wallet (sandbox provides pre-funded test accounts)
-      const accountWallet = wallets[0];
+      // Get user address from wallet
       this.userAddress = accountWallet.getAddress().toString();
       
       // Store wallet for contract interactions
