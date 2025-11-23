@@ -15,6 +15,7 @@ import type { SubmitTierProofParams } from './tierPublisher';
 import { ethers } from 'ethers';
 import { upsertArkivSkillProfile } from './arkiv/skillProfiles';
 import { getSkillProfile } from './skillProfile';
+import { loadAztecConfig } from './aztec/configLoader';
 
 /**
  * Parameters for publishing and fetching Aztec Builder leaderboard
@@ -83,10 +84,15 @@ export async function publishAndFetchAztecBuilderLeaderboard(
     signer,
     aztecClient,
     indexerBaseUrl,
-    pollIntervalMs = 3000,
-    maxAttempts = 10,
+    pollIntervalMs,
+    maxAttempts,
     requireSBT = false,
   } = params;
+  
+  // Load Aztec config for polling defaults
+  const aztecConfig = loadAztecConfig();
+  const pollInterval = pollIntervalMs ?? aztecConfig.pollingInterval;
+  const maxPollAttempts = maxAttempts ?? aztecConfig.maxPollingAttempts;
 
   // Validate indexerBaseUrl is provided
   if (!indexerBaseUrl) {
@@ -111,7 +117,7 @@ export async function publishAndFetchAztecBuilderLeaderboard(
   const client = new LeaderboardClient({ baseUrl: indexerBaseUrl });
 
   // 3. Polling loop to wait for indexer to ingest the event
-  for (let i = 0; i < maxAttempts; i++) {
+  for (let i = 0; i < maxPollAttempts; i++) {
     try {
       // Always enrich entries with human verification status (not just when filtering)
       const leaderboard = await client.getLeaderboard(skillHash as `0x${string}`, false, chainId);
@@ -161,14 +167,14 @@ export async function publishAndFetchAztecBuilderLeaderboard(
     } catch (error) {
       // If indexer is not reachable, log warning but continue polling
       console.warn(
-        `[leaderboardOrchestrator] Indexer request failed (attempt ${i + 1}/${maxAttempts}):`,
+        `[leaderboardOrchestrator] Indexer request failed (attempt ${i + 1}/${maxPollAttempts}):`,
         error instanceof Error ? error.message : String(error)
       );
     }
 
     // Wait before next attempt (except on last iteration)
-    if (i < maxAttempts - 1) {
-      await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+    if (i < maxPollAttempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
     }
   }
 
