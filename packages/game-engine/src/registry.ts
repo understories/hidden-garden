@@ -17,6 +17,7 @@ import type {
   PuzzleType,
   TierNumber,
   MultipleChoiceSubmission,
+  NumericInputSubmission,
 } from '@hidden-garden/core-logic';
 import {
   getTierForQuest,
@@ -254,8 +255,34 @@ export const questRegistry: Record<QuestId, QuestDefinition> = {
     prompt: 'Complete this Noir function to return the sum of two inputs:\n```noir\nfn add(a: Field, b: Field) -> Field {\n    // Your code here\n}\n```\nWhat value does `add(5, 3)` return?',
     expectedAnswerDescription: 'Integer or Field value. Expected answer: 8',
     dependencies: [],
-    validate: (_submission: QuestSubmission): ValidationResult => {
-      throw new Error('Quest validation not implemented yet.');
+    validate: (submission: QuestSubmission): ValidationResult => {
+      // Type guard: ensure it's a numeric input submission
+      if (!('value' in submission) || typeof (submission as any).value !== 'number') {
+        return {
+          success: false,
+          score: 0,
+          feedback: 'Invalid submission type. Expected numeric input submission with value field.',
+        };
+      }
+
+      const numericSubmission = submission as NumericInputSubmission;
+      const submittedValue = numericSubmission.value;
+      const expectedValue = 8; // add(5, 3) = 8
+
+      // Check for exact match
+      if (submittedValue === expectedValue) {
+        return {
+          success: true,
+          score: 100,
+          feedback: `Correct! The function \`add(5, 3)\` returns ${expectedValue}. In Noir, you would implement this as \`a + b\` to add two Field values.`,
+        };
+      } else {
+        return {
+          success: false,
+          score: 0,
+          feedback: `Incorrect. The function \`add(5, 3)\` should return ${expectedValue}. You submitted ${submittedValue}. Remember: in Noir, Field values can be added using the \`+\` operator.`,
+        };
+      }
     },
   },
   
