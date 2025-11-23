@@ -73,10 +73,28 @@ export async function POST(request: NextRequest) {
 
     // Determine Aztec mode - default to REAL for demonstrating Aztec privacy
     // Set NEXT_PUBLIC_USE_MOCK_AZTEC=true to use mock mode
+    // If @aztec/aztec.js is not available, automatically fall back to mock
     const useMockAztec = process.env.NEXT_PUBLIC_USE_MOCK_AZTEC === 'true';
-    const aztecMode = useMockAztec ? 'mock' : 'real';
+    let aztecMode: 'mock' | 'real' = useMockAztec ? 'mock' : 'real';
+    
+    // Check if Aztec SDK is available (only if trying to use real mode)
+    if (aztecMode === 'real') {
+      try {
+        // Try to dynamically check if @aztec/aztec.js is available
+        // This is a lightweight check - actual loading happens in initialize()
+        await import('@aztec/aztec.js');
+      } catch (error) {
+        console.warn(
+          '[publish-and-fetch] ⚠️  @aztec/aztec.js not available. ' +
+          'Falling back to mock mode. ' +
+          'Install with: pnpm add @aztec/aztec.js @aztec/accounts/testing ' +
+          'or set NEXT_PUBLIC_USE_MOCK_AZTEC=true explicitly.'
+        );
+        aztecMode = 'mock';
+      }
+    }
 
-    console.log('[publish-and-fetch] Aztec mode:', aztecMode, useMockAztec ? '(MOCK - set NEXT_PUBLIC_USE_MOCK_AZTEC=false for real Aztec)' : '(REAL - demonstrating Aztec privacy)');
+    console.log('[publish-and-fetch] Aztec mode:', aztecMode, aztecMode === 'mock' ? '(MOCK - set NEXT_PUBLIC_USE_MOCK_AZTEC=false for real Aztec)' : '(REAL - demonstrating Aztec privacy)');
 
     // Create Aztec client
     const aztecClient = createAztecClient(aztecMode, {
