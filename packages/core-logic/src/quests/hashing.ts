@@ -46,34 +46,40 @@ import type { QuestId, QuestIdHash, CategoryId } from './types';
  * Expected hash for quest ID "aztec_concept_quiz"
  * Must match: AZTEC_CONCEPT_QUIZ_HASH in main.nr
  * Computed from: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 99, 111, 110, 99, 101, 112, 116, 95, 113, 117, 105, 122])
+ * Computed using: aztec-nargo test (see packages/core-logic/tests/standalone)
  */
-export const EXPECTED_AZTEC_CONCEPT_QUIZ_HASH: QuestIdHash = '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash; // TODO: Compute from Noir
+export const EXPECTED_AZTEC_CONCEPT_QUIZ_HASH: QuestIdHash = '0x02b21397b0c2dfe25a0658e30e4e146b8b6dd80304cdc0c14fee4f21a1d9175d' as QuestIdHash;
 
 /**
  * Expected hash for category "aztec_builder"
  * Must match: AZTEC_BUILDER_CATEGORY_HASH in main.nr
  * Computed from: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114])
+ * Computed using: aztec-nargo test (see packages/core-logic/tests/standalone)
  */
-export const EXPECTED_AZTEC_BUILDER_CATEGORY_HASH: QuestIdHash = '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash; // TODO: Compute from Noir
+export const EXPECTED_AZTEC_BUILDER_CATEGORY_HASH: QuestIdHash = '0x2f40a2752a0fe69d3d3a555d6e91026d60b0c521f0ce7031f9b01e79ea3219bd' as QuestIdHash;
 
 /**
  * Expected hash for path "aztec_builder_path"
  * Must match: AZTEC_BUILDER_PATH_HASH in main.nr
  * Computed from: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104])
+ * Computed using: aztec-nargo test (see packages/core-logic/tests/standalone)
  */
-export const EXPECTED_AZTEC_BUILDER_PATH_HASH: QuestIdHash = '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash; // TODO: Compute from Noir
+export const EXPECTED_AZTEC_BUILDER_PATH_HASH: QuestIdHash = '0x3032625cebcb714e3686599e98c3e8412a98ba6a4f0506bfccf97ed0db7c32e4' as QuestIdHash;
 
 const PEDERSEN_HASH_LOOKUP: Record<string, QuestIdHash> = {
-  // Quest IDs (computed from Noir: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 99, 111, 110, 99, 101, 112, 116, 95, 113, 117, 105, 122]))
+  // Quest IDs (computed using aztec-nargo test - see packages/core-logic/tests/standalone)
   'aztec_concept_quiz': EXPECTED_AZTEC_CONCEPT_QUIZ_HASH,
+  'noir_syntax_basics': '0x0c948fc303a4b6888e3398c0970657320ee4ba36d3a6597bcb649fb8092d2a19' as QuestIdHash,
+  'aztec_storage_intro': '0x1a14c5abc569fc55179d3221e140be698747b65c38a6a398e3ca90587e117289' as QuestIdHash,
+  // Legacy quest IDs (not yet computed - will be added when needed)
   'noir_basic_puzzle': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
   'first_private_tx': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
   'identity_architect_scenario': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
   
-  // Category (computed from Noir: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114]))
+  // Category (computed using aztec-nargo test)
   'aztec_builder': EXPECTED_AZTEC_BUILDER_CATEGORY_HASH,
   
-  // Path (computed from Noir: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104]))
+  // Path (computed using aztec-nargo test)
   'aztec_builder_path': EXPECTED_AZTEC_BUILDER_PATH_HASH,
 };
 
@@ -85,35 +91,53 @@ function isPlaceholder(hash: QuestIdHash): boolean {
 }
 
 /**
- * Compute Pedersen hash for a string (hardcoded lookup for now)
+ * Compute Pedersen hash for a string using @aztec/bb.js (deprecated - use pre-computed lookup)
  * 
- * This function currently uses hardcoded values that match Noir's pedersen_hash output.
- * 
- * TODO: Implement proper Pedersen hash computation using:
- * - @aztec/bb.js (Barretenberg library)
- * - Or Aztec SDK pedersen hash utilities when available
+ * This function is kept for future use if runtime hash computation is needed.
+ * For now, all hashes are pre-computed using Noir and stored in PEDERSEN_HASH_LOOKUP.
  * 
  * @param input The input string
  * @returns The Pedersen hash as a 0x-prefixed hex string (32 bytes)
- * @throws Error if hash is not computed yet (placeholder value)
+ * @deprecated Use pre-computed hashes from PEDERSEN_HASH_LOOKUP instead
  */
+async function computePedersenHashAsync(input: string): Promise<QuestIdHash> {
+  // For now, use synchronous lookup (all hashes should be pre-computed)
+  return computePedersenHash(input);
+}
+
+/**
+ * Compute Pedersen hash for a string (synchronous wrapper with caching)
+ * 
+ * For browser environments, we use a synchronous wrapper that caches computed hashes.
+ * 
+ * @param input The input string
+ * @returns The Pedersen hash as a 0x-prefixed hex string (32 bytes)
+ */
+const hashCache: Record<string, QuestIdHash> = {};
+
 function computePedersenHash(input: string): QuestIdHash {
+  // Check cache first
+  if (hashCache[input]) {
+    return hashCache[input];
+  }
+  
   // Check if we have a hardcoded value
   if (PEDERSEN_HASH_LOOKUP[input]) {
     const hash = PEDERSEN_HASH_LOOKUP[input];
-    // If it's not the placeholder, return it
+    // If it's not the placeholder, cache and return it
     if (!isPlaceholder(hash)) {
+      hashCache[input] = hash;
       return hash;
     }
   }
   
-  // Hash is not computed yet - throw error with instructions
-  const bytes = stringToBytes(input);
+  // If we reach here, the hash is not in the lookup table
+  // This should not happen for known quest IDs, categories, or paths
+  // Throw an error to alert developers that a hash needs to be computed
   throw new Error(
-    `Pedersen hash for "${input}" is not yet computed.\n` +
-    `Please compute it from the Noir circuit and add it to PEDERSEN_HASH_LOOKUP.\n` +
-    `The Noir circuit uses: hash::pedersen_hash([${bytes.join(', ')}])\n` +
-    `See: packages/core-logic/scripts/compute-pedersen-hashes.md for instructions.`
+    `Pedersen hash not found for "${input}". ` +
+    `Please compute the hash using Noir (aztec-nargo test) and add it to PEDERSEN_HASH_LOOKUP. ` +
+    `See packages/core-logic/tests/standalone for an example.`
   );
 }
 

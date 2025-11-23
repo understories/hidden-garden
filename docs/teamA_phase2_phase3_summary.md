@@ -13,10 +13,12 @@ This document summarizes Team A's work on the AztecBat learning pathway system, 
 ### Hashing
 - ✅ **Pedersen-based hashing:** All quest/category/path hashes use `pedersen_hash` to match Noir circuit
 - ✅ **No keccak256:** Aztec-related hashing uses only Pedersen (keccak256 only used for legacy skill hashing, not quest hashing)
-- ⚠️ **Hash placeholders:** TypeScript constants (`EXPECTED_*_HASH`) are currently placeholders until computed from Noir
-  - This is acceptable for merge - placeholders are clearly documented with TODOs
-  - Tests handle placeholders gracefully (warn but don't fail)
-  - To compute: Run `aztec-nargo test tests/compute_pedersen_hashes.nr` and update constants
+- ✅ **Real Pedersen hashes:** Real Pedersen hashes for quest IDs, category, and path are computed in Noir and hard-coded in TypeScript, with tests verifying consistency
+  - Quest IDs: `aztec_concept_quiz`, `noir_syntax_basics`, `aztec_storage_intro`
+  - Category: `aztec_builder`
+  - Path: `aztec_builder_path`
+  - All hashes verified via hash consistency tests
+  - Unknown quest IDs throw clear errors (no placeholder fallback)
 
 ### RealAztecClient
 - ✅ **Devnet integration:** Connects to Aztec PXE via `AZTEC_PXE_URL` or `PXE_URL` env var

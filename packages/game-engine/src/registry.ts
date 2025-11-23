@@ -223,6 +223,100 @@ export const questRegistry: Record<QuestId, QuestDefinition> = {
     },
   },
   
+  'noir_syntax_basics': {
+    questId: 'noir_syntax_basics',
+    questIdHash: computeQuestIdHash('noir_syntax_basics'),
+    tier: 2,
+    category: AZTEC_BUILDER_CATEGORY,
+    type: 'multiple_choice' as PuzzleType,
+    name: 'NoirSyntaxBasics',
+    prompt: 'In Noir, what is the correct way to declare a public function that takes a Field parameter?\nA) `fn my_function(x: Field) -> Field`\nB) `pub fn my_function(x: Field) -> Field`\nC) `public fn my_function(x: Field) -> Field`\nD) `fn pub my_function(x: Field) -> Field`',
+    expectedAnswerDescription: 'Integer index (0-3) representing selected option. Correct answer is 1 (B).',
+    dependencies: [],
+    validate: (submission: QuestSubmission): ValidationResult => {
+      // Type guard: ensure it's a multiple choice submission
+      if (!('selectedOptionId' in submission)) {
+        return {
+          success: false,
+          score: 0,
+          feedback: 'Invalid submission type. Expected multiple choice submission with selectedOptionId.',
+        };
+      }
+
+      const mcSubmission = submission as MultipleChoiceSubmission;
+      const selectedOption = mcSubmission.selectedOptionId;
+
+      // Accept both string "1" and numeric string representations
+      // Also accept "B" as option 1
+      const isCorrect = 
+        selectedOption === '1' || 
+        selectedOption === 'B' || 
+        selectedOption === 'b' ||
+        parseInt(selectedOption, 10) === 1;
+
+      if (isCorrect) {
+        return {
+          success: true,
+          score: 100,
+          feedback: 'Correct! In Noir, the `pub` keyword comes before `fn` to declare a public function. The syntax is `pub fn function_name(parameters) -> return_type`.',
+        };
+      } else {
+        return {
+          success: false,
+          score: 0,
+          feedback: `Incorrect. The correct answer is B) \`pub fn my_function(x: Field) -> Field\`. In Noir, \`pub\` is placed before \`fn\` to make a function public. You selected option ${selectedOption}.`,
+        };
+      }
+    },
+  },
+  
+  'aztec_storage_intro': {
+    questId: 'aztec_storage_intro',
+    questIdHash: computeQuestIdHash('aztec_storage_intro'),
+    tier: 2,
+    category: AZTEC_BUILDER_CATEGORY,
+    type: 'multiple_choice' as PuzzleType,
+    name: 'AztecStorageIntro',
+    prompt: 'What is a private note in Aztec Protocol?\nA) A public transaction record visible to everyone\nB) An encrypted piece of data that only the owner can decrypt and spend\nC) A smart contract function that stores public data\nD) A token type used for public transactions',
+    expectedAnswerDescription: 'Integer index (0-3) representing selected option. Correct answer is 1 (B).',
+    dependencies: [],
+    validate: (submission: QuestSubmission): ValidationResult => {
+      // Type guard: ensure it's a multiple choice submission
+      if (!('selectedOptionId' in submission)) {
+        return {
+          success: false,
+          score: 0,
+          feedback: 'Invalid submission type. Expected multiple choice submission with selectedOptionId.',
+        };
+      }
+
+      const mcSubmission = submission as MultipleChoiceSubmission;
+      const selectedOption = mcSubmission.selectedOptionId;
+
+      // Accept both string "1" and numeric string representations
+      // Also accept "B" as option 1
+      const isCorrect = 
+        selectedOption === '1' || 
+        selectedOption === 'B' || 
+        selectedOption === 'b' ||
+        parseInt(selectedOption, 10) === 1;
+
+      if (isCorrect) {
+        return {
+          success: true,
+          score: 100,
+          feedback: 'Correct! A private note in Aztec is an encrypted piece of data that only the owner can decrypt and spend. Notes are stored privately and can only be accessed by the owner who knows the secret key.',
+        };
+      } else {
+        return {
+          success: false,
+          score: 0,
+          feedback: `Incorrect. The correct answer is B) An encrypted piece of data that only the owner can decrypt and spend. Private notes are the fundamental building block of Aztec's privacy model. You selected option ${selectedOption}.`,
+        };
+      }
+    },
+  },
+  
   // ============================================================================
   // Tier 3 Puzzles
   // ============================================================================

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
-// Test to compute Pedersen hashes for TypeScript lookup
+// Standalone test to compute Pedersen hashes for TypeScript lookup
 // 
 // This test computes the pedersen_hash values for all quest IDs, categories, and paths.
+// This is a standalone test that doesn't require contract dependencies.
 //
-// Run: nargo test compute_pedersen_hashes
+// Run: cd tests/standalone && aztec-nargo test
 // Extract the Field values from output and convert to hex for TypeScript.
 
 use dep::std::hash;
@@ -51,3 +52,4 @@ fn compute_pedersen_hashes() {
     assert(cat != 0, "Category hash should be non-zero");
     assert(path != 0, "Path hash should be non-zero");
 }
+

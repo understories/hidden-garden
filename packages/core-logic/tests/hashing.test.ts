@@ -33,7 +33,7 @@ describe('Quest Hashing Utilities', () => {
     it('should throw error for unknown quest ID', () => {
       expect(() => {
         computeQuestIdHash('unknown_quest' as any);
-      }).toThrow(/not yet computed/);
+      }).toThrow(/Pedersen hash not found/);
     });
   });
 
