@@ -42,6 +42,13 @@ function getPrivacyColors(privacy: PrivacyMode): {
         shadow: 'drop-shadow(0 2px 4px rgba(135, 206, 235, 0.3))',
         trunk: '#6b7a8a',
       };
+    default:
+      // Fallback to mixed if privacy mode is unexpected
+      return {
+        foliage: '#f4a460',
+        shadow: 'drop-shadow(0 2px 4px rgba(244, 164, 96, 0.3))',
+        trunk: '#8b6f47',
+      };
   }
 }
 
@@ -58,7 +65,11 @@ function getSizeClasses(size: 'sm' | 'md' | 'lg'): { width: string; height: stri
 }
 
 export function TreeIcon({ type = 'conifer', privacy, size = 'md', className = '' }: TreeIconProps) {
-  const colors = getPrivacyColors(privacy);
+  // Safety check: ensure privacy is valid
+  const validPrivacy: PrivacyMode = privacy && ['public-heavy', 'mixed', 'private-heavy'].includes(privacy) 
+    ? privacy 
+    : 'mixed';
+  const colors = getPrivacyColors(validPrivacy);
   const sizeClasses = getSizeClasses(size);
   const baseSize = size === 'sm' ? 32 : size === 'md' ? 48 : 64;
 
