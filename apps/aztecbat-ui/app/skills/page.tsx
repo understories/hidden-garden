@@ -1,8 +1,8 @@
 /**
  * Skills List Page
  *
- * Displays a list of available skills that users can attempt challenges for.
- * This is the entry point for the challenge flow.
+ * Displays a list of available skills that users can attempt quests for.
+ * This is the entry point for the quest flow.
  */
 
 import Link from 'next/link';
@@ -37,7 +37,7 @@ export default function SkillsListPage() {
       <div>
         <h1 className="text-3xl font-bold mb-2">Available Skills</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Choose a skill to begin your challenge. Your progress stays private by default.
+          Choose a skill to begin your quest. Your progress stays private by default.
         </p>
       </div>
 
