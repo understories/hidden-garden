@@ -1,13 +1,13 @@
 /**
- * Tier Publisher - Self-Gated Tier Publishing Helper
+ * Tier Publisher - Tier Publishing Helper (SBT Optional)
  * 
- * Provides a single backend entrypoint for publishing tier proofs to L1
- * with SelfHumanSBT verification.
+ * Provides a single backend entrypoint for publishing tier proofs to L1.
+ * SBT verification is optional - users can compete in "anon/agent mode" or "human-only mode".
  * 
  * This helper:
  * 1. Uses RealAztecClient to generate a proof for aztec_builder_path
- * 2. Checks SelfHumanSBT on L1
- * 3. Submits tier proof to SkillLeaderboard ONLY if SBT is valid
+ * 2. Optionally checks SelfHumanSBT on L1 (for human-only mode)
+ * 3. Submits tier proof to SkillLeaderboard (works with or without SBT)
  */
 
 import { ethers } from 'ethers';
@@ -49,6 +49,8 @@ export interface SubmitTierProofResult {
   txHash: string;
   /** Skill hash that was submitted */
   skillHash: string;
+  /** Whether the user has a valid SelfHumanSBT (human-verified) */
+  isHumanVerified: boolean;
 }
 
 /**
@@ -102,18 +104,24 @@ export async function checkSelfHumanSBT(
 }
 
 /**
- * Submit a tier proof to SkillLeaderboard with SelfHumanSBT verification
+ * Submit a tier proof to SkillLeaderboard (SBT check is optional)
  * 
  * This function:
  * 1. Computes skillHash for the skill path
  * 2. Generates Aztec proof via aztecClient
  * 3. Encodes public inputs for L1 contract
- * 4. Checks SelfHumanSBT validity
- * 5. Submits to SkillLeaderboard if SBT is valid
+ * 4. Optionally checks SelfHumanSBT validity (for human-only mode)
+ * 5. Submits to SkillLeaderboard (works with or without SBT)
+ * 
+ * Note: SBT verification is optional. Users can compete in:
+ * - "Anon/Agent Mode": No SBT required (anyone can publish)
+ * - "Human-Only Mode": SBT required (only verified humans can publish)
+ * 
+ * The leaderboard can be filtered to show only human-verified entries.
  * 
  * @param params Submission parameters
- * @returns Transaction hash and skill hash
- * @throws Error if SBT check fails, contract addresses not found, or proof generation fails
+ * @returns Transaction hash, skill hash, and human verification status
+ * @throws Error if contract addresses not found or proof generation fails
  */
 export async function submitTierProofWithSBTCheck(
   params: SubmitTierProofParams
@@ -161,19 +169,23 @@ export async function submitTierProofWithSBTCheck(
     minTier
   );
 
-  // 4. Check SelfHumanSBT validity
+  // 4. Check SelfHumanSBT validity (optional - for human-only mode)
+  // Note: SBT check is now optional. Users can compete in "anon/agent mode" or "human-only mode"
   const provider = signer.provider;
   if (!provider) {
     throw new Error('Signer must have a provider attached for SBT verification');
   }
 
-  const hasSBT = await checkSelfHumanSBT(provider, chainId, userAddress as Address);
-  
-  if (!hasSBT) {
-    throw new Error(
-      'User must have a valid SelfHumanSBT to publish tier proof. ' +
-      `Address ${userAddress} does not have a valid SBT on chain ${chainId}.`
+  let isHumanVerified = false;
+  try {
+    isHumanVerified = await checkSelfHumanSBT(provider, chainId, userAddress as Address);
+  } catch (error) {
+    // If SBT check fails (e.g., contract not deployed), default to false (anon mode)
+    console.warn(
+      `SBT check failed for ${userAddress} on chain ${chainId}: ${error instanceof Error ? error.message : String(error)}. ` +
+      'Publishing in anon/agent mode.'
     );
+    isHumanVerified = false;
   }
 
   // 5. Get SkillLeaderboard contract address
@@ -210,6 +222,7 @@ export async function submitTierProofWithSBTCheck(
     return {
       txHash: receipt.hash,
       skillHash,
+      isHumanVerified,
     };
   } catch (error) {
     if (error instanceof Error) {
