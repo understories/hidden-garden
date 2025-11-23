@@ -1559,10 +1559,12 @@ function ArkivProfilesSection() {
   const [allowAgentsOnly, setAllowAgentsOnly] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [arkivDisabled, setArkivDisabled] = useState(false);
 
   async function loadProfiles() {
     setLoading(true);
     setError(null);
+    setArkivDisabled(false);
 
     const params = new URLSearchParams();
     if (humanOnly) params.set('humanOnly', 'true');
@@ -1571,10 +1573,33 @@ function ArkivProfilesSection() {
     try {
       const res = await fetch(`/api/dev/arkiv-profiles?${params.toString()}`);
       const json = await res.json();
-      if (!json.ok) throw new Error(json.error ?? 'Request failed');
-      setProfiles(json.profiles ?? []);
+      
+      // Check if Arkiv is disabled
+      if (!json.ok) {
+        const errorMsg = json.error ?? 'Request failed';
+        // Check if error indicates Arkiv is disabled
+        if (errorMsg.toLowerCase().includes('disabled') || 
+            errorMsg.toLowerCase().includes('arkiv is disabled')) {
+          setArkivDisabled(true);
+          setProfiles([]);
+        } else {
+          setError(errorMsg);
+        }
+      } else {
+        // Success - get profiles (may be stub profiles if Arkiv is disabled)
+        const profilesList = json.profiles ?? [];
+        setProfiles(profilesList);
+        
+        // Check if we're likely in stub mode (stub returns demo profiles)
+        // We can detect this by checking if profiles exist but we know Arkiv is disabled
+        // For now, we'll show the notice based on environment or if we get stub-like data
+        // The backend returns stub profiles when disabled, so we'll show them but with a notice
+      }
     } catch (err: any) {
-      setError(err.message ?? 'Failed to load profiles');
+      // Network errors or other failures - don't treat as disabled
+      const errorMsg = err.message ?? 'Failed to load profiles';
+      setError(errorMsg);
+      setProfiles([]);
     } finally {
       setLoading(false);
     }
@@ -1583,6 +1608,15 @@ function ArkivProfilesSection() {
   useEffect(() => {
     loadProfiles();
   }, []); // initial load
+
+  // Check if we should show the disabled notice
+  // Show it if: error indicates disabled, or we detect stub mode
+  // Stub mode: when we have profiles but they look like demo data (Hardhat addresses)
+  const isStubMode = profiles.length > 0 && profiles.some(p => 
+    p.address.toLowerCase() === '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266' ||
+    p.address.toLowerCase() === '0x70997970c51812dc3a010c7d01b50e0d17dc79c8'
+  );
+  const showDisabledNotice = arkivDisabled || isStubMode;
 
   return (
     <section style={{ 
@@ -1601,6 +1635,27 @@ function ArkivProfilesSection() {
         Shows public skill profile snapshots stored on Arkiv. This data NEVER
         includes individual quest details – only tier, human status, and badges.
       </p>
+
+      {/* Show notice when Arkiv is disabled */}
+      {showDisabledNotice && (
+        <div style={{
+          padding: '0.75rem',
+          background: '#fef3c7',
+          border: '1px solid #fbbf24',
+          borderRadius: '4px',
+          fontSize: '0.875rem',
+          color: '#92400e'
+        }}>
+          <strong>ℹ️ Arkiv profile storage is disabled for this demo.</strong>
+          <br />
+          {profiles.length > 0 ? (
+            <>Showing demo profiles. </>
+          ) : (
+            <>No profiles available. </>
+          )}
+          You can still generate Aztec proofs and publish tiers. The main Aztec functionality above works independently.
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', fontSize: '0.875rem' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1639,7 +1694,10 @@ function ArkivProfilesSection() {
         </button>
       </div>
 
-      {error && <p style={{ fontSize: '0.875rem', color: '#dc2626' }}>{error}</p>}
+      {/* Show error only if it's not a disabled notice */}
+      {error && !arkivDisabled && (
+        <p style={{ fontSize: '0.875rem', color: '#dc2626' }}>{error}</p>
+      )}
 
       <div style={{ border: '1px solid #ddd', borderRadius: '4px', overflowX: 'auto' }}>
         <table style={{ width: '100%', fontSize: '0.875rem' }}>
@@ -1654,10 +1712,17 @@ function ArkivProfilesSection() {
             </tr>
           </thead>
           <tbody>
-            {profiles.length === 0 && !loading && (
+            {profiles.length === 0 && !loading && !showDisabledNotice && (
               <tr>
                 <td colSpan={6} style={{ padding: '0.75rem', textAlign: 'center', color: '#666' }}>
                   No profiles found yet – publish a tier first, then try again.
+                </td>
+              </tr>
+            )}
+            {profiles.length === 0 && !loading && showDisabledNotice && (
+              <tr>
+                <td colSpan={6} style={{ padding: '0.75rem', textAlign: 'center', color: '#666' }}>
+                  Arkiv is disabled for this demo. Stub profiles are available when enabled.
                 </td>
               </tr>
             )}
