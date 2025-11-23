@@ -70,26 +70,15 @@ export async function POST(request: NextRequest) {
     // Require real Aztec PXE connection
     const pxeUrl = process.env.NEXT_PUBLIC_PXE_URL || 'http://localhost:8080';
     
-    // Verify PXE is reachable before proceeding
+    // Verify PXE is reachable before proceeding using JSON-RPC health check
+    const { checkPXEHealth, getPXEErrorMessage } = await import('@hidden-garden/core-logic');
     try {
-      const response = await fetch(pxeUrl, { 
-        method: 'GET',
-        signal: AbortSignal.timeout(3000) // 3 second timeout
-      });
-      if (!response.ok) {
-        throw new Error(`PXE returned status ${response.status}`);
+      const healthResult = await checkPXEHealth(pxeUrl, 3000);
+      if (!healthResult.healthy) {
+        throw new Error(healthResult.error || 'PXE health check failed');
       }
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      throw new Error(
-        `Aztec PXE is not available at ${pxeUrl}. ` +
-        `Error: ${errorMsg}\n\n` +
-        `To start Aztec sandbox:\n` +
-        `  pnpm aztec:sandbox\n\n` +
-        `Or with Docker:\n` +
-        `  docker run -it -p 8080:8080 aztecprotocol/sandbox:latest\n\n` +
-        `Please ensure the Aztec sandbox is running before using this endpoint.`
-      );
+      throw new Error(getPXEErrorMessage(pxeUrl, error));
     }
 
     console.log('[publish-and-fetch] Aztec mode: REAL');
