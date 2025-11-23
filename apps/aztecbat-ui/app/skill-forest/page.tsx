@@ -125,7 +125,7 @@ export default function SkillForestPage() {
 
             {/* Mostly private */}
             <div className="flex items-start gap-3">
-              <div className="w-4 h-4 rounded-full bg-[#87ceeb] border border-blue-300/50 dark:border-blue-400/30 flex-shrink-0 mt-0.5 shadow-sm" />
+              <div className="w-4 h-4 rounded-full bg-[#9370db] border border-purple-300/50 dark:border-purple-400/30 flex-shrink-0 mt-0.5 shadow-sm" />
               <div>
                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   More private journeys
