@@ -133,3 +133,14 @@ export type SkillLeaderboard = {
   entries: SkillLeaderboardEntry[];
   totalParticipants: number;
 };
+
+// ============================================================================
+// Arkiv Integration
+// ============================================================================
+// Arkiv exports
+export * from './arkiv/types';
+export {
+  upsertArkivSkillProfile,
+  getArkivSkillProfile,
+  listArkivSkillProfiles,
+} from './arkiv/skillProfiles';
