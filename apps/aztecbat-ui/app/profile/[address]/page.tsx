@@ -5,6 +5,7 @@
  */
 
 import { AchievementCard } from '../../../components/AchievementCard';
+import { Avatar } from '../../../components/Avatar';
 import Link from 'next/link';
 
 type ProfilePageProps = {
@@ -230,13 +231,16 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       {/* Header */}
       <header className="space-y-2">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              {displayName}
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-mono mt-1">
-              {address}
-            </p>
+          <div className="flex items-center gap-4">
+            <Avatar displayName={displayName} address={address} size="lg" />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                {displayName}
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-mono mt-1">
+                {address}
+              </p>
+            </div>
           </div>
           <Link
             href="/"
