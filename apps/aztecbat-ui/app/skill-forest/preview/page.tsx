@@ -6,6 +6,7 @@
 
 'use client';
 
+import Link from 'next/link';
 import {
   SpringCanopyTree,
   AutumnBlendTree,
@@ -25,6 +26,14 @@ export default function TreePreviewPage() {
         <p className="text-gray-600 dark:text-gray-400">
           Lunar-punk bioluminescent forest graphics in soft Ghibli-inspired style.
         </p>
+        <div className="mt-4">
+          <Link
+            href="/skill-forest/interactive/preview"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors"
+          >
+            View Layout Options →
+          </Link>
+        </div>
       </div>
 
       {/* Public-Heavy Trees */}
