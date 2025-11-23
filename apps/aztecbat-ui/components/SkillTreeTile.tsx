@@ -7,6 +7,14 @@
 
 import Link from 'next/link';
 import { TreeIcon } from './TreeIcon';
+import {
+  SpringCanopyTree,
+  AutumnBlendTree,
+  MoonlitBranchesTree,
+  BaseTree,
+  BioluminescentMushroom,
+  MiniShrub,
+} from './CustomTreeIcons';
 
 type PrivacyMode = 'public-heavy' | 'mixed' | 'mostly-private';
 
@@ -29,6 +37,7 @@ type SkillTreeTileProps = {
   };
   quests?: Quest[];
   treeType?: 'conifer' | 'round' | 'mushroom';
+  customTreeType?: 'spring' | 'autumn' | 'moonlit' | 'base' | 'mushroom' | 'shrub';
 };
 
 function getPrivacyGradient(privacyMode: PrivacyMode): string {
@@ -80,6 +89,30 @@ function getTreeSize(participants: number): 'sm' | 'md' | 'lg' {
   return 'sm';
 }
 
+// Render custom tree based on type
+function renderCustomTree(
+  customTreeType: 'spring' | 'autumn' | 'moonlit' | 'base' | 'mushroom' | 'shrub',
+  privacy: 'public-heavy' | 'mixed' | 'private-heavy',
+  size: 'sm' | 'md' | 'lg' = 'sm'
+) {
+  switch (customTreeType) {
+    case 'spring':
+      return <SpringCanopyTree privacy={privacy} size={size} />;
+    case 'autumn':
+      return <AutumnBlendTree privacy={privacy} size={size} />;
+    case 'moonlit':
+      return <MoonlitBranchesTree privacy={privacy} size={size} />;
+    case 'base':
+      return <BaseTree privacy={privacy} size={size} />;
+    case 'mushroom':
+      return <BioluminescentMushroom privacy={privacy} size={size} />;
+    case 'shrub':
+      return <MiniShrub privacy={privacy} size={size} />;
+    default:
+      return <BaseTree privacy={privacy} size={size} />;
+  }
+}
+
 export function SkillTreeTile({
   skillId,
   skillName,
@@ -88,6 +121,7 @@ export function SkillTreeTile({
   privacyStats,
   quests = [],
   treeType,
+  customTreeType,
 }: SkillTreeTileProps) {
   const gradientClasses = getPrivacyGradient(privacyMode);
   const borderClasses = getPrivacyBorder(privacyMode);
@@ -105,9 +139,9 @@ export function SkillTreeTile({
     return mode === 'mostly-private' ? 'private-heavy' : mode;
   };
 
-  // If treeType is provided, show single tree
-  // Otherwise, show multiple trees (one per quest) for backward compatibility
-  const showSingleTree = treeType !== undefined;
+  // If customTreeType is provided, use custom trees; otherwise use legacy TreeIcon
+  const useCustomTree = customTreeType !== undefined;
+  const showSingleTree = treeType !== undefined || customTreeType !== undefined;
   
   // Default quests if not provided
   const defaultQuests: Quest[] = quests.length > 0 ? quests : [
@@ -116,8 +150,8 @@ export function SkillTreeTile({
     { id: 'quest-3', name: 'Quest 3', participantCount: Math.floor(participantCount * 0.25), privacyMode: convertPrivacyMode(privacyMode) },
   ];
 
-  // All trees are the same size (medium)
-  const treeSize = 'md';
+  // All trees are the same size (small for custom trees)
+  const treeSize = useCustomTree ? 'sm' : 'md';
   
   // Use skill's privacy mode to determine tree color (predominant reveal type)
   const treePrivacy = convertPrivacyMode(privacyMode);
@@ -140,11 +174,17 @@ export function SkillTreeTile({
                 </h3>
                 {/* Tree next to the name */}
                 {showSingleTree && (
-                  <TreeIcon
-                    type={treeType}
-                    privacy={treePrivacy}
-                    size={treeSize}
-                  />
+                  <>
+                    {useCustomTree && customTreeType ? (
+                      renderCustomTree(customTreeType, treePrivacy, treeSize)
+                    ) : (
+                      <TreeIcon
+                        type={treeType}
+                        privacy={treePrivacy}
+                        size={treeSize}
+                      />
+                    )}
+                  </>
                 )}
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-200 dark:group-hover:text-gray-300 transition-colors duration-300">
