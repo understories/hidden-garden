@@ -1,11 +1,14 @@
 /**
  * Skill Trees Page (Forest View)
  *
- * An alternate forest view where skills are represented as actual tree-like shapes.
- * More organic and tree-like than the grid view.
+ * A mysterious, bioluminescent forest inspired by Botanicula, Journey, and No Man's Sky.
+ * Skills appear as glowing organisms in a dark, wonder-filled forest.
  */
 
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
 
 // Mock skill tree data - in production this would come from the backend
 const mockSkillTrees = [
@@ -127,142 +130,196 @@ function getTreeSize(size: TreeSize): {
   }
 }
 
-function SkillTree({
+function BioluminescentOrganism({
   skillId,
   skillName,
   participantCount,
   privacyMode,
   privacyStats,
   size,
-}: typeof mockSkillTrees[0]) {
+  position,
+}: typeof mockSkillTrees[0] & { position: { x: number; y: number } }) {
   const colors = getTreeColors(privacyMode);
-  const dimensions = getTreeSize(size);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Organic shape sizes based on engagement
+  const organismSize = size === 'small' ? 60 : size === 'medium' ? 80 : size === 'large' ? 100 : 120;
+  const pulseSize = organismSize * 1.3;
 
   return (
-    <Link
-      href={`/leaderboard/${skillId}`}
-      className={`group relative flex flex-col items-center ${dimensions.width} ${dimensions.height} transition-all duration-300 hover:scale-110 focus:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 dark:focus:ring-blue-500`}
+    <div
+      className="absolute group cursor-pointer"
+      style={{
+        left: `${position.x}%`,
+        top: `${position.y}%`,
+        transform: 'translate(-50%, -50%)',
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Tree Foliage (Crown) */}
-      <div
-        className={`relative ${dimensions.foliageSize} rounded-full bg-gradient-to-br ${colors.foliage} opacity-80 dark:opacity-90 ${colors.glow} shadow-lg group-hover:shadow-xl group-hover:opacity-100 transition-all duration-300 mb-1`}
+      <Link
+        href={`/leaderboard/${skillId}`}
+        className="block relative focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 dark:focus:ring-blue-500 rounded-full"
       >
-        {/* Foliage layers for depth */}
-        <div className={`absolute inset-0 ${dimensions.foliageSize} rounded-full bg-gradient-to-tr ${colors.foliage} opacity-50 blur-sm`} />
-        <div className={`absolute inset-2 ${dimensions.foliageSize === 'w-16 h-16' ? 'w-12 h-12' : dimensions.foliageSize === 'w-20 h-20' ? 'w-14 h-14' : dimensions.foliageSize === 'w-24 h-24' ? 'w-18 h-18' : 'w-20 h-20'} rounded-full bg-gradient-to-br ${colors.foliage} opacity-70`} />
-      </div>
+        {/* Outer glow pulse - breathing effect */}
+        <div
+          className={`absolute inset-0 rounded-full bg-gradient-to-br ${colors.foliage} opacity-20 blur-xl transition-all duration-2000 ease-in-out ${
+            isHovered ? 'animate-pulse' : ''
+          }`}
+          style={{
+            width: `${pulseSize}px`,
+            height: `${pulseSize}px`,
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
 
-      {/* Tree Trunk */}
-      <div
-        className={`${dimensions.trunkHeight} w-3 ${colors.trunk} rounded-b-md group-hover:brightness-110 transition-all duration-300`}
-      />
+        {/* Main organism - organic blob shape */}
+        <div
+          className={`relative rounded-full bg-gradient-to-br ${colors.foliage} ${colors.glow} shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:brightness-110`}
+          style={{
+            width: `${organismSize}px`,
+            height: `${organismSize}px`,
+            clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
+          }}
+        >
+          {/* Inner glow */}
+          <div
+            className="absolute inset-4 rounded-full bg-gradient-to-tr opacity-60 blur-sm"
+            style={{
+              background: `linear-gradient(135deg, ${colors.foliage.split(' ')[0].replace('from-', '')}40, transparent)`,
+            }}
+          />
 
-      {/* Skill Name Label */}
-      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-32 text-center opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300 pointer-events-none">
-        <div className="px-2 py-1 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded shadow-lg whitespace-nowrap">
-          {skillName}
+          {/* Core light */}
+          <div
+            className="absolute inset-1/2 rounded-full bg-white opacity-40 blur-md"
+            style={{
+              width: `${organismSize * 0.3}px`,
+              height: `${organismSize * 0.3}px`,
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
+
+          {/* Floating particles around organism */}
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className={`absolute rounded-full bg-gradient-to-br ${colors.foliage} opacity-30 blur-sm animate-float`}
+              style={{
+                width: `${organismSize * 0.15}px`,
+                height: `${organismSize * 0.15}px`,
+                left: `${50 + (i - 1) * 30}%`,
+                top: `${50 + Math.sin(i) * 20}%`,
+                transform: 'translate(-50%, -50%)',
+                animationDelay: `${i * 0.5}s`,
+                animationDuration: '3s',
+              }}
+            />
+          ))}
         </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-          {participantCount.toLocaleString()} participants
-        </div>
-      </div>
 
-      {/* Tooltip on hover */}
-      <div className="absolute -top-2 left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-focus:opacity-100 group-hover:visible group-focus:visible transition-all duration-200 pointer-events-none z-20 whitespace-nowrap">
-        <div className="font-medium mb-1">{skillName}</div>
-        <div className="space-y-0.5 text-gray-300 dark:text-gray-400">
-          <div>{participantCount.toLocaleString()} participants</div>
-          <div className="text-xs">
-            {privacyStats.public}% public, {privacyStats.mixed}% mixed, {privacyStats.private}% private
+        {/* Name appears on hover - like discovering a species */}
+        <div
+          className={`absolute left-1/2 -translate-x-1/2 mt-4 text-center transition-all duration-300 ${
+            isHovered
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 translate-y-2 pointer-events-none'
+          }`}
+        >
+          <div className="px-3 py-1.5 bg-black/70 dark:bg-black/80 backdrop-blur-sm text-white text-xs font-medium rounded-full shadow-lg border border-white/10">
+            {skillName}
+          </div>
+          <div className="text-xs text-gray-300 dark:text-gray-400 mt-1.5">
+            {participantCount.toLocaleString()} explorers
           </div>
         </div>
-        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45" />
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
 export default function SkillTreesPage() {
+  // Organic positions for organisms in the dark forest
+  const organismPositions = [
+    { x: 20, y: 30 },
+    { x: 75, y: 25 },
+    { x: 45, y: 55 },
+    { x: 15, y: 70 },
+    { x: 80, y: 65 },
+    { x: 50, y: 85 },
+  ];
+
   return (
     <main className="max-w-7xl mx-auto space-y-6 py-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Skill Trees</h1>
+        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">Hidden Forest</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          A lunar-punk forest where each skill grows as a tree. Size reflects engagement; colors reflect privacy patterns.
+          Explore the bioluminescent organisms that grow from shared learning. Each glow tells a story of privacy and discovery.
         </p>
       </div>
 
-      {/* Legend */}
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800/50 space-y-4">
-        <div>
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
-            Forest Colors
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="flex items-start gap-3">
-              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-emerald-400 via-cyan-400 to-teal-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  More public reveals
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Spring canopy
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-amber-400 via-orange-400 to-yellow-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  Mixed privacy
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Autumn blend
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  More private journeys
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Moonlit branches
-                </div>
-              </div>
-            </div>
+      {/* Minimal Legend */}
+      <div className="border border-gray-800 dark:border-gray-700 rounded-lg p-4 bg-black/30 dark:bg-black/50 backdrop-blur-sm space-y-3">
+        <div className="flex items-center gap-6 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-gradient-to-br from-emerald-400 via-cyan-400 to-teal-400" />
+            <span className="text-gray-300 dark:text-gray-400">Public reveals</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-gradient-to-br from-amber-400 via-orange-400 to-yellow-400" />
+            <span className="text-gray-300 dark:text-gray-400">Mixed</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400" />
+            <span className="text-gray-300 dark:text-gray-400">Private journeys</span>
           </div>
         </div>
-        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-            Each skill grows as a tree in this lunar forest. Taller trees have more participants. The glow reflects privacy patterns—brighter for public reveals, cooler for private journeys. Your learning shapes the forest, whether you reveal or keep it private.
-          </p>
-        </div>
+        <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
+          Hover to discover. Each organism's size reflects how many have explored it. The glow reveals privacy patterns—brighter for shared knowledge, cooler for private paths.
+        </p>
       </div>
 
-      {/* Forest Layout - Organic, scattered trees */}
-      <div className="relative min-h-[600px] border border-gray-200 dark:border-gray-700 rounded-lg bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-8 overflow-hidden">
-        {/* Forest floor texture */}
-        <div className="absolute inset-0 opacity-10 dark:opacity-5">
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-green-900/20 to-transparent" />
+      {/* Dark Forest Canvas */}
+      <div className="relative min-h-[700px] rounded-lg overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 border border-gray-800 dark:border-gray-700">
+        {/* Atmospheric depth layers */}
+        <div className="absolute inset-0">
+          {/* Distant stars/particles */}
+          {[...Array(30)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full bg-white opacity-20 animate-pulse"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                width: `${Math.random() * 2 + 1}px`,
+                height: `${Math.random() * 2 + 1}px`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${Math.random() * 2 + 2}s`,
+              }}
+            />
+          ))}
+
+          {/* Subtle fog/mist layers */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-900/10 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-slate-900/50 to-transparent" />
         </div>
 
-        {/* Trees positioned organically */}
-        <div className="relative h-full flex items-end justify-around flex-wrap gap-8">
+        {/* Bioluminescent Organisms */}
+        <div className="relative w-full h-full min-h-[700px]">
           {mockSkillTrees.map((tree, index) => (
-            <div
+            <BioluminescentOrganism
               key={tree.skillId}
-              className="flex-shrink-0"
-              style={{
-                marginBottom: `${Math.random() * 20}px`,
-                marginLeft: index % 2 === 0 ? '0' : '20px',
-                marginRight: index % 2 === 1 ? '0' : '20px',
-              }}
-            >
-              <SkillTree {...tree} />
-            </div>
+              {...tree}
+              position={organismPositions[index] || { x: 50, y: 50 }}
+            />
           ))}
+        </div>
+
+        {/* Subtle instruction hint */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-600 text-center">
+          <span className="opacity-50">Hover to discover</span>
         </div>
       </div>
     </main>
