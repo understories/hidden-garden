@@ -4,6 +4,8 @@
  * Displays a single leaderboard entry with rank, user info, tier, and proof status.
  */
 
+import { Avatar } from './Avatar';
+
 type LeaderboardEntryProps = {
   rank: number;
   displayName: string;
@@ -57,13 +59,16 @@ export function LeaderboardEntry({
         #{rank}
       </td>
       <td className="px-4 py-3">
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            {displayName}
-          </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-            {address}
-          </span>
+        <div className="flex items-center gap-3">
+          <Avatar displayName={displayName} address={address} size="sm" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {displayName}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+              {address}
+            </span>
+          </div>
         </div>
       </td>
       <td className="px-4 py-3">
