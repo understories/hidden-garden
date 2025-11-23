@@ -5,6 +5,10 @@
  * Rebuilt from scratch following Power/Ease Matrix principles.
  */
 
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { clusters, getSkillsByCluster } from './skillCanopyData';
 import { ForestTile } from '../../components/ForestTile';
 import { ClickableTree } from '../../components/ClickableTree';
@@ -29,13 +33,102 @@ function getTreeSize(participants: number): 'sm' | 'md' | 'lg' {
 }
 
 export default function SkillCanopyPage() {
+  const pathname = usePathname();
+
   return (
     <main className="max-w-6xl mx-auto space-y-6 py-8">
+      {/* Navigation tabs */}
+      <div className="flex items-center gap-2 mb-4">
+        <Link
+          href="/skill-tree"
+          className={`
+            px-4 py-2 rounded-lg text-sm font-medium transition-colors
+            ${pathname === '/skill-tree'
+              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }
+          `}
+        >
+          Skill Tree
+        </Link>
+        <Link
+          href="/skill-canopy"
+          className={`
+            px-4 py-2 rounded-lg text-sm font-medium transition-colors
+            ${pathname === '/skill-canopy'
+              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }
+          `}
+        >
+          Skill Canopy
+        </Link>
+      </div>
+
       <div>
         <h1 className="text-3xl font-bold mb-2">Skill Canopy</h1>
         <p className="text-gray-600 dark:text-gray-400">
           An isometric, game-like view of skill clusters in our lunar-punk forest.
         </p>
+      </div>
+
+      {/* Legend */}
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800/50 space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">
+            Forest Colors
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Public-heavy */}
+            <div className="flex items-start gap-3">
+              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-emerald-400/30 via-cyan-400/25 to-teal-400/30 dark:from-emerald-400/40 dark:via-cyan-400/35 dark:to-teal-400/40 border-2 border-emerald-400/30 dark:border-emerald-400/40 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  More public reveals
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Spring canopy
+                </div>
+              </div>
+            </div>
+
+            {/* Mixed */}
+            <div className="flex items-start gap-3">
+              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-amber-400/30 via-orange-400/25 to-yellow-400/30 dark:from-amber-400/40 dark:via-orange-400/35 dark:to-yellow-400/40 border-2 border-amber-400/30 dark:border-amber-400/40 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  Mixed privacy
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Autumn blend
+                </div>
+              </div>
+            </div>
+
+            {/* Mostly private */}
+            <div className="flex items-start gap-3">
+              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-400/25 via-indigo-400/20 to-purple-400/25 dark:from-blue-400/35 dark:via-indigo-400/30 dark:to-purple-400/35 border-2 border-blue-400/20 dark:border-indigo-400/30 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  More private journeys
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Moonlit branches
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Canopy-specific explanation */}
+        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-2">
+            Each island represents a skill cluster—a group of related learning domains. The trees on each island are individual skills, with colors reflecting their privacy patterns. Hover over any tree to see details, or click to explore its leaderboard.
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+            Your learning choices—whether to reveal or keep private—shape this lunar forest. Every skill contributes to the ecosystem's unique glow, creating a living map of knowledge and privacy preferences.
+          </p>
+        </div>
       </div>
 
       {/* Responsive grid of forest tiles */}
