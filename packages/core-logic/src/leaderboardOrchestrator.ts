@@ -48,6 +48,8 @@ export interface PublishAndFetchResult {
   skillHash: string;
   /** Updated leaderboard entries */
   leaderboard: LeaderboardEntry[];
+  /** Whether the user has a valid SelfHumanSBT (human-verified) */
+  isHumanVerified: boolean;
 }
 
 /**
@@ -93,7 +95,7 @@ export async function publishAndFetchAztecBuilderLeaderboard(
     aztecClient,
   };
 
-  const { txHash, skillHash } = await submitTierProofWithSBTCheck(submitParams);
+  const { txHash, skillHash, isHumanVerified } = await submitTierProofWithSBTCheck(submitParams);
 
   // 2. Instantiate leaderboard client
   const client = new LeaderboardClient({ baseUrl: indexerBaseUrl });
@@ -108,7 +110,7 @@ export async function publishAndFetchAztecBuilderLeaderboard(
     );
 
     if (found) {
-      return { txHash, skillHash, leaderboard };
+      return { txHash, skillHash, leaderboard, isHumanVerified };
     }
 
     // Wait before next attempt (except on last iteration)
