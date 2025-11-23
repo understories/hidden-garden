@@ -71,59 +71,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Determine Aztec mode - default to MOCK for development
-    // Set NEXT_PUBLIC_USE_REAL_AZTEC=true to use real Aztec devnet for live demo
-    const useRealAztec = process.env.NEXT_PUBLIC_USE_REAL_AZTEC === 'true';
-    let aztecMode: 'mock' | 'real' = useRealAztec ? 'real' : 'mock';
+    // Dev UI always uses REAL Aztec - no mock mode
+    // This ensures we're demonstrating real Aztec privacy
+    let aztecMode: 'mock' | 'real' = 'real';
     
-    // Check if Aztec SDK is available (only if trying to use real mode)
-    if (aztecMode === 'real') {
-      try {
-        // Try to dynamically check if @aztec/aztec.js is available
-        // This is a lightweight check - actual loading happens in initialize()
-        await import('@aztec/aztec.js');
-      } catch (error) {
-        console.warn(
-          '[publish-and-fetch] ⚠️  @aztec/aztec.js not available. ' +
-          'Falling back to mock mode. ' +
-          'Install with: pnpm add @aztec/aztec.js @aztec/accounts/testing ' +
-          'or set NEXT_PUBLIC_USE_MOCK_AZTEC=true explicitly.'
-        );
-        aztecMode = 'mock';
-      }
+    // Check if Aztec SDK is available
+    try {
+      await import('@aztec/aztec.js');
+    } catch (error) {
+      throw new Error(
+        '@aztec/aztec.js is not available. ' +
+        'Install with: pnpm add @aztec/aztec.js @aztec/accounts/testing ' +
+        'Aztec devnet must be running for the dev UI to work.'
+      );
     }
 
-    console.log('[publish-and-fetch] Aztec mode:', aztecMode, aztecMode === 'mock' ? '(MOCK - set NEXT_PUBLIC_USE_MOCK_AZTEC=false for real Aztec)' : '(REAL - demonstrating Aztec privacy)');
+    console.log('[publish-and-fetch] Aztec mode: REAL (dev UI always uses real Aztec)');
 
-    // Create Aztec client
-    const aztecClient = createAztecClient(aztecMode, {
+    // Create Aztec client (always real mode)
+    const aztecClient = createAztecClient('real', {
       pxeUrl: process.env.NEXT_PUBLIC_PXE_URL || 'http://localhost:8080',
     });
 
-    // Create signer
-    // TODO: For production, use a proper server-side signer pattern
-    // For now, create a mock signer that satisfies the type requirements
-    // In mock mode, this won't actually send transactions
+    // Create signer (always real for dev UI)
     let signer: ethers.Signer;
 
-    if (!useMockAztec && process.env.SERVER_PRIVATE_KEY) {
-      // Real mode: use private key from environment
+    if (process.env.SERVER_PRIVATE_KEY) {
+      // Use private key from environment
       const provider = new ethers.JsonRpcProvider(
         process.env.RPC_URL || 'http://localhost:8545'
       );
       signer = new ethers.Wallet(process.env.SERVER_PRIVATE_KEY, provider);
-      console.log('[publish-and-fetch] Using real signer from SERVER_PRIVATE_KEY');
+      console.log('[publish-and-fetch] Using signer from SERVER_PRIVATE_KEY');
     } else {
-      // Mock mode: create a dummy signer that won't actually send transactions
-      // The function will work in mock mode for testing
+      // Fallback to Hardhat default for local dev
       const provider = new ethers.JsonRpcProvider(
-        'http://localhost:8545' // Dummy provider
+        process.env.RPC_URL || 'http://localhost:8545'
       );
       signer = new ethers.Wallet(
         '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', // Hardhat default
         provider
       );
-      console.log('[publish-and-fetch] Using mock signer (transactions will be mocked)');
+      console.log('[publish-and-fetch] Using Hardhat default signer');
     }
 
     // Get indexer base URL
