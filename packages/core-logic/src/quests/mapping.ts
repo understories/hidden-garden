@@ -21,8 +21,20 @@ import { computeCategoryHash, computePathHash } from './hashing';
  * Category hash (computed from category string)
  * This matches the category_hash used in QuestNote storage
  * Computed as: pedersen_hash(bytes("aztec_builder")) - matches Noir circuit
+ * 
+ * ⚠️ PLACEHOLDER FOR MVP: Currently using placeholder value.
+ * Backend team (Team A) will compute actual hash from Noir circuit.
+ * To update: Replace placeholder in PEDERSEN_HASH_LOOKUP in hashing.ts
  */
-export const AZTEC_BUILDER_CATEGORY_HASH: QuestIdHash = computeCategoryHash(AZTEC_BUILDER_CATEGORY);
+export const AZTEC_BUILDER_CATEGORY_HASH: QuestIdHash = (() => {
+  try {
+    return computeCategoryHash(AZTEC_BUILDER_CATEGORY);
+  } catch (error) {
+    // MVP: Use placeholder to allow UI development
+    // Backend team will provide actual hash value
+    return '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash;
+  }
+})();
 
 /**
  * Path hash for Aztec Builder pathway
@@ -30,8 +42,20 @@ export const AZTEC_BUILDER_CATEGORY_HASH: QuestIdHash = computeCategoryHash(AZTE
  * This identifies the "aztec_builder_path" learning pathway
  * 
  * Computed as: pedersen_hash(bytes("aztec_builder_path")) - matches Noir circuit
+ * 
+ * ⚠️ PLACEHOLDER FOR MVP: Currently using placeholder value.
+ * Backend team (Team A) will compute actual hash from Noir circuit.
+ * To update: Replace placeholder in PEDERSEN_HASH_LOOKUP in hashing.ts
  */
-export const PATH_HASH: QuestIdHash = computePathHash('aztec_builder_path');
+export const PATH_HASH: QuestIdHash = (() => {
+  try {
+    return computePathHash('aztec_builder_path');
+  } catch (error) {
+    // MVP: Use placeholder to allow UI development
+    // Backend team will provide actual hash value
+    return '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash;
+  }
+})();
 
 /**
  * Quest ID to Tier mapping
