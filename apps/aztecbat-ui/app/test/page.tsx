@@ -8,9 +8,35 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { clusters, getSkillsByCluster, skillTreeNodes } from '../skill-canopy/skillCanopyData';
 
 type PrivacyMode = 'public-heavy' | 'mixed' | 'private-heavy';
+
+// Mock data for test page
+const clusters = [
+  { id: 'core-protocol', name: 'Core Protocol' },
+  { id: 'rust-noir', name: 'Rust & Noir' },
+  { id: 'zk-foundations', name: 'ZK Foundations' },
+  { id: 'infrastructure', name: 'Infrastructure' },
+];
+
+const skillTreeNodes = [
+  { id: 'aztec-protocol', name: 'Aztec Protocol', clusterId: 'core-protocol', privacy: 'private-heavy' as PrivacyMode, participants: 1247 },
+  { id: 'zero-knowledge-basics', name: 'Zero-Knowledge Basics', clusterId: 'core-protocol', privacy: 'mixed' as PrivacyMode, participants: 892 },
+  { id: 'privacy-circuits', name: 'Privacy Circuits', clusterId: 'core-protocol', privacy: 'private-heavy' as PrivacyMode, participants: 634 },
+  { id: 'rust-foundations', name: 'Rust Foundations', clusterId: 'rust-noir', privacy: 'public-heavy' as PrivacyMode, participants: 2156 },
+  { id: 'noir-basics', name: 'Aztec Noir Basics', clusterId: 'rust-noir', privacy: 'public-heavy' as PrivacyMode, participants: 1123 },
+  { id: 'advanced-noir', name: 'Advanced Noir', clusterId: 'rust-noir', privacy: 'mixed' as PrivacyMode, participants: 445 },
+  { id: 'rust-advanced', name: 'Rust Advanced', clusterId: 'rust-noir', privacy: 'public-heavy' as PrivacyMode, participants: 789 },
+  { id: 'zk-proofs', name: 'ZK Proof Systems', clusterId: 'zk-foundations', privacy: 'mixed' as PrivacyMode, participants: 567 },
+  { id: 'circuit-design', name: 'Circuit Design', clusterId: 'zk-foundations', privacy: 'private-heavy' as PrivacyMode, participants: 423 },
+  { id: 'zk-applications', name: 'ZK Applications', clusterId: 'zk-foundations', privacy: 'mixed' as PrivacyMode, participants: 312 },
+  { id: 'l1-l2-bridging', name: 'L1 → L2 Bridging', clusterId: 'infrastructure', privacy: 'mixed' as PrivacyMode, participants: 445 },
+  { id: 'rollup-mechanics', name: 'Rollup Mechanics', clusterId: 'infrastructure', privacy: 'public-heavy' as PrivacyMode, participants: 678 },
+];
+
+function getSkillsByCluster(clusterId: string) {
+  return skillTreeNodes.filter((skill) => skill.clusterId === clusterId);
+}
 
 // Get Ghibli-style privacy colors (matching our design system)
 function getPrivacyColor(privacy: PrivacyMode): string {
@@ -201,7 +227,6 @@ export default function SkillForestTestPage() {
               {nodes.map((node) => {
                 const color = getPrivacyColor(node.privacy);
                 const isHovered = hoveredNode === node.id;
-                const skillData = skillTreeNodes.find(s => s.id === node.id);
                 
                 return (
                   <g key={node.id}>
