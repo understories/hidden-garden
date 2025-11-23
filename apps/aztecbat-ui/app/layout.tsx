@@ -43,6 +43,12 @@ export default function RootLayout({
                   >
                     Leaderboards
                   </Link>
+                  <Link
+                    href="/skill-tree"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                  >
+                    Skill Tree
+                  </Link>
                   {isLoggedIn && (
                     <Link
                       href="/garden"
