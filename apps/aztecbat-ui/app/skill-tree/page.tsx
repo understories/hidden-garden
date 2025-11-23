@@ -5,6 +5,10 @@
  * Shows skills as tree tiles with growth and privacy-based glow.
  */
 
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { SkillTreeTile } from '../../components/SkillTreeTile';
 
 // Mock skill tree data - in production this would come from the backend
@@ -54,8 +58,38 @@ const mockSkillTrees = [
 ];
 
 export default function SkillTreePage() {
+  const pathname = usePathname();
+
   return (
     <main className="max-w-6xl mx-auto space-y-6 py-8">
+      {/* Navigation tabs */}
+      <div className="flex items-center gap-2 mb-4">
+        <Link
+          href="/skill-tree"
+          className={`
+            px-4 py-2 rounded-lg text-sm font-medium transition-colors
+            ${pathname === '/skill-tree'
+              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }
+          `}
+        >
+          Skill Tree
+        </Link>
+        <Link
+          href="/skill-canopy"
+          className={`
+            px-4 py-2 rounded-lg text-sm font-medium transition-colors
+            ${pathname === '/skill-canopy'
+              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }
+          `}
+        >
+          Skill Canopy
+        </Link>
+      </div>
+
       <div>
         <h1 className="text-3xl font-bold mb-2">Skill Tree</h1>
         <p className="text-gray-600 dark:text-gray-400">
