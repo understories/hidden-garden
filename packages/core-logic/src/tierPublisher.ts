@@ -70,12 +70,39 @@ export function encodeTierProofPublicInputs(
   skillHash: `0x${string}`,
   minTier: number
 ): `0x${string}` {
-  const abiCoder = ethers.AbiCoder.defaultAbiCoder();
-  const encoded = abiCoder.encode(
-    ['address', 'bytes32', 'uint8'],
-    [userAddress, skillHash, minTier]
-  );
-  return encoded as `0x${string}`;
+  // Validate and normalize inputs
+  if (!ethers.isAddress(userAddress)) {
+    throw new Error(`Invalid Ethereum address: ${userAddress}`);
+  }
+  
+  // Normalize address to checksum format
+  const normalizedAddress = ethers.getAddress(userAddress);
+  
+  // Validate skill hash format
+  if (!skillHash.startsWith('0x') || skillHash.length !== 66) {
+    throw new Error(
+      `Invalid skill hash format: expected 0x-prefixed 32-byte hex string (66 chars), got "${skillHash}" (${skillHash.length} chars)`
+    );
+  }
+  
+  // Validate minTier
+  if (!Number.isInteger(minTier) || minTier < 1 || minTier > 4) {
+    throw new Error(`Invalid minTier: expected integer 1-4, got ${minTier} (${typeof minTier})`);
+  }
+  
+  try {
+    const abiCoder = ethers.AbiCoder.defaultAbiCoder();
+    const encoded = abiCoder.encode(
+      ['address', 'bytes32', 'uint8'],
+      [normalizedAddress, skillHash, minTier]
+    );
+    return encoded as `0x${string}`;
+  } catch (error) {
+    throw new Error(
+      `Failed to encode public inputs: ${error instanceof Error ? error.message : String(error)}. ` +
+      `Address: ${normalizedAddress}, SkillHash: ${skillHash}, MinTier: ${minTier}`
+    );
+  }
 }
 
 /**
@@ -127,11 +154,7 @@ export async function checkSelfHumanSBT(
  * 4. Optionally checks SelfHumanSBT validity (for human-only mode)
  * 5. Submits to SkillLeaderboard (works with or without SBT)
  * 
- * Note: SBT verification is optional. Users can compete in:
- * - "Anon/Agent Mode": No SBT required (anyone can publish)
- * - "Human-Only Mode": SBT required (only verified humans can publish)
- * 
- * The leaderboard can be filtered to show only human-verified entries.
+ * Note: SBT verification is optional via requireSBT parameter.
  * 
  * @param params Submission parameters
  * @returns Transaction hash, skill hash, and human verification status
@@ -192,8 +215,7 @@ export async function submitTierProofWithSBTCheck(
     minTier
   );
 
-  // 4. Check SelfHumanSBT validity (optional - for human-only mode)
-  // Note: SBT check is now optional. Users can compete in "anon/agent mode" or "human-only mode"
+  // 4. Check SelfHumanSBT validity (optional via requireSBT parameter)
   const provider = signer.provider;
   if (!provider) {
     throw new Error('Signer must have a provider attached for SBT verification');
