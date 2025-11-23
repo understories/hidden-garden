@@ -1,20 +1,10 @@
-import Link from 'next/link';
-
 export default function Home() {
   return (
-    <main
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        padding: '2rem',
-        textAlign: 'center',
-      }}
-    >
-      <h1 style={{ fontSize: '4rem', marginBottom: '1rem' }}>🌱 Hidden Garden</h1>
-      <p style={{ fontSize: '1.5rem', color: '#666' }}>
+    <main className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] py-8 px-4 text-center">
+      <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+        Hidden Garden 🌱
+      </h1>
+      <p className="text-xl md:text-2xl font-medium text-gray-700 dark:text-gray-300 max-w-2xl leading-relaxed">
         A privacy-preserving skill tree and leaderboard.
       </p>
     </main>
