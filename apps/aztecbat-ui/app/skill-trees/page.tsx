@@ -187,7 +187,7 @@ function getTreeSize(size: TreeSize): {
 }
 
 // Convert isometric grid position to screen coordinates (increased spacing for planets)
-function gridToIsometric(gridX: number, gridY: number, tileSize: number = 180): { x: number; y: number } {
+function gridToIsometric(gridX: number, gridY: number, tileSize: number = 240): { x: number; y: number } {
   const isoX = (gridX - gridY) * (tileSize * 0.5);
   const isoY = (gridX + gridY) * (tileSize * 0.25);
   return { x: isoX, y: isoY };
@@ -229,7 +229,7 @@ function ExplorerCluster({
 
   return (
     <div
-      className="absolute group/cluster orbit-container"
+      className="absolute group/cluster orbit-container pointer-events-auto"
       style={{
         left: `${centerX}px`,
         top: `${centerY}px`,
@@ -272,15 +272,19 @@ function ExplorerCluster({
         ))}
       </div>
 
-      {/* Cluster tooltip - visible only on hover */}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 dark:bg-black/80 backdrop-blur-sm text-white text-xs rounded opacity-0 invisible group-hover/cluster:opacity-100 group-hover/cluster:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-30 border border-white/10">
-        <div className="font-medium">{cluster.size} explorers</div>
-        <div className="text-gray-300">
-          {getTierName(cluster.masteryLevel)} • {cluster.questsCompleted} quests
+      {/* Moon tooltip - visible on hover */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black/90 dark:bg-black/90 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 invisible group-hover/cluster:opacity-100 group-hover/cluster:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-30 border border-white/20 shadow-xl">
+        <div className="font-semibold mb-1">Moon Cluster</div>
+        <div className="font-medium mb-1.5">{cluster.size} explorers</div>
+        <div className="space-y-0.5 text-gray-300">
+          <div>Mastery: {getTierName(cluster.masteryLevel)}</div>
+          <div>Quests: {cluster.questsCompleted} completed</div>
+          <div className="text-gray-400 text-xs mt-1 pt-1 border-t border-white/10">
+            Privacy: {cluster.preference === 'public-heavy' ? 'Public' : cluster.preference === 'mixed' ? 'Mixed' : 'Private'}
+          </div>
         </div>
-        <div className="text-gray-400 text-xs mt-0.5">
-          {cluster.preference === 'public-heavy' ? 'Public' : cluster.preference === 'mixed' ? 'Mixed' : 'Private'}
-        </div>
+        {/* Tooltip arrow */}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-black/90 dark:bg-black/90 rotate-45 border-r border-b border-white/20" />
       </div>
     </div>
   );
@@ -315,7 +319,7 @@ function BioluminescentOrganism({
   const pulseSize = organismSize * 1.4;
 
   // Convert grid position to isometric coordinates
-  const isoPos = gridToIsometric(gridPos.x, gridPos.y);
+  const isoPos = gridToIsometric(gridPos.x, gridPos.y, 240);
 
   return (
     <div
@@ -440,8 +444,8 @@ function PowerTransmissionLine({
   to: { x: number; y: number };
   opacity?: number;
 }) {
-  const fromIso = gridToIsometric(from.x, from.y);
-  const toIso = gridToIsometric(to.x, to.y);
+  const fromIso = gridToIsometric(from.x, from.y, 240);
+  const toIso = gridToIsometric(to.x, to.y, 240);
 
   const length = Math.sqrt(
     Math.pow(toIso.x - fromIso.x, 2) + Math.pow(toIso.y - fromIso.y, 2)
@@ -476,6 +480,44 @@ function PowerTransmissionLine({
 }
 
 export default function SkillTreesPage() {
+  const [zoom, setZoom] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const handleZoomIn = () => {
+    setZoom((prev) => Math.min(prev + 0.25, 2));
+  };
+
+  const handleZoomOut = () => {
+    setZoom((prev) => Math.max(prev - 0.25, 0.5));
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    setZoom((prev) => Math.max(0.5, Math.min(2, prev + delta)));
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 0) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - panX, y: e.clientY - panY });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      setPanX(e.clientX - dragStart.x);
+      setPanY(e.clientY - dragStart.y);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
   return (
     <main className="max-w-7xl mx-auto space-y-6 py-8">
       <div>
@@ -506,33 +548,69 @@ export default function SkillTreesPage() {
         </p>
       </div>
 
-      {/* Isometric Forest Canvas */}
-      <div className="relative min-h-[800px] rounded-lg overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 border border-gray-800 dark:border-gray-700">
-        {/* Isometric grid background - spaced for planets */}
-        <div className="absolute inset-0 opacity-10">
-          {[...Array(8)].map((_, x) =>
-            [...Array(6)].map((_, y) => {
-              const iso = gridToIsometric(x, y, 180);
-              return (
-                <div
-                  key={`${x}-${y}`}
-                  className="absolute border border-cyan-500/10"
-                  style={{
-                    left: `calc(50% + ${iso.x}px)`,
-                    top: `calc(40% + ${iso.y}px)`,
-                    width: '180px',
-                    height: '90px',
-                    transform: 'translate(-50%, -50%) rotate(45deg) skew(-15deg, 15deg)',
-                    clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
-                  }}
-                />
-              );
-            })
-          )}
-        </div>
+      {/* Zoom Controls */}
+      <div className="flex items-center gap-2 justify-end">
+        <button
+          onClick={handleZoomOut}
+          className="px-3 py-1.5 text-sm border border-gray-700 dark:border-gray-600 rounded bg-black/30 dark:bg-black/50 backdrop-blur-sm text-gray-300 dark:text-gray-400 hover:bg-black/50 hover:text-white transition-colors"
+          aria-label="Zoom out"
+        >
+          −
+        </button>
+        <span className="text-xs text-gray-400 dark:text-gray-500 px-2">
+          {Math.round(zoom * 100)}%
+        </span>
+        <button
+          onClick={handleZoomIn}
+          className="px-3 py-1.5 text-sm border border-gray-700 dark:border-gray-600 rounded bg-black/30 dark:bg-black/50 backdrop-blur-sm text-gray-300 dark:text-gray-400 hover:bg-black/50 hover:text-white transition-colors"
+          aria-label="Zoom in"
+        >
+          +
+        </button>
+      </div>
 
-        {/* Atmospheric depth layers */}
-        <div className="absolute inset-0">
+      {/* Isometric Forest Canvas */}
+      <div
+        className="relative min-h-[800px] rounded-lg overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 border border-gray-800 dark:border-gray-700 cursor-move"
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
+        {/* Zoomable container */}
+        <div
+          className="absolute inset-0 origin-center transition-transform duration-200"
+          style={{
+            transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+            transformOrigin: 'center center',
+          }}
+        >
+          {/* Isometric grid background - spaced for planets */}
+          <div className="absolute inset-0 opacity-10">
+            {[...Array(10)].map((_, x) =>
+              [...Array(8)].map((_, y) => {
+                const iso = gridToIsometric(x, y, 240);
+                return (
+                  <div
+                    key={`${x}-${y}`}
+                    className="absolute border border-cyan-500/10"
+                    style={{
+                      left: `calc(50% + ${iso.x}px)`,
+                      top: `calc(40% + ${iso.y}px)`,
+                      width: '240px',
+                      height: '120px',
+                      transform: 'translate(-50%, -50%) rotate(45deg) skew(-15deg, 15deg)',
+                      clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
+                    }}
+                  />
+                );
+              })
+            )}
+          </div>
+
+          {/* Atmospheric depth layers */}
+          <div className="absolute inset-0">
           {/* Distant stars/particles */}
           {[...Array(40)].map((_, i) => (
             <div
@@ -561,11 +639,11 @@ export default function SkillTreesPage() {
 
           {/* Subtle fog/mist layers */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-900/10 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-slate-900/60 to-transparent" />
-        </div>
+            <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-slate-900/60 to-transparent" />
+          </div>
 
-        {/* Power transmission lines between planets */}
-        <div className="absolute inset-0 w-full h-full min-h-[800px]">
+          {/* Power transmission lines between planets */}
+          <div className="absolute inset-0 w-full h-full min-h-[800px]">
           {mockSkillTrees.map((tree) =>
             tree.overlaps?.map((overlapId) => {
               const targetTree = mockSkillTrees.find((t) => t.skillId === overlapId);
@@ -579,41 +657,41 @@ export default function SkillTreesPage() {
                 />
               );
             })
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Bioluminescent Organisms */}
-        <div className="relative w-full h-full min-h-[800px]">
+          {/* Bioluminescent Organisms */}
+          <div className="relative w-full h-full min-h-[800px]">
           {mockSkillTrees.map((tree) => (
             <BioluminescentOrganism key={tree.skillId} {...tree} />
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* Overlap clusters - visual indicators where skills intersect */}
-        {mockSkillTrees
-          .filter((tree) => tree.overlaps && tree.overlaps.length > 0)
-          .map((tree) => {
-            const iso = gridToIsometric(tree.gridPos.x, tree.gridPos.y);
-            return (
-              <div
-                key={`cluster-${tree.skillId}`}
-                className="absolute rounded-full border border-cyan-400/10 pointer-events-none"
-                style={{
-                  left: `calc(50% + ${iso.x}px)`,
-                  top: `calc(40% + ${iso.y}px)`,
-                  width: `${(tree.overlaps?.length || 0) * 20 + 100}px`,
-                  height: `${(tree.overlaps?.length || 0) * 20 + 100}px`,
-                  transform: 'translate(-50%, -50%)',
-                  animation: 'pulse 4s ease-in-out infinite',
-                }}
-              />
-            );
-          })}
+          {/* Overlap clusters - visual indicators where skills intersect */}
+          {mockSkillTrees
+            .filter((tree) => tree.overlaps && tree.overlaps.length > 0)
+            .map((tree) => {
+              const iso = gridToIsometric(tree.gridPos.x, tree.gridPos.y, 240);
+              return (
+                <div
+                  key={`cluster-${tree.skillId}`}
+                  className="absolute rounded-full border border-cyan-400/10 pointer-events-none"
+                  style={{
+                    left: `calc(50% + ${iso.x}px)`,
+                    top: `calc(40% + ${iso.y}px)`,
+                    width: `${(tree.overlaps?.length || 0) * 20 + 100}px`,
+                    height: `${(tree.overlaps?.length || 0) * 20 + 100}px`,
+                    transform: 'translate(-50%, -50%)',
+                    animation: 'pulse 4s ease-in-out infinite',
+                  }}
+                />
+              );
+            })}
 
-        {/* Activity heat map - showing recent quest completions */}
-        <div className="absolute inset-0 pointer-events-none">
-          {mockSkillTrees.map((tree) => {
-            const iso = gridToIsometric(tree.gridPos.x, tree.gridPos.y);
+          {/* Activity heat map - showing recent quest completions */}
+          <div className="absolute inset-0 pointer-events-none">
+            {mockSkillTrees.map((tree) => {
+              const iso = gridToIsometric(tree.gridPos.x, tree.gridPos.y, 240);
             // Simulate activity pulses
             const activityLevel = tree.participantCount / 100;
             return (
@@ -632,16 +710,16 @@ export default function SkillTreesPage() {
               />
             );
           })}
-        </div>
+          </div>
 
-        {/* Learning paths - trails between related skills */}
-        <div className="absolute inset-0 pointer-events-none">
+          {/* Learning paths - trails between related skills */}
+          <div className="absolute inset-0 pointer-events-none">
           {mockSkillTrees.map((tree) =>
             tree.overlaps?.slice(0, 1).map((overlapId) => {
               const targetTree = mockSkillTrees.find((t) => t.skillId === overlapId);
               if (!targetTree) return null;
-              const fromIso = gridToIsometric(tree.gridPos.x, tree.gridPos.y);
-              const toIso = gridToIsometric(targetTree.gridPos.x, targetTree.gridPos.y);
+              const fromIso = gridToIsometric(tree.gridPos.x, tree.gridPos.y, 240);
+              const toIso = gridToIsometric(targetTree.gridPos.x, targetTree.gridPos.y, 240);
               
               // Create a curved path
               const midX = (fromIso.x + toIso.x) / 2;
@@ -665,56 +743,12 @@ export default function SkillTreesPage() {
               );
             })
           )}
+          </div>
         </div>
 
         {/* Subtle instruction hint */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-600 text-center z-20">
-          <span className="opacity-50">Hover to discover • Clusters show explorer groups • Lines show skill overlaps</span>
-        </div>
-      </div>
-
-      {/* Additional Visualization Ideas Panel */}
-      <div className="border border-gray-800 dark:border-gray-700 rounded-lg p-6 bg-black/30 dark:bg-black/50 backdrop-blur-sm">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
-          Visualization Enhancements (Future Ideas)
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
-          <div className="space-y-2">
-            <h3 className="font-medium text-gray-800 dark:text-gray-200">Time-based Growth</h3>
-            <p className="text-xs">
-              Animate organisms growing over time, showing skill evolution. Add a timeline scrubber to see the forest change.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-medium text-gray-800 dark:text-gray-200">Interactive Filtering</h3>
-            <p className="text-xs">
-              Filter by mastery level, privacy preference, or quest completion. Hide/show clusters dynamically.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-medium text-gray-800 dark:text-gray-200">Learning Journeys</h3>
-            <p className="text-xs">
-              Show animated paths between skills, representing how explorers move through the forest over time.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-medium text-gray-800 dark:text-gray-200">Density Visualization</h3>
-            <p className="text-xs">
-              Heat maps showing activity hotspots. Brighter areas indicate more quest completions or interactions.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-medium text-gray-800 dark:text-gray-200">Depth Layers</h3>
-            <p className="text-xs">
-              Multiple z-layers showing different aspects: surface (public), mid-layer (mixed), deep (private).
-            </p>
-          </div>
-          <div className="space-y-2">
-            <h3 className="font-medium text-gray-800 dark:text-gray-200">Seasonal Changes</h3>
-            <p className="text-xs">
-              Visualize how the forest changes with seasons (time periods), showing growth cycles and migration patterns.
-            </p>
-          </div>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-600 text-center z-20 pointer-events-none">
+          <span className="opacity-50">Hover planets/moons to discover • Scroll to zoom • Drag to pan</span>
         </div>
       </div>
     </main>
