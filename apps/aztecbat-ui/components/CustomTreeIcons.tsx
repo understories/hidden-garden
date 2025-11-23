@@ -484,6 +484,158 @@ export function MiniShrub({ privacy, size = 'sm', className = '' }: TreeIconProp
 }
 
 /**
+ * 7. Silver Pine Tree (Majestic Center Tree)
+ * A tall, majestic pine tree for the center of the forest
+ * Silver/metallic colors with a regal, commanding presence
+ */
+export function SilverPineTree({ size = 'lg', className = '' }: { size?: 'sm' | 'md' | 'lg' | 'xl'; className?: string }) {
+  const baseSize = size === 'xl' ? 96 : getBaseSize(size);
+  const viewBox = '0 0 48 80';
+  
+  // Silver/metallic color palette
+  const silverColors = {
+    light: '#e8e8e8', // Light silver
+    medium: '#c0c0c0', // Medium silver
+    dark: '#a0a0a0', // Dark silver
+    shadow: '#808080', // Shadow
+    glow: 'rgba(200, 200, 200, 0.4)', // Soft glow
+  };
+
+  return (
+    <svg
+      width={baseSize}
+      height={baseSize * (80 / 48)}
+      viewBox={viewBox}
+      className={className}
+      style={{
+        filter: `drop-shadow(0 4px 8px ${silverColors.glow})`,
+      }}
+      aria-label="Silver Pine Tree"
+    >
+      <defs>
+        <linearGradient id="silver-pine-trunk" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor={silverColors.medium} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={silverColors.dark} stopOpacity="0.9" />
+        </linearGradient>
+        <linearGradient id="silver-pine-needles" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor={silverColors.light} stopOpacity="0.95" />
+          <stop offset="50%" stopColor={silverColors.medium} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={silverColors.dark} stopOpacity="0.85" />
+        </linearGradient>
+      </defs>
+
+      {/* Trunk */}
+      <path
+        d="M 20 50 Q 22 55, 24 60 Q 26 55, 28 50 L 28 80 L 20 80 Z"
+        fill="url(#silver-pine-trunk)"
+        stroke={silverColors.shadow}
+        strokeWidth="0.5"
+        strokeOpacity="0.5"
+      />
+
+      {/* Pine branches (layered from bottom to top) */}
+      {/* Bottom branch */}
+      <ellipse
+        cx="24"
+        cy="45"
+        rx="12"
+        ry="8"
+        fill="url(#silver-pine-needles)"
+        opacity="0.9"
+      />
+      <ellipse
+        cx="24"
+        cy="42"
+        rx="10"
+        ry="6"
+        fill={silverColors.light}
+        fillOpacity="0.8"
+      />
+
+      {/* Middle branch */}
+      <ellipse
+        cx="24"
+        cy="32"
+        rx="10"
+        ry="7"
+        fill="url(#silver-pine-needles)"
+        opacity="0.9"
+      />
+      <ellipse
+        cx="24"
+        cy="30"
+        rx="8"
+        ry="5"
+        fill={silverColors.light}
+        fillOpacity="0.8"
+      />
+
+      {/* Upper branch */}
+      <ellipse
+        cx="24"
+        cy="20"
+        rx="8"
+        ry="6"
+        fill="url(#silver-pine-needles)"
+        opacity="0.9"
+      />
+      <ellipse
+        cx="24"
+        cy="18"
+        rx="6"
+        ry="4"
+        fill={silverColors.light}
+        fillOpacity="0.8"
+      />
+
+      {/* Top crown */}
+      <ellipse
+        cx="24"
+        cy="10"
+        rx="6"
+        ry="5"
+        fill="url(#silver-pine-needles)"
+        opacity="0.95"
+      />
+      <ellipse
+        cx="24"
+        cy="8"
+        rx="4"
+        ry="3"
+        fill={silverColors.light}
+        fillOpacity="0.9"
+      />
+
+      {/* Subtle highlights for depth */}
+      <ellipse
+        cx="22"
+        cy="10"
+        rx="2"
+        ry="1.5"
+        fill={silverColors.light}
+        fillOpacity="0.6"
+      />
+      <ellipse
+        cx="22"
+        cy="20"
+        rx="2.5"
+        ry="2"
+        fill={silverColors.light}
+        fillOpacity="0.5"
+      />
+      <ellipse
+        cx="22"
+        cy="32"
+        rx="3"
+        ry="2.5"
+        fill={silverColors.light}
+        fillOpacity="0.4"
+      />
+    </svg>
+  );
+}
+
+/**
  * Main export - returns appropriate tree based on privacy mode
  */
 export function CustomTreeIcon({ privacy, size = 'md', className = '' }: TreeIconProps) {
