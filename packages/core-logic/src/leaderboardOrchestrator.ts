@@ -36,6 +36,8 @@ export interface PublishAndFetchParams {
   pollIntervalMs?: number;
   /** Maximum number of polling attempts (default: 10) */
   maxAttempts?: number;
+  /** Require SelfHumanSBT to be valid (default: false) */
+  requireSBT?: boolean;
 }
 
 /**
@@ -81,6 +83,7 @@ export async function publishAndFetchAztecBuilderLeaderboard(
     indexerBaseUrl,
     pollIntervalMs = 3000,
     maxAttempts = 10,
+    requireSBT = false,
   } = params;
 
   // Validate indexerBaseUrl is provided
@@ -97,6 +100,7 @@ export async function publishAndFetchAztecBuilderLeaderboard(
     skillPathId: 'aztec_builder_path',
     signer,
     aztecClient,
+    requireSBT,
   };
 
   const { txHash, skillHash, isHumanVerified } = await submitTierProofWithSBTCheck(submitParams);
