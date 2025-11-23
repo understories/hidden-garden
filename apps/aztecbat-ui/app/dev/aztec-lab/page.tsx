@@ -626,14 +626,286 @@ export default function AztecLabPage() {
         )}
       </section>
 
-      {/* Section 3: Quest Testing */}
+      {/* Section 3: Cryptographic Computations */}
+      <section style={{ 
+        border: '1px solid #ccc', 
+        padding: '1.5rem',
+        marginTop: '2rem',
+        borderRadius: '4px',
+        background: '#f9f9f9'
+      }}>
+        <h2>Section 3: Cryptographic Computations (Real Aztec)</h2>
+        <p>See cryptographic operations in real-time: Pedersen hashing, proof generation, and ABI encoding.</p>
+        
+        <div style={{ 
+          background: '#e3f2fd', 
+          padding: '1rem', 
+          marginBottom: '1rem',
+          borderRadius: '4px',
+          fontSize: '0.9rem'
+        }}>
+          <strong>🔐 Real Aztec Privacy:</strong> This section demonstrates actual cryptographic computations:
+          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+            <li><strong>Pedersen Hashing:</strong> Quest IDs, categories, and paths → Pedersen hash (matches Noir circuit)</li>
+            <li><strong>ZK Proof Generation:</strong> Private quest completions → Zero-knowledge proof (when using real Aztec)</li>
+            <li><strong>Public Inputs Encoding:</strong> ABI encoding for L1 contract verification</li>
+            <li><strong>Skill Hash Computation:</strong> Skill path → Pedersen hash</li>
+          </ul>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+              Quest ID:
+              <input
+                type="text"
+                value={cryptoQuestId}
+                onChange={(e) => setCryptoQuestId(e.target.value)}
+                style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                placeholder="aztec_concept_quiz"
+              />
+            </label>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+              Category:
+              <input
+                type="text"
+                value={cryptoCategory}
+                onChange={(e) => setCryptoCategory(e.target.value)}
+                style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                placeholder="aztec_builder"
+              />
+            </label>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+              Path:
+              <input
+                type="text"
+                value={cryptoPath}
+                onChange={(e) => setCryptoPath(e.target.value)}
+                style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                placeholder="aztec_builder_path"
+              />
+            </label>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+              User Address:
+              <input
+                type="text"
+                value={cryptoUserAddress}
+                onChange={(e) => setCryptoUserAddress(e.target.value)}
+                style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem', fontFamily: 'monospace' }}
+                placeholder="0x..."
+              />
+            </label>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+              Min Tier:
+              <input
+                type="number"
+                value={cryptoMinTier}
+                onChange={(e) => setCryptoMinTier(e.target.value)}
+                style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                min="1"
+                max="4"
+              />
+            </label>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            try {
+              // Compute quest ID hash
+              const questBytes = stringToBytes(cryptoQuestId);
+              const questHash = computeQuestIdHash(cryptoQuestId);
+              
+              // Compute category hash
+              const categoryBytes = stringToBytes(cryptoCategory);
+              const categoryHash = computeCategoryHash(cryptoCategory as any);
+              
+              // Compute path hash
+              const pathBytes = stringToBytes(cryptoPath);
+              const pathHash = computePathHash(cryptoPath);
+              
+              // Compute skill hash (for tier proof)
+              const skillHash = hashSkillName(cryptoPath);
+              
+              // Encode public inputs for L1 contract
+              const publicInputs = encodeTierProofPublicInputs(
+                cryptoUserAddress as `0x${string}`,
+                skillHash,
+                parseInt(cryptoMinTier, 10)
+              );
+              
+              setCryptoComputations({
+                quest: {
+                  id: cryptoQuestId,
+                  bytes: questBytes,
+                  bytesHex: questBytes.map(b => `0x${b.toString(16).padStart(2, '0')}`).join(', '),
+                  hash: questHash,
+                },
+                category: {
+                  id: cryptoCategory,
+                  bytes: categoryBytes,
+                  bytesHex: categoryBytes.map(b => `0x${b.toString(16).padStart(2, '0')}`).join(', '),
+                  hash: categoryHash,
+                },
+                path: {
+                  id: cryptoPath,
+                  bytes: pathBytes,
+                  bytesHex: pathBytes.map(b => `0x${b.toString(16).padStart(2, '0')}`).join(', '),
+                  hash: pathHash,
+                },
+                skillHash: skillHash,
+                publicInputs: {
+                  userAddress: cryptoUserAddress,
+                  skillHash: skillHash,
+                  minTier: parseInt(cryptoMinTier, 10),
+                  encoded: publicInputs,
+                  abiTypes: ['address', 'bytes32', 'uint8'],
+                },
+              });
+            } catch (error) {
+              alert(`Error computing: ${error instanceof Error ? error.message : String(error)}`);
+            }
+          }}
+          style={{
+            padding: '0.75rem 1.5rem',
+            background: '#2196F3',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            fontWeight: 'bold',
+          }}
+        >
+          Compute Cryptographic Operations
+        </button>
+
+        {cryptoComputations && (
+          <div style={{ marginTop: '2rem', background: 'white', padding: '1.5rem', borderRadius: '4px', border: '1px solid #ddd' }}>
+            <h3 style={{ marginTop: 0 }}>🔐 Cryptographic Computations</h3>
+            
+            {/* Quest ID Hash */}
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f5f5f5', borderRadius: '4px' }}>
+              <h4 style={{ marginTop: 0, color: '#1976D2' }}>1. Quest ID → Pedersen Hash</h4>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                <div><strong>Input:</strong> "{cryptoComputations.quest.id}"</div>
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>Bytes (ASCII):</strong> [{cryptoComputations.quest.bytes.join(', ')}]
+                </div>
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>Bytes (Hex):</strong> [{cryptoComputations.quest.bytesHex}]
+                </div>
+                <div style={{ marginTop: '0.5rem', color: '#4caf50', fontWeight: 'bold' }}>
+                  <strong>Pedersen Hash:</strong> {cryptoComputations.quest.hash}
+                </div>
+                <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#666' }}>
+                  <em>Noir: hash::pedersen_hash([{cryptoComputations.quest.bytes.join(', ')}])</em>
+                </div>
+              </div>
+            </div>
+
+            {/* Category Hash */}
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f5f5f5', borderRadius: '4px' }}>
+              <h4 style={{ marginTop: 0, color: '#1976D2' }}>2. Category → Pedersen Hash</h4>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                <div><strong>Input:</strong> "{cryptoComputations.category.id}"</div>
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>Bytes (ASCII):</strong> [{cryptoComputations.category.bytes.join(', ')}]
+                </div>
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>Bytes (Hex):</strong> [{cryptoComputations.category.bytesHex}]
+                </div>
+                <div style={{ marginTop: '0.5rem', color: '#4caf50', fontWeight: 'bold' }}>
+                  <strong>Pedersen Hash:</strong> {cryptoComputations.category.hash}
+                </div>
+                <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#666' }}>
+                  <em>Noir: hash::pedersen_hash([{cryptoComputations.category.bytes.join(', ')}])</em>
+                </div>
+              </div>
+            </div>
+
+            {/* Path Hash */}
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f5f5f5', borderRadius: '4px' }}>
+              <h4 style={{ marginTop: 0, color: '#1976D2' }}>3. Path → Pedersen Hash (Skill Hash)</h4>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                <div><strong>Input:</strong> "{cryptoComputations.path.id}"</div>
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>Bytes (ASCII):</strong> [{cryptoComputations.path.bytes.join(', ')}]
+                </div>
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>Bytes (Hex):</strong> [{cryptoComputations.path.bytesHex}]
+                </div>
+                <div style={{ marginTop: '0.5rem', color: '#4caf50', fontWeight: 'bold' }}>
+                  <strong>Pedersen Hash (Skill Hash):</strong> {cryptoComputations.skillHash}
+                </div>
+                <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#666' }}>
+                  <em>Noir: hash::pedersen_hash([{cryptoComputations.path.bytes.join(', ')}])</em>
+                </div>
+              </div>
+            </div>
+
+            {/* Public Inputs Encoding */}
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#fff3e0', borderRadius: '4px', border: '1px solid #ffb74d' }}>
+              <h4 style={{ marginTop: 0, color: '#F57C00' }}>4. Public Inputs Encoding (ABI Encoding)</h4>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <strong>For L1 Contract Verification:</strong>
+                </div>
+                <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'white', borderRadius: '2px' }}>
+                  <div><strong>User Address:</strong> {cryptoComputations.publicInputs.userAddress}</div>
+                  <div style={{ marginTop: '0.25rem' }}><strong>Skill Hash:</strong> {cryptoComputations.publicInputs.skillHash}</div>
+                  <div style={{ marginTop: '0.25rem' }}><strong>Min Tier:</strong> {cryptoComputations.publicInputs.minTier} (uint8)</div>
+                </div>
+                <div style={{ marginTop: '0.5rem' }}>
+                  <strong>ABI Types:</strong> {cryptoComputations.publicInputs.abiTypes.join(', ')}
+                </div>
+                <div style={{ marginTop: '0.5rem', color: '#4caf50', fontWeight: 'bold', wordBreak: 'break-all' }}>
+                  <strong>Encoded (abi.encode):</strong> {cryptoComputations.publicInputs.encoded}
+                </div>
+                <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#666' }}>
+                  <em>This encoded data is sent to SkillLeaderboard.submitSkillTierWithProof() for L1 verification</em>
+                </div>
+              </div>
+            </div>
+
+            {/* ZK Proof Note */}
+            <div style={{ padding: '1rem', background: '#e8f5e9', borderRadius: '4px', border: '1px solid #81c784' }}>
+              <h4 style={{ marginTop: 0, color: '#2e7d32' }}>5. Zero-Knowledge Proof Generation</h4>
+              <div style={{ fontSize: '0.9rem' }}>
+                <p style={{ margin: '0.5rem 0' }}>
+                  <strong>When using Real Aztec Client:</strong>
+                </p>
+                <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+                  <li>Private quest completions are stored in Aztec private vault</li>
+                  <li>Noir circuit generates ZK proof that proves tier ≥ {cryptoMinTier} without revealing quest details</li>
+                  <li>Proof is verified on L1 using the encoded public inputs above</li>
+                  <li>Privacy: Quest IDs, scores, and completion details remain private</li>
+                </ul>
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: '#666' }}>
+                  <em>To see actual proof generation, use "Reveal Tier" section with Real Aztec client enabled.</em>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Section 4: Quest Testing */}
       <section style={{ 
         border: '1px solid #ccc', 
         padding: '1.5rem',
         marginTop: '2rem',
         borderRadius: '4px'
       }}>
-        <h2>Section 3: Quest Testing (Validate & Store in Aztec)</h2>
+        <h2>Section 4: Quest Testing (Validate & Store in Aztec)</h2>
         <p>Tests: Quest validation and Aztec quest completion storage</p>
         <div style={{ 
           background: '#fff3e0', 
