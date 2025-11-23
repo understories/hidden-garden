@@ -1,0 +1,97 @@
+<svg width="256" height="320" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Soil/pot base -->
+  <ellipse cx="16" cy="36" rx="10" ry="4" fill="#a0826d" fillOpacity="0.7"/>
+  <ellipse cx="16" cy="35" rx="8" ry="3" fill="#a0826d" fillOpacity="0.5"/>
+  
+  <!-- Stem -->
+  <path
+    d="M 16 36 Q 16 30, 16 24 Q 16 20, 16 16"
+    stroke="#8b6f47"
+    strokeWidth="2"
+    strokeLinecap="round"
+    fill="none"
+    strokeOpacity="0.8"
+  />
+  
+  <!-- Left leaf - organic, flowing shape -->
+  <path
+    d="M 16 16 
+       Q 10 14, 8 10
+       Q 6 8, 8 6
+       Q 10 4, 12 6
+       Q 14 8, 14 10
+       Q 14 12, 16 14
+       Z"
+    fill="#7dd87d"
+    fillOpacity="0.85"
+    stroke="#7dd87d"
+    strokeWidth="0.5"
+    strokeOpacity="0.6"
+    filter="url(#glow)"
+  />
+  
+  <!-- Right leaf - organic, flowing shape -->
+  <path
+    d="M 16 16 
+       Q 22 14, 24 10
+       Q 26 8, 24 6
+       Q 22 4, 20 6
+       Q 18 8, 18 10
+       Q 18 12, 16 14
+       Z"
+    fill="#7dd87d"
+    fillOpacity="0.85"
+    stroke="#7dd87d"
+    strokeWidth="0.5"
+    strokeOpacity="0.6"
+    filter="url(#glow)"
+  />
+  
+  <!-- Center leaf - smaller, at the top -->
+  <path
+    d="M 16 16 
+       Q 14 12, 16 8
+       Q 18 12, 16 16
+       Z"
+    fill="#7dd87d"
+    fillOpacity="0.9"
+    stroke="#7dd87d"
+    strokeWidth="0.5"
+    strokeOpacity="0.6"
+    filter="url(#glow)"
+  />
+  
+  <!-- Leaf veins - subtle details -->
+  <path
+    d="M 16 16 Q 12 12, 10 8"
+    stroke="#7dd87d"
+    strokeWidth="0.5"
+    strokeOpacity="0.4"
+    fill="none"
+  />
+  <path
+    d="M 16 16 Q 20 12, 22 8"
+    stroke="#7dd87d"
+    strokeWidth="0.5"
+    strokeOpacity="0.4"
+    fill="none"
+  />
+  <path
+    d="M 16 16 L 16 10"
+    stroke="#7dd87d"
+    strokeWidth="0.5"
+    strokeOpacity="0.4"
+    fill="none"
+  />
+</svg>
+
