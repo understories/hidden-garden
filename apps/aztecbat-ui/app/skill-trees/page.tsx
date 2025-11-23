@@ -10,6 +10,17 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
+// Explorer cluster types based on learning patterns
+type ExplorerCluster = {
+  id: string;
+  questsCompleted: number;
+  masteryLevel: number; // 1-4 (Bronze to Master)
+  preference: 'public-heavy' | 'mixed' | 'mostly-private';
+  size: number; // Number of explorers in this cluster
+  angle: number; // Position around the skill organism
+  distance: number; // Distance from center
+};
+
 // Mock skill tree data with relationship/overlap information
 const mockSkillTrees = [
   {
@@ -19,10 +30,15 @@ const mockSkillTrees = [
     privacyMode: 'mostly-private' as const,
     privacyStats: { public: 15, mixed: 15, private: 70 },
     size: 'large' as const,
-    // Skills that overlap (users learning both)
     overlaps: ['zero-knowledge-basics', 'advanced-circuits'],
-    // Isometric grid position
     gridPos: { x: 2, y: 1 },
+    // Explorer clusters within this domain
+    explorerClusters: [
+      { id: 'cluster-1', questsCompleted: 3, masteryLevel: 4, preference: 'mostly-private' as const, size: 320, angle: 0, distance: 80 },
+      { id: 'cluster-2', questsCompleted: 2, masteryLevel: 3, preference: 'mixed' as const, size: 180, angle: 120, distance: 100 },
+      { id: 'cluster-3', questsCompleted: 1, masteryLevel: 2, preference: 'mostly-private' as const, size: 450, angle: 240, distance: 90 },
+      { id: 'cluster-4', questsCompleted: 2, masteryLevel: 2, preference: 'mostly-private' as const, size: 297, angle: 60, distance: 110 },
+    ] as ExplorerCluster[],
   },
   {
     skillId: 'rust-foundations',
@@ -33,6 +49,12 @@ const mockSkillTrees = [
     size: 'xlarge' as const,
     overlaps: ['noir-basics', 'advanced-circuits'],
     gridPos: { x: 4, y: 3 },
+    explorerClusters: [
+      { id: 'cluster-1', questsCompleted: 3, masteryLevel: 4, preference: 'public-heavy' as const, size: 650, angle: 30, distance: 120 },
+      { id: 'cluster-2', questsCompleted: 2, masteryLevel: 3, preference: 'public-heavy' as const, size: 480, angle: 150, distance: 110 },
+      { id: 'cluster-3', questsCompleted: 1, masteryLevel: 2, preference: 'mixed' as const, size: 720, angle: 270, distance: 130 },
+      { id: 'cluster-4', questsCompleted: 2, masteryLevel: 3, preference: 'public-heavy' as const, size: 306, angle: 90, distance: 100 },
+    ] as ExplorerCluster[],
   },
   {
     skillId: 'zero-knowledge-basics',
@@ -43,6 +65,12 @@ const mockSkillTrees = [
     size: 'medium' as const,
     overlaps: ['aztec-protocol', 'advanced-circuits', 'noir-basics'],
     gridPos: { x: 1, y: 2 },
+    explorerClusters: [
+      { id: 'cluster-1', questsCompleted: 2, masteryLevel: 3, preference: 'mixed' as const, size: 280, angle: 45, distance: 85 },
+      { id: 'cluster-2', questsCompleted: 1, masteryLevel: 2, preference: 'public-heavy' as const, size: 210, angle: 180, distance: 95 },
+      { id: 'cluster-3', questsCompleted: 3, masteryLevel: 4, preference: 'mixed' as const, size: 180, angle: 315, distance: 90 },
+      { id: 'cluster-4', questsCompleted: 2, masteryLevel: 2, preference: 'mostly-private' as const, size: 222, angle: 135, distance: 100 },
+    ] as ExplorerCluster[],
   },
   {
     skillId: 'advanced-circuits',
@@ -53,6 +81,11 @@ const mockSkillTrees = [
     size: 'medium' as const,
     overlaps: ['aztec-protocol', 'rust-foundations', 'zero-knowledge-basics'],
     gridPos: { x: 3, y: 2 },
+    explorerClusters: [
+      { id: 'cluster-1', questsCompleted: 3, masteryLevel: 4, preference: 'mostly-private' as const, size: 150, angle: 0, distance: 80 },
+      { id: 'cluster-2', questsCompleted: 2, masteryLevel: 3, preference: 'mostly-private' as const, size: 120, angle: 120, distance: 90 },
+      { id: 'cluster-3', questsCompleted: 1, masteryLevel: 2, preference: 'mixed' as const, size: 364, angle: 240, distance: 95 },
+    ] as ExplorerCluster[],
   },
   {
     skillId: 'l1-l2-bridging',
@@ -63,6 +96,10 @@ const mockSkillTrees = [
     size: 'small' as const,
     overlaps: ['rust-foundations'],
     gridPos: { x: 5, y: 4 },
+    explorerClusters: [
+      { id: 'cluster-1', questsCompleted: 2, masteryLevel: 3, preference: 'mixed' as const, size: 180, angle: 60, distance: 75 },
+      { id: 'cluster-2', questsCompleted: 1, masteryLevel: 2, preference: 'public-heavy' as const, size: 265, angle: 200, distance: 80 },
+    ] as ExplorerCluster[],
   },
   {
     skillId: 'noir-basics',
@@ -73,6 +110,11 @@ const mockSkillTrees = [
     size: 'large' as const,
     overlaps: ['rust-foundations', 'zero-knowledge-basics'],
     gridPos: { x: 4, y: 1 },
+    explorerClusters: [
+      { id: 'cluster-1', questsCompleted: 3, masteryLevel: 4, preference: 'public-heavy' as const, size: 420, angle: 20, distance: 100 },
+      { id: 'cluster-2', questsCompleted: 2, masteryLevel: 3, preference: 'public-heavy' as const, size: 380, angle: 140, distance: 95 },
+      { id: 'cluster-3', questsCompleted: 1, masteryLevel: 2, preference: 'mixed' as const, size: 323, angle: 260, distance: 105 },
+    ] as ExplorerCluster[],
   },
 ];
 
@@ -151,6 +193,101 @@ function gridToIsometric(gridX: number, gridY: number, tileSize: number = 120): 
   return { x: isoX, y: isoY };
 }
 
+// Explorer cluster component
+function ExplorerCluster({
+  cluster,
+  centerX,
+  centerY,
+}: {
+  cluster: ExplorerCluster;
+  centerX: number;
+  centerY: number;
+}) {
+  const colors = getTreeColors(cluster.preference);
+  const masteryColors = {
+    1: 'from-amber-400/40 to-amber-600/40', // Bronze
+    2: 'from-gray-300/40 to-gray-500/40', // Silver
+    3: 'from-yellow-300/40 to-yellow-500/40', // Gold
+    4: 'from-purple-300/40 to-purple-500/40', // Master
+  };
+
+  // Position cluster around the skill organism
+  const angleRad = (cluster.angle * Math.PI) / 180;
+  const x = centerX + Math.cos(angleRad) * cluster.distance;
+  const y = centerY + Math.sin(angleRad) * cluster.distance;
+
+  // Size based on number of explorers
+  const clusterSize = Math.max(20, Math.min(40, cluster.size / 20));
+
+  return (
+    <div
+      className="absolute group/cluster"
+      style={{
+        left: `${x}px`,
+        top: `${y}px`,
+        transform: 'translate(-50%, -50%)',
+      }}
+    >
+      {/* Cluster glow */}
+      <div
+        className={`absolute rounded-full bg-gradient-to-br ${colors.foliage} opacity-30 blur-md transition-all duration-500 group-hover/cluster:opacity-50 group-hover/cluster:scale-125`}
+        style={{
+          width: `${clusterSize * 2}px`,
+          height: `${clusterSize * 2}px`,
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
+
+      {/* Cluster core - mastery level indicator */}
+      <div
+        className={`relative rounded-full bg-gradient-to-br ${masteryColors[cluster.masteryLevel as keyof typeof masteryColors]} border-2 ${colors.foliage.includes('emerald') ? 'border-emerald-400/50' : colors.foliage.includes('amber') ? 'border-amber-400/50' : 'border-indigo-400/50'} shadow-lg transition-all duration-300 group-hover/cluster:scale-110 group-hover/cluster:brightness-125`}
+        style={{
+          width: `${clusterSize}px`,
+          height: `${clusterSize}px`,
+        }}
+      >
+        {/* Quest completion indicator - rings */}
+        {[...Array(cluster.questsCompleted)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full border border-white/30"
+            style={{
+              width: `${clusterSize + (i + 1) * 4}px`,
+              height: `${clusterSize + (i + 1) * 4}px`,
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Cluster tooltip */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 backdrop-blur-sm text-white text-xs rounded opacity-0 invisible group-hover/cluster:opacity-100 group-hover/cluster:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-30">
+        <div className="font-medium">{cluster.size} explorers</div>
+        <div className="text-gray-300">
+          {getTierName(cluster.masteryLevel)} • {cluster.questsCompleted} quests
+        </div>
+        <div className="text-gray-400 text-xs mt-0.5">
+          {cluster.preference === 'public-heavy' ? 'Public' : cluster.preference === 'mixed' ? 'Mixed' : 'Private'}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function getTierName(tier: number): string {
+  const tierMap: Record<number, string> = {
+    1: 'Bronze',
+    2: 'Silver',
+    3: 'Gold',
+    4: 'Master',
+  };
+  return tierMap[tier] || `Tier ${tier}`;
+}
+
 function BioluminescentOrganism({
   skillId,
   skillName,
@@ -160,6 +297,7 @@ function BioluminescentOrganism({
   size,
   gridPos,
   overlaps,
+  explorerClusters,
 }: typeof mockSkillTrees[0]) {
   const colors = getTreeColors(privacyMode);
   const [isHovered, setIsHovered] = useState(false);
@@ -244,6 +382,20 @@ function BioluminescentOrganism({
             />
           ))}
         </div>
+
+        {/* Explorer clusters orbiting the skill organism */}
+        {explorerClusters && explorerClusters.length > 0 && (
+          <div className="absolute inset-0 pointer-events-none" style={{ width: `${organismSize + 200}px`, height: `${organismSize + 200}px`, left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+            {explorerClusters.map((cluster) => (
+              <ExplorerCluster
+                key={cluster.id}
+                cluster={cluster}
+                centerX={(organismSize + 200) / 2}
+                centerY={(organismSize + 200) / 2}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Name appears on hover - like discovering a species */}
         <div
@@ -440,9 +592,111 @@ export default function SkillTreesPage() {
             );
           })}
 
+        {/* Activity heat map - showing recent quest completions */}
+        <div className="absolute inset-0 pointer-events-none">
+          {mockSkillTrees.map((tree) => {
+            const iso = gridToIsometric(tree.gridPos.x, tree.gridPos.y);
+            // Simulate activity pulses
+            const activityLevel = tree.participantCount / 100;
+            return (
+              <div
+                key={`heat-${tree.skillId}`}
+                className="absolute rounded-full bg-gradient-to-br from-cyan-400/10 to-transparent animate-pulse"
+                style={{
+                  left: `calc(50% + ${iso.x}px)`,
+                  top: `calc(40% + ${iso.y}px)`,
+                  width: `${Math.min(200, activityLevel * 2)}px`,
+                  height: `${Math.min(200, activityLevel * 2)}px`,
+                  transform: 'translate(-50%, -50%)',
+                  animationDuration: `${3 + Math.random() * 2}s`,
+                  animationDelay: `${Math.random() * 2}s`,
+                }}
+              />
+            );
+          })}
+        </div>
+
+        {/* Learning paths - trails between related skills */}
+        <div className="absolute inset-0 pointer-events-none">
+          {mockSkillTrees.map((tree) =>
+            tree.overlaps?.slice(0, 1).map((overlapId) => {
+              const targetTree = mockSkillTrees.find((t) => t.skillId === overlapId);
+              if (!targetTree) return null;
+              const fromIso = gridToIsometric(tree.gridPos.x, tree.gridPos.y);
+              const toIso = gridToIsometric(targetTree.gridPos.x, targetTree.gridPos.y);
+              
+              // Create a curved path
+              const midX = (fromIso.x + toIso.x) / 2;
+              const midY = (fromIso.y + toIso.y) / 2 - 30; // Curve upward
+              
+              return (
+                <svg
+                  key={`path-${tree.skillId}-${overlapId}`}
+                  className="absolute inset-0 w-full h-full"
+                  style={{ pointerEvents: 'none' }}
+                >
+                  <path
+                    d={`M ${50 + (fromIso.x / 20)}% ${40 + (fromIso.y / 20)}% Q ${50 + (midX / 20)}% ${40 + (midY / 20)}%, ${50 + (toIso.x / 20)}% ${40 + (toIso.y / 20)}%`}
+                    stroke="rgba(148, 163, 184, 0.1)"
+                    strokeWidth="1"
+                    fill="none"
+                    strokeDasharray="4 4"
+                    className="animate-dash"
+                  />
+                </svg>
+              );
+            })
+          )}
+        </div>
+
         {/* Subtle instruction hint */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-600 text-center z-20">
-          <span className="opacity-50">Hover to discover • Lines show skill overlaps</span>
+          <span className="opacity-50">Hover to discover • Clusters show explorer groups • Lines show skill overlaps</span>
+        </div>
+      </div>
+
+      {/* Additional Visualization Ideas Panel */}
+      <div className="border border-gray-800 dark:border-gray-700 rounded-lg p-6 bg-black/30 dark:bg-black/50 backdrop-blur-sm">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+          Visualization Enhancements (Future Ideas)
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
+          <div className="space-y-2">
+            <h3 className="font-medium text-gray-800 dark:text-gray-200">Time-based Growth</h3>
+            <p className="text-xs">
+              Animate organisms growing over time, showing skill evolution. Add a timeline scrubber to see the forest change.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-medium text-gray-800 dark:text-gray-200">Interactive Filtering</h3>
+            <p className="text-xs">
+              Filter by mastery level, privacy preference, or quest completion. Hide/show clusters dynamically.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-medium text-gray-800 dark:text-gray-200">Learning Journeys</h3>
+            <p className="text-xs">
+              Show animated paths between skills, representing how explorers move through the forest over time.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-medium text-gray-800 dark:text-gray-200">Density Visualization</h3>
+            <p className="text-xs">
+              Heat maps showing activity hotspots. Brighter areas indicate more quest completions or interactions.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-medium text-gray-800 dark:text-gray-200">Depth Layers</h3>
+            <p className="text-xs">
+              Multiple z-layers showing different aspects: surface (public), mid-layer (mixed), deep (private).
+            </p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-medium text-gray-800 dark:text-gray-200">Seasonal Changes</h3>
+            <p className="text-xs">
+              Visualize how the forest changes with seasons (time periods), showing growth cycles and migration patterns.
+            </p>
+          </div>
         </div>
       </div>
     </main>
