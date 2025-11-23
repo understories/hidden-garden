@@ -11,26 +11,45 @@
  * After submission, users are redirected to the leaderboard/profile.
  */
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 type RevealOption = 'full' | 'completion-only' | 'private';
 
+// Mock skills lookup - in production this would come from the backend
+const mockSkills: Record<string, { name: string }> = {
+  'rust-foundations': { name: 'Rust Foundations' },
+  'zero-knowledge-basics': { name: 'Zero-Knowledge Basics' },
+  'advanced-circuits': { name: 'Advanced Circuits' },
+  'aztec-protocol': { name: 'Aztec Protocol' },
+};
+
 export default function ProofFlowPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedOption, setSelectedOption] = useState<RevealOption | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [skillId, setSkillId] = useState<string>('');
+
+  useEffect(() => {
+    const skillIdParam = searchParams.get('skillId');
+    if (skillIdParam) {
+      setSkillId(decodeURIComponent(skillIdParam));
+    }
+  }, [searchParams]);
 
   // Mocked result data
   const mockResult = {
     score: 87,
     maxScore: 100,
     status: 'Passed',
-    skillId: 'rust', // Mocked skill ID for navigation
   };
 
+  const skill = skillId ? mockSkills[skillId] : null;
+  const skillName = skill?.name || skillId || 'Challenge';
+
   const handleSubmit = async () => {
-    if (!selectedOption) return;
+    if (!selectedOption || !skillId) return;
 
     setIsSubmitting(true);
 
@@ -42,10 +61,10 @@ export default function ProofFlowPage() {
     // Navigate based on choice
     if (selectedOption === 'full' || selectedOption === 'completion-only') {
       // Navigate to leaderboard for the skill
-      router.push(`/leaderboard/${mockResult.skillId}`);
+      router.push(`/leaderboard/${skillId}`);
     } else {
       // Navigate back to skills with confirmation
-      router.push(`/skills/${mockResult.skillId}?private=true`);
+      router.push(`/skills/${skillId}?private=true`);
     }
   };
 
@@ -54,7 +73,7 @@ export default function ProofFlowPage() {
       <div>
         <h1 className="text-3xl font-bold mb-2">Challenge Result</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Review your result and choose what to share publicly
+          {skillName} • Review your result and choose what to share publicly
         </p>
       </div>
 
