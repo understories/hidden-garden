@@ -136,3 +136,38 @@ body {
   }
 }
 
+/* Expanding background animation */
+@keyframes expand-background {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.5;
+  }
+}
+
+.animate-expand-background {
+  animation: expand-background 8s ease-in-out infinite;
+}
+
+/* Planet orbital animation */
+.planet-orbit {
+  animation: planet-orbit var(--orbit-duration, 30s) linear infinite;
+}
+
+@keyframes planet-orbit {
+  from {
+    transform: translate(-50%, -50%) rotate(var(--initial-angle, 0deg)) translateX(var(--orbit-distance, 200px)) rotate(calc(-1 * var(--initial-angle, 0deg)));
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(calc(var(--initial-angle, 0deg) + 360deg)) translateX(var(--orbit-distance, 200px)) rotate(calc(-1 * var(--initial-angle, 0deg) - 360deg));
+  }
+}
+
+/* Radial gradient support */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
