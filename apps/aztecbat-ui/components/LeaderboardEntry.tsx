@@ -46,9 +46,9 @@ export function LeaderboardEntry({
 
   return (
     <tr
-      className={`border-b border-gray-200 dark:border-gray-700 transition-colors ${
+      className={`border-b border-gray-200 dark:border-gray-700 transition-all duration-150 ease-out ${
         onClick
-          ? 'hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer'
+          ? 'hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:opacity-90 cursor-pointer'
           : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
       }`}
       onClick={onClick}
