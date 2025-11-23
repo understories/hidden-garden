@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { WalletProvider } from '../components/WalletProvider';
+import { ConnectButton } from '../components/ConnectButton';
 import { DarkModeToggle } from '../components/DarkModeToggle';
 import { SeedlingLogo } from '../components/SeedlingLogo';
 import './globals.css';
@@ -62,10 +63,7 @@ export default function RootLayout({
                 </nav>
               </div>
               <div className="flex items-center gap-4">
-                {/* Placeholder for user identity - no wallet connection yet */}
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Connected wallet
-                </span>
+                <ConnectButton />
                 <DarkModeToggle />
               </div>
             </div>

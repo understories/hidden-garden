@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import type { EnsPublicClient } from '@hidden-garden/core-logic';
 import { shortenAddress, getEnsName } from '@hidden-garden/core-logic';
@@ -69,24 +70,43 @@ export const ConnectButton: React.FC = () => {
         type="button"
         onClick={() => injectedConnector && connect({ connector: injectedConnector })}
         disabled={isPending || !injectedConnector}
-        className="px-3 py-1 rounded border text-sm"
+        className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isPending ? 'Connecting…' : 'Connect wallet'}
+        {isPending ? 'Connecting…' : 'Connect Wallet'}
       </button>
     );
   }
 
-  const label =
-    ensLoading ? 'Resolving ENS…' : ensName ?? (address ? shortenAddress(address) : 'Connected');
+  const displayName = ensLoading 
+    ? 'Resolving ENS…' 
+    : ensName ?? (address ? shortenAddress(address) : 'Connected');
+  
+  const profileIdentifier = ensName || address;
+  const profileHref = profileIdentifier ? `/u/${profileIdentifier}` : null;
 
   return (
-    <button
-      type="button"
-      onClick={() => disconnect()}
-      className="px-3 py-1 rounded border text-sm"
-    >
-      {label}
-    </button>
+    <div className="flex items-center gap-2">
+      {profileHref ? (
+        <Link
+          href={profileHref}
+          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
+          {displayName}
+        </Link>
+      ) : (
+        <span className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200">
+          {displayName}
+        </span>
+      )}
+      <button
+        type="button"
+        onClick={() => disconnect()}
+        className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+        title="Disconnect wallet"
+      >
+        Disconnect
+      </button>
+    </div>
   );
 };
 
