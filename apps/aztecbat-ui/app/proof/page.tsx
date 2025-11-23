@@ -9,12 +9,11 @@
  * - Step 4: Submit Transaction (mocked for now)
  *
  * After submission, users are redirected to the leaderboard/profile.
+ * Quest completions are stored privately in Aztec.
  */
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-
-type RevealOption = 'full' | 'completion-only' | 'private';
 
 // Mock skills lookup - in production this would come from the backend
 const mockSkills: Record<string, { name: string }> = {
@@ -27,7 +26,9 @@ const mockSkills: Record<string, { name: string }> = {
 export default function ProofFlowPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selectedOption, setSelectedOption] = useState<RevealOption | null>(null);
+  const [tierToReveal, setTierToReveal] = useState<number>(1);
+  const [minAverageScore, setMinAverageScore] = useState<number>(0);
+  const [requireProofOfHuman, setRequireProofOfHuman] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [skillId, setSkillId] = useState<string>('');
 
@@ -46,32 +47,26 @@ export default function ProofFlowPage() {
   };
 
   const skill = skillId ? mockSkills[skillId] : null;
-  const skillName = skill?.name || skillId || 'Challenge';
+  const skillName = skill?.name || skillId || 'Quest';
 
   const handleSubmit = async () => {
-    if (!selectedOption || !skillId) return;
+    if (!skillId) return;
 
     setIsSubmitting(true);
 
-    // Simulate submission delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Simulate submission delay (ZK proof generation)
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     setIsSubmitting(false);
 
-    // Navigate based on choice
-    if (selectedOption === 'full' || selectedOption === 'completion-only') {
-      // Navigate to leaderboard for the skill with success param
-      router.push(`/leaderboard/${skillId}?revealed=true`);
-    } else {
-      // Navigate back to skills with confirmation
-      router.push(`/skills/${skillId}?private=true`);
-    }
+    // Navigate to leaderboard for the skill with success param
+    router.push(`/leaderboard/${skillId}?revealed=true`);
   };
 
   return (
     <main className="max-w-2xl mx-auto space-y-8 py-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Challenge Result</h1>
+        <h1 className="text-3xl font-bold mb-2">Quest Result</h1>
         <p className="text-gray-600 dark:text-gray-400">
           {skillName} • Review your result and choose what to share publicly
         </p>
@@ -234,9 +229,12 @@ export default function ProofFlowPage() {
         </div>
       </section>
 
-      {/* Info Block */}
+      {/* Aztec Privacy Disclaimer */}
       <section className="border-l-4 border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-r-lg p-6">
         <div className="space-y-3 text-sm leading-relaxed">
+          <p className="font-medium">
+            We store quest completions privately in Aztec; this local list mirrors what lives there, but the only thing we reveal publicly is the ZK proof of tier.
+          </p>
           <p>
             We built a privacy-first skill graph. Your learning path stays private inside Aztec, but
             you can selectively reveal just the tier you want to show.
