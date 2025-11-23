@@ -5,7 +5,6 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-77.6%25-blue)](https://www.typescriptlang.org/)
 [![Noir](https://img.shields.io/badge/Noir-13.0%25-orange)](https://noir-lang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16.0-black)](https://nextjs.org/)
-[![License](https://img.shields.io/badge/license-Private-red)](LICENSE)
 
 ## ✨ Features
 
