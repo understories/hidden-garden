@@ -29,8 +29,8 @@ export default function RootLayout({
             <div className="max-w-4xl mx-auto flex items-center justify-between p-4">
               <div className="flex items-center gap-6">
                 <Link href="/" className="flex items-center gap-2 font-semibold text-lg hover:opacity-80 transition-opacity">
-                  <SeedlingLogo size="sm" />
                   <span>Hidden Garden</span>
+                  <SeedlingLogo size="sm" />
                 </Link>
                 <nav className="flex items-center gap-4">
                   <Link
@@ -70,9 +70,15 @@ export default function RootLayout({
               </div>
             </div>
           </header>
-          <main className="max-w-4xl mx-auto p-4">
+          <main className="max-w-4xl mx-auto p-4 relative min-h-[calc(100vh-8rem)]">
             {children}
           </main>
+          {/* Logo at bottom right of each page */}
+          <div className="fixed bottom-4 right-4 z-10 opacity-50 hover:opacity-100 transition-opacity">
+            <Link href="/" className="block" aria-label="Hidden Garden home">
+              <SeedlingLogo size="sm" />
+            </Link>
+          </div>
         </WalletProvider>
       </body>
     </html>
