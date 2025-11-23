@@ -54,3 +54,14 @@ body {
   animation: float 3s ease-in-out infinite;
 }
 
+/* Animated dash for learning paths */
+@keyframes dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.animate-dash {
+  animation: dash 3s linear infinite;
+}
+
