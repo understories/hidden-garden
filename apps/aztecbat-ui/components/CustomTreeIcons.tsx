@@ -25,7 +25,7 @@ function getBaseSize(size: 'sm' | 'md' | 'lg'): number {
   }
 }
 
-// Privacy-based color gradients
+// Simplified privacy-based color palette (one color per preference)
 function getPrivacyGradient(privacy: PrivacyMode): {
   primary: string;
   secondary: string;
@@ -34,31 +34,48 @@ function getPrivacyGradient(privacy: PrivacyMode): {
 } {
   switch (privacy) {
     case 'public-heavy':
-      // Spring Canopy: Light green → cyan bioluminescent
+      // Spring green only
       return {
         primary: '#7dd87d', // Soft spring green
-        secondary: '#5dd5d5', // Soft cyan
-        tertiary: '#4dd0d0', // Deeper cyan
+        secondary: '#7dd87d', // Same spring green
+        tertiary: '#7dd87d', // Same spring green
         glow: 'rgba(125, 216, 125, 0.3)',
       };
     case 'mixed':
-      // Autumn Blend: Amber → orange → pink bioluminescent
+      // Amber only
       return {
         primary: '#f4a460', // Soft sandy amber
-        secondary: '#ff8c69', // Soft coral orange
-        tertiary: '#ff7f9f', // Soft pink
+        secondary: '#f4a460', // Same amber
+        tertiary: '#f4a460', // Same amber
         glow: 'rgba(244, 164, 96, 0.3)',
       };
     case 'private-heavy':
-      // Moonlit Branches: Indigo → violet → moon-blue
+      // Violet only
       return {
-        primary: '#87ceeb', // Soft sky blue
-        secondary: '#9370db', // Soft violet
-        tertiary: '#6a5acd', // Soft indigo
-        glow: 'rgba(135, 206, 235, 0.3)',
+        primary: '#9370db', // Soft violet
+        secondary: '#9370db', // Same violet
+        tertiary: '#9370db', // Same violet
+        glow: 'rgba(147, 112, 219, 0.3)',
       };
   }
 }
+
+// Unused colors from original palette (for reference)
+export const unusedColors = {
+  'public-heavy': {
+    cyan: '#5dd5d5', // Soft cyan
+    deeperCyan: '#4dd0d0', // Deeper cyan
+    skyBlue: '#87ceeb', // Soft sky blue
+  },
+  'mixed': {
+    coralOrange: '#ff8c69', // Soft coral orange
+    pink: '#ff7f9f', // Soft pink
+  },
+  'private-heavy': {
+    indigo: '#6a5acd', // Soft indigo
+    moonBlue: '#87ceeb', // Soft sky blue (moon-blue)
+  },
+};
 
 /**
  * 1. Public-Heavy Tree ("Spring Canopy")
@@ -269,14 +286,12 @@ export function MoonlitBranchesTree({ privacy, size = 'md', className = '' }: Tr
 
 /**
  * 4. Neutral / Base Tree
- * Very simple form with no privacy tint - base green/blue shape
+ * Very simple form - uses privacy-based colors like other trees
  */
 export function BaseTree({ privacy, size = 'md', className = '' }: TreeIconProps) {
   const baseSize = getBaseSize(size);
+  const colors = getPrivacyGradient(privacy);
   const viewBox = '0 0 48 64';
-  // Neutral base colors
-  const baseGreen = '#7fb069';
-  const baseBlue = '#6ba3d8';
 
   return (
     <svg
@@ -285,14 +300,14 @@ export function BaseTree({ privacy, size = 'md', className = '' }: TreeIconProps
       viewBox={viewBox}
       className={className}
       style={{
-        filter: 'drop-shadow(0 2px 4px rgba(127, 176, 105, 0.2))',
+        filter: `drop-shadow(0 2px 4px ${colors.glow})`,
       }}
       aria-label="Base Tree"
     >
       <defs>
-        <linearGradient id="base-tree-gradient" x1="50%" y1="0%" x2="50%" y2="100%">
-          <stop offset="0%" stopColor={baseGreen} stopOpacity="0.85" />
-          <stop offset="100%" stopColor={baseBlue} stopOpacity="0.8" />
+        <linearGradient id={`base-tree-${privacy}`} x1="50%" y1="0%" x2="50%" y2="100%">
+          <stop offset="0%" stopColor={colors.primary} stopOpacity="0.85" />
+          <stop offset="100%" stopColor={colors.primary} stopOpacity="0.8" />
         </linearGradient>
       </defs>
 
@@ -302,14 +317,14 @@ export function BaseTree({ privacy, size = 'md', className = '' }: TreeIconProps
         cy="28"
         rx="16"
         ry="14"
-        fill="url(#base-tree-gradient)"
+        fill={`url(#base-tree-${privacy})`}
       />
       <ellipse
         cx="24"
         cy="26"
         rx="12"
         ry="10"
-        fill={baseGreen}
+        fill={colors.primary}
         fillOpacity="0.7"
       />
 
