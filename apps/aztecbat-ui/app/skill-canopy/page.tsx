@@ -68,7 +68,7 @@ export default function SkillCanopyPage() {
       <div>
         <h1 className="text-3xl font-bold mb-2">Skill Canopy</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          An isometric, game-like view of skill clusters in our lunar-punk forest.
+          A gentle, organic view of skill clusters in our hidden garden.
         </p>
       </div>
 
@@ -81,7 +81,7 @@ export default function SkillCanopyPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Public-heavy */}
             <div className="flex items-start gap-3">
-              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-emerald-400/30 via-cyan-400/25 to-teal-400/30 dark:from-emerald-400/40 dark:via-cyan-400/35 dark:to-teal-400/40 border-2 border-emerald-400/30 dark:border-emerald-400/40 flex-shrink-0 mt-0.5" />
+              <div className="w-4 h-4 rounded-full bg-[#7dd87d] border border-green-300/50 dark:border-green-400/30 flex-shrink-0 mt-0.5 shadow-sm" />
               <div>
                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   More public reveals
@@ -94,7 +94,7 @@ export default function SkillCanopyPage() {
 
             {/* Mixed */}
             <div className="flex items-start gap-3">
-              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-amber-400/30 via-orange-400/25 to-yellow-400/30 dark:from-amber-400/40 dark:via-orange-400/35 dark:to-yellow-400/40 border-2 border-amber-400/30 dark:border-amber-400/40 flex-shrink-0 mt-0.5" />
+              <div className="w-4 h-4 rounded-full bg-[#f4a460] border border-amber-300/50 dark:border-amber-400/30 flex-shrink-0 mt-0.5 shadow-sm" />
               <div>
                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   Mixed privacy
@@ -107,7 +107,7 @@ export default function SkillCanopyPage() {
 
             {/* Mostly private */}
             <div className="flex items-start gap-3">
-              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-400/25 via-indigo-400/20 to-purple-400/25 dark:from-blue-400/35 dark:via-indigo-400/30 dark:to-purple-400/35 border-2 border-blue-400/20 dark:border-indigo-400/30 flex-shrink-0 mt-0.5" />
+              <div className="w-4 h-4 rounded-full bg-[#87ceeb] border border-blue-300/50 dark:border-blue-400/30 flex-shrink-0 mt-0.5 shadow-sm" />
               <div>
                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   More private journeys
