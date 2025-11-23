@@ -10,6 +10,13 @@ import { TreeIcon } from './TreeIcon';
 
 type PrivacyMode = 'public-heavy' | 'mixed' | 'mostly-private';
 
+type Quest = {
+  id: string;
+  name: string;
+  participantCount: number;
+  privacyMode: 'public-heavy' | 'mixed' | 'private-heavy';
+};
+
 type SkillTreeTileProps = {
   skillId: string;
   skillName: string;
@@ -20,6 +27,7 @@ type SkillTreeTileProps = {
     mixed: number;
     private: number;
   };
+  quests?: Quest[];
 };
 
 function getPrivacyGradient(privacyMode: PrivacyMode): string {
@@ -58,12 +66,26 @@ function getPrivacyGlow(privacyMode: PrivacyMode): string {
   }
 }
 
+// Helper to get tree type based on quest index
+function getTreeType(index: number): 'conifer' | 'round' | 'mushroom' {
+  const types: ('conifer' | 'round' | 'mushroom')[] = ['conifer', 'round', 'mushroom'];
+  return types[index % types.length];
+}
+
+// Helper to get tree size based on participant count
+function getTreeSize(participants: number): 'sm' | 'md' | 'lg' {
+  if (participants > 500) return 'md';
+  if (participants > 200) return 'sm';
+  return 'sm';
+}
+
 export function SkillTreeTile({
   skillId,
   skillName,
   participantCount,
   privacyMode,
   privacyStats,
+  quests = [],
 }: SkillTreeTileProps) {
   const gradientClasses = getPrivacyGradient(privacyMode);
   const borderClasses = getPrivacyBorder(privacyMode);
@@ -76,6 +98,18 @@ export function SkillTreeTile({
     private: privacyMode === 'mostly-private' ? 70 : privacyMode === 'mixed' ? 20 : 10,
   };
 
+  // Helper to convert skill privacy mode to quest privacy mode
+  const convertPrivacyMode = (mode: PrivacyMode): 'public-heavy' | 'mixed' | 'private-heavy' => {
+    return mode === 'mostly-private' ? 'private-heavy' : mode;
+  };
+
+  // Default quests if not provided
+  const defaultQuests: Quest[] = quests.length > 0 ? quests : [
+    { id: 'quest-1', name: 'Quest 1', participantCount: Math.floor(participantCount * 0.4), privacyMode: convertPrivacyMode(privacyMode) },
+    { id: 'quest-2', name: 'Quest 2', participantCount: Math.floor(participantCount * 0.35), privacyMode: convertPrivacyMode(privacyMode) },
+    { id: 'quest-3', name: 'Quest 3', participantCount: Math.floor(participantCount * 0.25), privacyMode: convertPrivacyMode(privacyMode) },
+  ];
+
   return (
     <div className="relative group">
       <Link
@@ -85,22 +119,29 @@ export function SkillTreeTile({
         {/* Enhanced glow effect on hover/focus */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 dark:from-white/0 dark:to-white/10 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300 rounded-xl" />
         
-        <div className="relative z-10 flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-white dark:group-hover:text-white transition-colors duration-300">
-              {skillName}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-200 dark:group-hover:text-gray-300 transition-colors duration-300">
-              {participantCount.toLocaleString()} participants
-            </p>
+        <div className="relative z-10">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-white dark:group-hover:text-white transition-colors duration-300">
+                {skillName}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-200 dark:group-hover:text-gray-300 transition-colors duration-300">
+                {participantCount.toLocaleString()} participants
+              </p>
+            </div>
           </div>
-          {/* Small tree icon */}
-          <div className="flex-shrink-0">
-            <TreeIcon
-              type="round"
-              privacy={privacyMode === 'mostly-private' ? 'private-heavy' : privacyMode}
-              size="sm"
-            />
+          
+          {/* Trees - one per quest */}
+          <div className="flex items-end justify-center gap-3 flex-wrap">
+            {defaultQuests.map((quest, index) => (
+              <div key={quest.id} className="flex flex-col items-center">
+                <TreeIcon
+                  type={getTreeType(index)}
+                  privacy={quest.privacyMode}
+                  size={getTreeSize(quest.participantCount)}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </Link>
