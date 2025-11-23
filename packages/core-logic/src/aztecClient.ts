@@ -9,6 +9,7 @@ import type { QuestIdHash, QuestId } from './quests/types';
 import { computeQuestIdHash } from './quests/hashing';
 import * as fs from 'fs';
 import * as path from 'path';
+import { loadAztecConfig } from './aztec/configLoader';
 
 // Aztec.js types - using type-only imports to avoid runtime dependency issues during build
 // The actual values will be imported dynamically at runtime
@@ -181,15 +182,26 @@ export class RealAztecClient implements AztecClient {
   private userAddress: AztecAddress | null = null;
   private account: CompleteAddress | null = null;
   private config: AztecClientConfig;
+  private aztecConfig: ReturnType<typeof loadAztecConfig>;
   private initialized: boolean = false;
 
   constructor(config: AztecClientConfig = {}) {
+    // Load config from file based on AZTEC_ENV
+    const aztecConfig = loadAztecConfig();
+    
     this.config = {
-      pxeUrl: process.env.PXE_URL || process.env.AZTEC_PXE_URL || 'http://localhost:8080',
+      pxeUrl: config?.pxeUrl || 
+              process.env.AZTEC_PXE_URL || 
+              process.env.PXE_URL || 
+              process.env.NEXT_PUBLIC_AZTEC_PXE_URL ||
+              aztecConfig.pxeUrl,
       contractAddress: process.env.AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS || config?.contractAddress,
       artifactPath: config?.artifactPath,
       ...config,
     };
+    
+    // Store config for timeouts and polling
+    this.aztecConfig = aztecConfig;
   }
 
   /**
@@ -243,7 +255,7 @@ export class RealAztecClient implements AztecClient {
       
       // Wait for node to be ready (in v3, waitForNode replaces waitForPXE)
       try {
-        await waitForPXE(this.pxe, 60000); // 60 second timeout
+        await waitForPXE(this.pxe, this.aztecConfig.timeout);
       } catch (error) {
         throw new Error(
           `RealAztecClient: Could not connect to Aztec node at ${pxeUrl}. ` +
