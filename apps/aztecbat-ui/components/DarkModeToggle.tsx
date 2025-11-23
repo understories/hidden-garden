@@ -62,11 +62,15 @@ export function DarkModeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="px-3 py-1.5 text-sm border rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+      className={`px-3 py-1.5 text-sm border rounded transition-colors ${
+        isDark
+          ? 'border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'
+          : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+      }`}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
-      {isDark ? '☀️ Light' : '🌙 Dark'}
+      {isDark ? '☀️ Light' : <span className="font-semibold">🌙 Dark</span>}
     </button>
   );
 }
