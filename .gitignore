@@ -99,3 +99,4 @@ playground/node_modules/
 # Next.js dev logs
 .next/**/*.log
 
+docs/GITHUB_ABOUT_SECTION.md
