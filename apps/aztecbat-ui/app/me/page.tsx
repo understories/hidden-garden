@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import type { SkillNode } from '@hidden-garden/core-logic';
+import type { SkillNode, SkillProfile, QuestSummary } from '@hidden-garden/core-logic';
 import { normalizeSkillId, shortenAddress, getEnsName } from '@hidden-garden/core-logic';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
@@ -27,6 +27,8 @@ const initialSkills: SkillNode[] = [
 export default function MyGardenPage() {
   const [skills, setSkills] = React.useState<SkillNode[]>(initialSkills);
   const [newSkillName, setNewSkillName] = React.useState('');
+  const [skillProfile, setSkillProfile] = React.useState<SkillProfile | null>(null);
+  const [profileLoading, setProfileLoading] = React.useState(false);
 
   const { address, isConnected } = useAccount();
   const [ensName, setEnsName] = React.useState<string | null>(null);
@@ -66,6 +68,35 @@ export default function MyGardenPage() {
     return () => {
       cancelled = true;
     };
+  }, [address, isConnected]);
+
+  // Load skill profile when address is available
+  React.useEffect(() => {
+    if (!address || !isConnected) {
+      setSkillProfile(null);
+      return;
+    }
+
+    async function loadProfile() {
+      setProfileLoading(true);
+      try {
+        const params = new URLSearchParams({
+          address,
+          chainId: '31337', // Default to local Hardhat
+        });
+        const response = await fetch(`/api/dev/skill-profile?${params}`);
+        const data = await response.json();
+        if (response.ok && data.ok) {
+          setSkillProfile(data.profile);
+        }
+      } catch (error) {
+        console.error('Failed to load skill profile:', error);
+      } finally {
+        setProfileLoading(false);
+      }
+    }
+
+    loadProfile();
   }, [address, isConnected]);
 
   const profileIdentifier =
@@ -215,6 +246,61 @@ export default function MyGardenPage() {
           <code>zero-knowledge-proofs</code>).
         </p>
       </section>
+
+      {/* My Private Progress Section */}
+      {isConnected && address && (
+        <section className="space-y-3 border-t pt-4 mt-4">
+          <h2 className="text-lg font-semibold">🔒 My Private Progress</h2>
+          <p className="text-sm text-gray-600 italic">
+            This mirrors what we store privately in Aztec. Only the tier proof below ever leaves the garden.
+          </p>
+          
+          {profileLoading ? (
+            <p className="text-sm text-gray-500">Loading progress...</p>
+          ) : skillProfile && skillProfile.questSummaries && skillProfile.questSummaries.length > 0 ? (
+            <div className="space-y-2">
+              {skillProfile.questSummaries.map((quest: QuestSummary) => (
+                <div
+                  key={quest.id}
+                  className={`p-3 rounded-md border ${
+                    quest.status === 'completed'
+                      ? 'bg-green-50 border-green-200'
+                      : 'bg-gray-50 border-gray-200'
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex-1">
+                      <div className="font-medium">{quest.title}</div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        {quest.status === 'completed' ? (
+                          <>✅ Completed {quest.score !== null && `(Score: ${quest.score}%)`}</>
+                        ) : (
+                          <>⏳ Not started</>
+                        )}
+                      </div>
+                    </div>
+                    {quest.status === 'completed' && quest.score !== null && (
+                      <div
+                        className={`text-xl font-bold ${
+                          quest.score >= 60 ? 'text-green-600' : 'text-orange-600'
+                        }`}
+                      >
+                        {quest.score}%
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              <div className="mt-3 p-3 bg-white border border-gray-200 rounded-md text-sm">
+                <strong>Summary:</strong> {skillProfile.questsCompleted || 0} of {skillProfile.questSummaries.length} quests completed
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">No quest progress yet. Complete quests to see your private progress here.</p>
+          )}
+        </section>
+      )}
 
       <section className="space-y-2 border-t pt-4 mt-4">
         <h2 className="text-lg font-semibold">Public profile</h2>
