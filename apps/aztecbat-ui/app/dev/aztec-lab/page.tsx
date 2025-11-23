@@ -47,8 +47,9 @@ export default function AztecLabPage() {
     connectedAddress || ''
   );
   const [revealChainId, setRevealChainId] = useState<string>('31337');
-  const [minTier, setMinTier] = useState<string>('1');
+  const [selectedTier, setSelectedTier] = useState<string>('1');
   const [minAverageScore, setMinAverageScore] = useState<string>('60');
+  const [requireSelf, setRequireSelf] = useState<boolean>(false);
   const [revealLoading, setRevealLoading] = useState(false);
   const [revealResult, setRevealResult] = useState<{
     txHash: string;
@@ -212,9 +213,9 @@ export default function AztecLabPage() {
         body: JSON.stringify({
           address: revealAddress,
           chainId: parseInt(revealChainId, 10),
-          minTier: parseInt(minTier, 10),
+          minTier: parseInt(selectedTier, 10),
           minAverageScore: parseInt(minAverageScore, 10),
-          humanOnly: humanOnlyFilter,
+          requireSBT: requireSelf,
         }),
       });
 
@@ -480,31 +481,92 @@ export default function AztecLabPage() {
         )}
       </section>
 
-      {/* Section 2: Reveal Tier */}
+      {/* Section 2: Select What to Reveal */}
       <section style={{ 
         border: '1px solid #ccc', 
         padding: '1.5rem',
+        marginTop: '2rem',
         borderRadius: '4px'
       }}>
-        <h2>Section 2: Reveal Tier (Aztec → L1 → Indexer → Leaderboard)</h2>
-        <p>Tests: <code>publishAndFetchAztecBuilderLeaderboard()</code></p>
+        <h2>Section 2: Select What to Reveal</h2>
+        <p>Choose which tier and score to reveal to the leaderboard</p>
+        
         <div style={{ 
-          background: '#e3f2fd', 
+          background: '#fff3e0', 
           padding: '1rem', 
           marginBottom: '1rem',
           borderRadius: '4px',
           fontSize: '0.9rem'
         }}>
-          <strong>Mode Selection:</strong> You can compete in:
-          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
-            <li><strong>Anon/Agent Mode:</strong> No SBT required (anyone can publish)</li>
-            <li><strong>Human-Only Mode:</strong> SBT required (only verified humans can publish)</li>
-          </ul>
-          <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: '#666' }}>
-            Note: SBT verification is optional. The leaderboard can be filtered to show only human-verified entries.
+          <strong>💡 How it works:</strong> Select a tier and minimum score to prove. This generates a ZK proof that you've achieved at least that tier without revealing individual quest completions or scores.
+        </div>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+            Tier Selection:
+          </label>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            {[1, 2].map((tier) => (
+              <label key={tier} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="tier"
+                  value={tier.toString()}
+                  checked={selectedTier === tier.toString()}
+                  onChange={(e) => setSelectedTier(e.target.value)}
+                  style={{ marginRight: '0.5rem', width: 'auto' }}
+                />
+                <span>
+                  Tier {tier}
+                  {tier === 1 && ' (Aztec Explorer)'}
+                  {tier === 2 && ' (Noir Novice)'}
+                </span>
+              </label>
+            ))}
+          </div>
+          <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
+            Max Tier 2 available for now (hardcoded for demo)
           </p>
         </div>
-        
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+            Minimum Average Score: {minAverageScore}%
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={minAverageScore}
+            onChange={(e) => setMinAverageScore(e.target.value)}
+            style={{ width: '100%' }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
+            <span>0%</span>
+            <span>50%</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={requireSelf}
+              onChange={(e) => setRequireSelf(e.target.checked)}
+              style={{ marginRight: '0.5rem', width: 'auto' }}
+            />
+            <span style={{ fontWeight: 'bold' }}>
+              Require Self proof of human
+            </span>
+          </label>
+          <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem', marginLeft: '1.75rem' }}>
+            {requireSelf 
+              ? 'Only verified humans can publish (Human-Only Mode)'
+              : 'Anyone can publish, including anons and agents (Anon/Agent Mode)'}
+          </p>
+        </div>
+
         <div style={{ marginBottom: '1rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>
             Address:
@@ -530,80 +592,31 @@ export default function AztecLabPage() {
               type="text"
               value={revealChainId}
               onChange={(e) => setRevealChainId(e.target.value)}
-              placeholder="11155111"
+              placeholder="31337"
               style={{
                 width: '100%',
                 padding: '0.5rem',
                 marginTop: '0.25rem',
               }}
             />
-          </label>
-        </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Min Tier:
-            <input
-              type="number"
-              value={minTier}
-              onChange={(e) => setMinTier(e.target.value)}
-              min="1"
-              max="4"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                marginTop: '0.25rem',
-              }}
-            />
-          </label>
-        </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Min Average Score:
-            <input
-              type="number"
-              value={minAverageScore}
-              onChange={(e) => setMinAverageScore(e.target.value)}
-              min="0"
-              max="100"
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                marginTop: '0.25rem',
-              }}
-            />
-          </label>
-        </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={humanOnlyFilter}
-              onChange={(e) => setHumanOnlyFilter(e.target.checked)}
-              style={{ width: 'auto' }}
-            />
-            <span>
-              <strong>Filter Leaderboard:</strong> Show only human-verified entries
-            </span>
           </label>
         </div>
 
         <button
           onClick={handleRevealTier}
-          disabled={revealLoading || !revealAddress}
+          disabled={revealLoading || !revealAddress || !selectedTier || !minAverageScore}
           style={{
             padding: '0.75rem 1.5rem',
             fontSize: '1rem',
-            cursor: revealLoading || !revealAddress ? 'not-allowed' : 'pointer',
-            backgroundColor: revealLoading || !revealAddress ? '#ccc' : '#28a745',
+            cursor: revealLoading || !revealAddress || !selectedTier || !minAverageScore ? 'not-allowed' : 'pointer',
+            backgroundColor: revealLoading || !revealAddress || !selectedTier || !minAverageScore ? '#ccc' : '#007bff',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
+            fontWeight: 'bold',
           }}
         >
-          {revealLoading ? 'Processing...' : 'Reveal Tier + Fetch Leaderboard'}
+          {revealLoading ? 'Revealing...' : '🔓 Reveal Selected Tier'}
         </button>
 
         {revealError && (
@@ -620,7 +633,10 @@ export default function AztecLabPage() {
 
         {revealResult && (
           <div style={{ marginTop: '1rem' }}>
-            <h3>Result:</h3>
+            <h3>✅ Reveal Successful!</h3>
+            <div style={{ marginBottom: '1rem', padding: '0.75rem', background: '#e8f5e9', border: '1px solid #4caf50', borderRadius: '4px' }}>
+              <strong>Revealed Tier:</strong> {selectedTier} | <strong>Min Score:</strong> {minAverageScore}%
+            </div>
             <div style={{ marginBottom: '1rem' }}>
               <strong>Transaction Hash:</strong>{' '}
               {(() => {
