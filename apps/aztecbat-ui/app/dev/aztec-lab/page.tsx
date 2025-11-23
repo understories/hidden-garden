@@ -141,9 +141,35 @@ export default function AztecLabPage() {
     setQuestStorageResult(null);
 
     try {
-      // Dev UI always uses real Aztec
+      // Require real Aztec PXE connection
+      const pxeUrl = process.env.NEXT_PUBLIC_PXE_URL || 'http://localhost:8080';
+      
+      // Verify PXE is reachable
+      try {
+        const response = await fetch(pxeUrl, { 
+          method: 'GET',
+          signal: AbortSignal.timeout(3000)
+        });
+        if (!response.ok) {
+          throw new Error(`PXE returned status ${response.status}`);
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        setQuestStorageResult({
+          success: false,
+          error: `Aztec PXE is not available at ${pxeUrl}.\n\n` +
+                 `Error: ${errorMsg}\n\n` +
+                 `To start Aztec sandbox:\n` +
+                 `  pnpm aztec:sandbox\n\n` +
+                 `Or with Docker:\n` +
+                 `  docker run -it -p 8080:8080 aztecprotocol/sandbox:latest\n\n` +
+                 `Please ensure the Aztec sandbox is running.`
+        });
+        return;
+      }
+
       const aztecClient = createAztecClient('real', {
-        pxeUrl: process.env.NEXT_PUBLIC_PXE_URL || 'http://localhost:8080',
+        pxeUrl,
       });
 
       // Store quest completion
