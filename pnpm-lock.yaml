@@ -120,6 +120,9 @@ importers:
       '@aztec/aztec.js':
         specifier: 3.0.0-devnet.5
         version: 3.0.0-devnet.5(typescript@5.9.3)
+      '@aztec/bb.js':
+        specifier: ^2.1.7
+        version: 2.1.7
       ethers:
         specifier: ^6.15.0
         version: 6.15.0
@@ -374,6 +377,10 @@ packages:
   '@aztec/aztec.js@3.0.0-devnet.5':
     resolution: {integrity: sha512-imufeCwtwMslvLa1oUgV/NpFUjqmb/mnGLNmXoHx0vSwPWG5SIyorxkzSvenuYeF3NVo++LJaW9Ng4lzRj0CiA==}
     engines: {node: '>=20.10'}
+
+  '@aztec/bb.js@2.1.7':
+    resolution: {integrity: sha512-TiMDQuRm/RjuupgihNAEj061qLs9aHa0KvpWFA1nV04eZsC2wWU/HLc7Ffm/WuaySYGQovj5lcLoldhpl44YvQ==}
+    hasBin: true
 
   '@aztec/bb.js@3.0.0-devnet.5':
     resolution: {integrity: sha512-PreVW5HaIZC0OhXDdLHFxyUo2n71amChLh58MPzca9L1bex+g4naAd+7z6IepSGY2eQT8dWLhuhn7DYnBA3TYQ==}
@@ -6458,6 +6465,16 @@ snapshots:
       - supports-color
       - typescript
       - utf-8-validate
+
+  '@aztec/bb.js@2.1.7':
+    dependencies:
+      comlink: 4.4.2
+      commander: 12.1.0
+      idb-keyval: 6.2.2
+      msgpackr: 1.11.5
+      pako: 2.1.0
+      pino: 9.14.0
+      tslib: 2.8.1
 
   '@aztec/bb.js@3.0.0-devnet.5':
     dependencies:
