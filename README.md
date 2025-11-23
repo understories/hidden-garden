@@ -197,10 +197,6 @@ The application can be deployed to Vercel. See [VERCEL_DEPLOYMENT_CHECKLIST.md](
 - **Aztec Protocol**: [https://aztec.network](https://aztec.network)
 - **Noir Language**: [https://noir-lang.org](https://noir-lang.org)
 
-## 📝 License
-
-This project is private and proprietary. All rights reserved.
-
 ## 🙏 Acknowledgments
 
 - Built with [Aztec Protocol](https://aztec.network/) for private smart contracts
