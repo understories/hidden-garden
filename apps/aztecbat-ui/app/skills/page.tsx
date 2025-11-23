@@ -10,6 +10,11 @@ import Link from 'next/link';
 // Mock skills data - in production this would come from the backend
 const mockSkills = [
   {
+    id: 'aztec-protocol',
+    name: 'Aztec Protocol',
+    description: 'Deep dive into Aztec privacy technology',
+  },
+  {
     id: 'rust-foundations',
     name: 'Rust Foundations',
     description: 'Master the fundamentals of Rust programming',
@@ -23,11 +28,6 @@ const mockSkills = [
     id: 'advanced-circuits',
     name: 'Advanced Circuits',
     description: 'Build complex circuits with Noir',
-  },
-  {
-    id: 'aztec-protocol',
-    name: 'Aztec Protocol',
-    description: 'Deep dive into Aztec privacy technology',
   },
 ];
 
