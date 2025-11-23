@@ -39,6 +39,8 @@ export interface SubmitTierProofParams {
   signer: ethers.Signer;
   /** Aztec client for generating proofs */
   aztecClient: AztecClient;
+  /** Require SelfHumanSBT to be valid (default: false) */
+  requireSBT?: boolean;
 }
 
 /**
@@ -134,6 +136,7 @@ export async function submitTierProofWithSBTCheck(
     skillPathId = 'aztec_builder_path',
     signer,
     aztecClient,
+    requireSBT = false,
   } = params;
 
   // Validate inputs
@@ -186,6 +189,14 @@ export async function submitTierProofWithSBTCheck(
       'Publishing in anon/agent mode.'
     );
     isHumanVerified = false;
+  }
+
+  // If requireSBT is true and user doesn't have valid SBT, throw error
+  if (requireSBT && !isHumanVerified) {
+    throw new Error(
+      `User must have a valid SelfHumanSBT to publish tier proof. ` +
+      `Address ${userAddress} does not have a valid SBT on chain ${chainId}.`
+    );
   }
 
   // 5. Get SkillLeaderboard contract address
