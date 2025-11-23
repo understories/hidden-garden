@@ -12,15 +12,40 @@ const nextConfig = {
         crypto: false,
       };
       
-      // Ignore optional wagmi connector dependencies that aren't needed
-      // These are dynamically imported by wagmi connectors but not required for basic functionality
-      // We only use injected() connector (MetaMask/browser wallets via window.ethereum)
-      // The injected connector works with browser extensions without needing these SDKs
+      // Ignore ALL optional wagmi connector dependencies
+      // We only use injected() connector which works with browser extensions (window.ethereum)
+      // All other connectors require optional SDKs that we don't need for MVP
+      const optionalWagmiDeps = [
+        '@base-org/account',
+        '@coinbase/wallet-sdk',
+        '@gemini-wallet/core',
+        '@metamask/sdk',
+        '@walletconnect/ethereum-provider',
+        '@walletconnect/modal',
+        '@walletconnect/types',
+        '@safe-global/safe-apps-sdk',
+        '@safe-global/safe-apps-provider',
+        'porto', // Porto wallet connector
+      ];
+      
+      // Use IgnorePlugin to prevent webpack from trying to resolve these modules
+      // This handles dynamic imports that wagmi connectors try to load
+      // Create regex pattern that matches any of the optional dependencies
+      const depPattern = optionalWagmiDeps.map(dep => dep.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
       config.plugins.push(
         new webpack.IgnorePlugin({
-          resourceRegExp: /^@base-org\/account$|^@coinbase\/wallet-sdk$|^@gemini-wallet\/core$|^@metamask\/sdk$/,
+          resourceRegExp: new RegExp(`^(${depPattern})$`),
         })
       );
+      
+      // Also set them as false in resolve.alias as a fallback
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        ...optionalWagmiDeps.reduce((acc, dep) => {
+          acc[dep] = false;
+          return acc;
+        }, {}),
+      };
     }
     return config;
   },
