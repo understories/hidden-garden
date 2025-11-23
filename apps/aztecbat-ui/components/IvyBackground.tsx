@@ -83,7 +83,7 @@ function generateVineConfigs(): Array<{
   const directions: Array<'horizontal' | 'vertical' | 'diagonal-up' | 'diagonal-down' | 'curved'> = 
     ['horizontal', 'vertical', 'diagonal-up', 'diagonal-down', 'curved'];
   
-  for (let i = 0; i < 150; i++) {
+  for (let i = 0; i < 75; i++) {
     const privacyMode = privacyModes[i % 3];
     const direction = directions[i % 5];
     
