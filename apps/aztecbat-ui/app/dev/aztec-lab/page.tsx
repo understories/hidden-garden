@@ -14,6 +14,7 @@ import {
   stringToBytes,
   encodeTierProofPublicInputs,
   hashSkillName,
+  getExplorerTxUrl,
 } from '@hidden-garden/core-logic';
 import { listAllQuests, getQuestDefinition, type QuestDefinition, type QuestSubmission } from '@hidden-garden/game-engine';
 import { ethers } from 'ethers';
@@ -546,7 +547,38 @@ export default function AztecLabPage() {
             <h3>Result:</h3>
             <div style={{ marginBottom: '1rem' }}>
               <strong>Transaction Hash:</strong>{' '}
-              <code style={{ fontFamily: 'monospace' }}>{revealResult.txHash}</code>
+              {(() => {
+                const chainId = parseInt(revealChainId, 10);
+                const explorerUrl = getExplorerTxUrl(chainId, revealResult.txHash);
+                if (explorerUrl) {
+                  return (
+                    <a
+                      href={explorerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontFamily: 'monospace',
+                        color: '#2196F3',
+                        textDecoration: 'underline',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {revealResult.txHash}
+                      <span style={{ marginLeft: '0.25rem' }}>🔗</span>
+                    </a>
+                  );
+                }
+                return (
+                  <code style={{ fontFamily: 'monospace' }}>
+                    {revealResult.txHash}
+                    {chainId === 31337 && (
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem', color: '#666' }}>
+                        (Local Hardhat - no explorer available)
+                      </span>
+                    )}
+                  </code>
+                );
+              })()}
             </div>
             <div style={{ marginBottom: '1rem' }}>
               <strong>Skill Hash:</strong>{' '}
@@ -1161,7 +1193,40 @@ export default function AztecLabPage() {
                 {questStorageResult.success ? (
                   <>
                     <div><strong>✅ Stored in Aztec!</strong></div>
-                    <div><strong>Transaction Hash:</strong> <code style={{ fontFamily: 'monospace' }}>{questStorageResult.transactionHash}</code></div>
+                    <div><strong>Transaction Hash:</strong>{' '}
+                      {(() => {
+                        const chainId = parseInt(revealChainId, 10); // Use same chain ID as reveal section
+                        const explorerUrl = getExplorerTxUrl(chainId, questStorageResult.transactionHash);
+                        if (explorerUrl) {
+                          return (
+                            <a
+                              href={explorerUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                fontFamily: 'monospace',
+                                color: '#2196F3',
+                                textDecoration: 'underline',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {questStorageResult.transactionHash}
+                              <span style={{ marginLeft: '0.25rem' }}>🔗</span>
+                            </a>
+                          );
+                        }
+                        return (
+                          <code style={{ fontFamily: 'monospace' }}>
+                            {questStorageResult.transactionHash}
+                            {chainId === 31337 && (
+                              <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem', color: '#666' }}>
+                                (Local Hardhat - no explorer available)
+                              </span>
+                            )}
+                          </code>
+                        );
+                      })()}
+                    </div>
                     <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
                       Quest completion is now stored privately in your Aztec vault.
                     </div>
