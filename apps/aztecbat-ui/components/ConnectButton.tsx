@@ -77,10 +77,14 @@ export const ConnectButton: React.FC = () => {
     );
   }
 
+  // Format display name: show ENS.eth if available, otherwise shortened address
   const displayName = ensLoading 
     ? 'Resolving ENS…' 
-    : ensName ?? (address ? shortenAddress(address) : 'Connected');
+    : ensName 
+    ? `${ensName}${ensName.endsWith('.eth') ? '' : '.eth'}` // Ensure .eth suffix
+    : (address ? shortenAddress(address) : 'Connected');
   
+  // Use ENS name for profile link if available, otherwise address
   const profileIdentifier = ensName || address;
   const profileHref = profileIdentifier ? `/u/${profileIdentifier}` : null;
 
