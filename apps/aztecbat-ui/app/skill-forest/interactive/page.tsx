@@ -208,28 +208,100 @@ export default function InteractiveSkillForestPage() {
           );
         })}
 
-        {/* Cluster background zones */}
+        {/* Cluster background zones (interactive) */}
         {Object.entries(clusters).map(([privacyMode, clusterSkills]) => {
           if (clusterSkills.length === 0) return null;
           const zone = getClusterZone(privacyMode as 'public-heavy' | 'mixed' | 'mostly-private');
           const centerX = 50 + zone.centerRadius * Math.cos(zone.centerAngle);
           const centerY = 50 + zone.centerRadius * Math.sin(zone.centerAngle);
+          const isHovered = hoveredCluster === privacyMode;
+          
+          // Calculate cluster stats
+          const totalParticipants = clusterSkills.reduce((sum, skill) => sum + skill.participantCount, 0);
+          const treeTypes = clusterSkills.reduce((acc, skill) => {
+            acc[skill.customTreeType] = (acc[skill.customTreeType] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
           
           return (
-            <div
-              key={privacyMode}
-              className="absolute rounded-full border-2"
-              style={{
-                left: `${centerX - zone.spread}%`,
-                top: `${centerY - zone.spread}%`,
-                width: `${zone.spread * 2}%`,
-                height: `${zone.spread * 2}%`,
-                backgroundColor: zone.color,
-                borderColor: zone.borderColor,
-                filter: 'blur(20px)',
-                pointerEvents: 'none',
-              }}
-            />
+            <div key={privacyMode}>
+              {/* Interactive hover zone */}
+              <div
+                className="absolute rounded-full cursor-pointer transition-opacity duration-300"
+                style={{
+                  left: `${centerX - zone.spread}%`,
+                  top: `${centerY - zone.spread}%`,
+                  width: `${zone.spread * 2}%`,
+                  height: `${zone.spread * 2}%`,
+                  backgroundColor: zone.color,
+                  borderColor: zone.borderColor,
+                  borderWidth: '2px',
+                  filter: 'blur(20px)',
+                  opacity: isHovered ? 0.3 : 0.15,
+                }}
+                onMouseEnter={() => setHoveredCluster(privacyMode)}
+                onMouseLeave={() => setHoveredCluster(null)}
+              />
+              
+              {/* Cluster info panel */}
+              {isHovered && (
+                <div
+                  className="absolute z-30 bg-white dark:bg-gray-800 rounded-lg shadow-xl border-2 p-4 min-w-[200px] pointer-events-none"
+                  style={{
+                    left: `${centerX + zone.spread + 2}%`,
+                    top: `${centerY}%`,
+                    transform: 'translateY(-50%)',
+                    borderColor: zone.borderColor,
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: zone.borderColor.replace('0.3', '1') }}
+                    />
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                      {privacyMode === 'public-heavy' 
+                        ? 'Public-Heavy Cluster' 
+                        : privacyMode === 'mixed' 
+                        ? 'Mixed Cluster' 
+                        : 'Private-Heavy Cluster'}
+                    </h3>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">Skills: </span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {clusterSkills.length}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">Total Participants: </span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">
+                        {totalParticipants.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <div className="text-gray-600 dark:text-gray-400 mb-1">Tree Types:</div>
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(treeTypes).map(([type, count]) => (
+                          <span
+                            key={type}
+                            className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded"
+                          >
+                            {type}: {count}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Tooltip arrow */}
+                  <div
+                    className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-b-8 border-b-transparent"
+                    style={{ borderRightColor: zone.borderColor.replace('0.3', '1') }}
+                  />
+                </div>
+              )}
+            </div>
           );
         })}
 
@@ -262,36 +334,88 @@ export default function InteractiveSkillForestPage() {
         </Link>
 
         {/* Skill trees as constellation points */}
-        {positions.map(({ skill, x, y, privacy }) => (
-          <div
-            key={skill.skillId}
-            className="absolute cursor-pointer hover:scale-110 transition-transform duration-300 z-20"
-            style={{
-              left: `${x}%`,
-              top: `${y}%`,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            {/* Subtle glow around tree */}
-            <div
-              className="absolute rounded-full opacity-20 blur-md -z-10"
-              style={{
-                width: '40px',
-                height: '40px',
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: privacy === 'public-heavy' 
-                  ? '#7dd87d' 
-                  : privacy === 'mixed' 
-                  ? '#f4a460' 
-                  : '#9370db',
-              }}
-            />
-            {/* Tree */}
-            {renderCustomTree(skill.customTreeType, privacy, 'sm')}
-          </div>
-        ))}
+        {positions.map(({ skill, x, y, privacy }) => {
+          const isHovered = hoveredSkill === skill.skillId;
+          const privacyColor = privacy === 'public-heavy' 
+            ? '#7dd87d' 
+            : privacy === 'mixed' 
+            ? '#f4a460' 
+            : '#9370db';
+          
+          return (
+            <div key={skill.skillId}>
+              <Link
+                href={`/leaderboard/${skill.skillId}`}
+                className="absolute cursor-pointer hover:scale-110 transition-transform duration-300 z-20"
+                style={{
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  transform: 'translate(-50%, -50%)',
+                }}
+                onMouseEnter={() => setHoveredSkill(skill.skillId)}
+                onMouseLeave={() => setHoveredSkill(null)}
+              >
+                {/* Enhanced glow on hover */}
+                <div
+                  className="absolute rounded-full blur-md -z-10 transition-opacity duration-300"
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    backgroundColor: privacyColor,
+                    opacity: isHovered ? 0.4 : 0.2,
+                  }}
+                />
+                {/* Tree */}
+                {renderCustomTree(skill.customTreeType, privacy, 'sm')}
+              </Link>
+              
+              {/* Tree tooltip */}
+              {isHovered && (
+                <div
+                  className="absolute z-30 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg shadow-xl p-3 min-w-[180px] pointer-events-none"
+                  style={{
+                    left: `${x > 50 ? x - 5 : x + 5}%`,
+                    top: `${y > 50 ? y - 5 : y + 5}%`,
+                    transform: `translate(${x > 50 ? '-100%' : '0'}, ${y > 50 ? '-100%' : '0'})`,
+                  }}
+                >
+                  <div className="font-semibold text-sm mb-2">{skill.skillName}</div>
+                  <div className="space-y-1 text-gray-300">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: privacyColor }}
+                      />
+                      <span className="capitalize">
+                        {privacy.replace('-', ' ')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Participants: </span>
+                      <span className="font-medium">{skill.participantCount.toLocaleString()}</span>
+                    </div>
+                    {skill.privacyStats && (
+                      <div className="text-xs text-gray-400 pt-1 border-t border-gray-700">
+                        {skill.privacyStats.public}% public, {skill.privacyStats.mixed}% mixed, {skill.privacyStats.private}% private
+                      </div>
+                    )}
+                  </div>
+                  {/* Tooltip arrow */}
+                  <div
+                    className={`absolute w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45 ${
+                      x > 50 
+                        ? 'right-2 bottom-0 translate-y-1/2' 
+                        : 'left-2 bottom-0 translate-y-1/2'
+                    }`}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Legend */}
