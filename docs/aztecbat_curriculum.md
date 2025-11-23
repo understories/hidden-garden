@@ -363,6 +363,46 @@ Each puzzle in AztecBat follows a strict specification format to ensure consiste
 
 ---
 
+#### Puzzle 2.6 — NoirSyntaxBasics
+
+**quest_id:** `hash("noir_syntax_basics")`  
+**Tier:** 2  
+**Type:** multiple_choice  
+**Prompt:**  
+> In Noir, what is the correct way to declare a public function that takes a Field parameter?  
+> A) `fn my_function(x: Field) -> Field`  
+> B) `pub fn my_function(x: Field) -> Field`  
+> C) `public fn my_function(x: Field) -> Field`  
+> D) `fn pub my_function(x: Field) -> Field`  
+
+**User Submission:** Integer index (0-3) representing selected option.  
+**Validation Logic:** `submission === 1` (option B is correct)  
+**Success Criteria:** Exact match to correct answer index.  
+**Score:** 100 if correct, 0 if incorrect.  
+**Remarks for Noir Vault:** Tests understanding of Noir function syntax, specifically the `pub` keyword placement.
+
+---
+
+#### Puzzle 2.7 — AztecStorageIntro
+
+**quest_id:** `hash("aztec_storage_intro")`  
+**Tier:** 2  
+**Type:** multiple_choice  
+**Prompt:**  
+> What is a private note in Aztec Protocol?  
+> A) A public transaction record visible to everyone  
+> B) An encrypted piece of data that only the owner can decrypt and spend  
+> C) A smart contract function that stores public data  
+> D) A token type used for public transactions  
+
+**User Submission:** Integer index (0-3) representing selected option.  
+**Validation Logic:** `submission === 1` (option B is correct)  
+**Success Criteria:** Exact match to correct answer index.  
+**Score:** 100 if correct, 0 if incorrect.  
+**Remarks for Noir Vault:** Tests understanding of Aztec's private note-based storage model.
+
+---
+
 ### Tier 3 Puzzles
 
 #### Puzzle 3.1 — WhichIsPrivate
