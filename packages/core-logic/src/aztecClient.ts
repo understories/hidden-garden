@@ -33,24 +33,47 @@ let Contract: any;
 
 // Initialize Aztec.js imports dynamically at runtime
 // This will fail gracefully if @aztec/aztec.js is not available
+// NOTE: Aztec v3 uses subpath exports - we must import from specific paths
 async function loadAztecSDK() {
   try {
-    // Use dynamic import for ESM modules
+    // Aztec v3 uses subpath exports - import from specific paths
     // @ts-ignore - dynamic import may not be recognized by TypeScript
-    const aztecJs = await import('@aztec/aztec.js');
+    const aztecNode = await import('@aztec/aztec.js/node');
     // @ts-ignore - dynamic import may not be recognized by TypeScript
-    const aztecAccounts = await import('@aztec/accounts/testing');
+    const aztecFields = await import('@aztec/aztec.js/fields');
+    // @ts-ignore - dynamic import may not be recognized by TypeScript
+    const aztecAddresses = await import('@aztec/aztec.js/addresses');
+    // @ts-ignore - dynamic import may not be recognized by TypeScript
+    const aztecContracts = await import('@aztec/aztec.js/contracts');
+    // @ts-ignore - dynamic import may not be recognized by TypeScript
+    const aztecAccount = await import('@aztec/aztec.js/account');
     
-    createPXEClient = aztecJs.createPXEClient;
-    waitForPXE = aztecJs.waitForPXE;
-    Fr = aztecJs.Fr;
-    AztecAddress = aztecJs.AztecAddress;
-    Contract = aztecJs.Contract;
-    getDeployedTestAccountsWallets = aztecAccounts.getDeployedTestAccountsWallets;
+    // Map to our expected function names
+    // In v3, createAztecNodeClient replaces createPXEClient
+    // The node client can be used as a PXE-like interface
+    createPXEClient = aztecNode.createAztecNodeClient;
+    waitForPXE = aztecNode.waitForNode;
+    Fr = aztecFields.Fr;
+    AztecAddress = aztecAddresses.AztecAddress;
+    Contract = aztecContracts.Contract;
+    
+    // For test accounts, we need to check the accounts/testing package
+    // This might have changed in v3 - we'll handle it gracefully
+    try {
+      // @ts-ignore - dynamic import may not be recognized by TypeScript
+      const aztecAccountsTesting = await import('@aztec/accounts/testing');
+      getDeployedTestAccountsWallets = aztecAccountsTesting.getDeployedTestAccountsWallets;
+    } catch (accountsError) {
+      // If accounts/testing doesn't exist or has changed, we'll need to use a different approach
+      // For now, we'll set it to null and handle it in initialize()
+      console.warn('@aztec/accounts/testing not available or API changed. Will use alternative account creation.');
+      getDeployedTestAccountsWallets = null;
+    }
     
     return true;
   } catch (error) {
     // Aztec.js not available - will fail at runtime with clear error
+    console.error('Failed to load Aztec SDK:', error);
     return false;
   }
 }
@@ -198,31 +221,32 @@ export class RealAztecClient implements AztecClient {
         );
       }
 
-      // Check if createPXEClient is available after loading SDK
+      // Check if createPXEClient (now createAztecNodeClient) is available after loading SDK
       if (!createPXEClient) {
         throw new Error(
-          '@aztec/aztec.js is installed but createPXEClient is not available. ' +
+          '@aztec/aztec.js is installed but createAztecNodeClient is not available. ' +
           'Make sure you have the latest version: pnpm add @aztec/aztec.js@latest'
         );
       }
       
-      // Create PXE client
+      // Create Aztec node client (in v3, this replaces createPXEClient)
+      // The node client can be used as a PXE-like interface
       try {
         this.pxe = createPXEClient(pxeUrl);
       } catch (error) {
         throw new Error(
-          `RealAztecClient: Could not create PXE client for ${pxeUrl}. ` +
+          `RealAztecClient: Could not create Aztec node client for ${pxeUrl}. ` +
           `Error: ${error instanceof Error ? error.message : String(error)}. ` +
-          `Make sure @aztec/aztec.js is installed.`
+          `Make sure @aztec/aztec.js is installed and Aztec devnet is running.`
         );
       }
       
-      // Wait for PXE to be ready
+      // Wait for node to be ready (in v3, waitForNode replaces waitForPXE)
       try {
         await waitForPXE(this.pxe, 60000); // 60 second timeout
       } catch (error) {
         throw new Error(
-          `RealAztecClient: Could not connect to PXE at ${pxeUrl}. ` +
+          `RealAztecClient: Could not connect to Aztec node at ${pxeUrl}. ` +
           `Is Aztec sandbox/devnet running? ` +
           `Start it with: pnpm aztec:devnet or aztec start --sandbox. ` +
           `Error: ${error instanceof Error ? error.message : String(error)}`
@@ -230,6 +254,15 @@ export class RealAztecClient implements AztecClient {
       }
 
       // Get test account wallets from sandbox
+      // In v3, getDeployedTestAccountsWallets might have changed or we need to use a different approach
+      if (!getDeployedTestAccountsWallets) {
+        throw new Error(
+          'getDeployedTestAccountsWallets is not available. ' +
+          'The @aztec/accounts/testing API may have changed in v3. ' +
+          'Please check the Aztec v3 documentation for the correct account creation pattern.'
+        );
+      }
+      
       // getDeployedTestAccountsWallets returns AccountWallet instances
       const wallets = await getDeployedTestAccountsWallets(this.pxe);
       if (wallets.length === 0) {
