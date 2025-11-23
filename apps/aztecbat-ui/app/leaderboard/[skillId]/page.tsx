@@ -3,8 +3,8 @@
 /**
  * Leaderboard Page
  *
- * Displays the leaderboard for a specific skill with white-hat/black-hat view toggle.
- * The data remains the same; only the framing and copy change.
+ * Displays the leaderboard for a specific skill with empowering, white-hat framing.
+ * Focuses on growth, mastery, and collective progress.
  */
 
 import { useState, useEffect } from 'react';
@@ -81,7 +81,6 @@ function shortenAddress(address: string): string {
 export default function LeaderboardPage({ params }: LeaderboardPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [viewMode, setViewMode] = useState<'white-hat' | 'black-hat'>('white-hat');
   const [skillId, setSkillId] = useState<string>('');
   const [showRevealedMessage, setShowRevealedMessage] = useState(false);
 
@@ -129,91 +128,20 @@ export default function LeaderboardPage({ params }: LeaderboardPageProps) {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-2">
-          {viewMode === 'white-hat' ? (
-            <>
-              {skillDisplayName} Leaderboard
-              <span className="block text-lg font-normal text-gray-600 dark:text-gray-400 mt-1">
-                Celebrate your progress and mastery
-              </span>
-            </>
-          ) : (
-            <>
-              {skillDisplayName} Rankings
-              <span className="block text-lg font-normal text-gray-600 dark:text-gray-400 mt-1">
-                See where you stand against others
-              </span>
-            </>
-          )}
+          {skillDisplayName} Leaderboard
+          <span className="block text-lg font-normal text-gray-600 dark:text-gray-400 mt-1">
+            Celebrate your progress and mastery
+          </span>
         </h1>
-      </div>
-
-      {/* View Toggle */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-              View Mode
-            </label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setViewMode('white-hat')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  viewMode === 'white-hat'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-                }`}
-              >
-                White-Hat View
-              </button>
-              <button
-                onClick={() => setViewMode('black-hat')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  viewMode === 'black-hat'
-                    ? 'bg-orange-600 text-white shadow-sm'
-                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-                }`}
-              >
-                Black-Hat View
-                <span className="ml-1 text-xs opacity-75">(Educational)</span>
-              </button>
-            </div>
-          </div>
-          {viewMode === 'black-hat' && (
-            <div className="ml-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded text-xs text-orange-800 dark:text-orange-200 max-w-xs">
-              <strong>Educational Mode:</strong> This view demonstrates how the same data could be
-              framed with more competitive language. We default to the empowering white-hat view.
-            </div>
-          )}
-        </div>
-        
-        {/* Helper Text */}
-        <div className="text-xs text-gray-500 dark:text-gray-400 px-1">
-          {viewMode === 'white-hat' ? (
-            <p>
-              <strong>White-hat view:</strong> Empowering framing focused on growth and mastery. This view celebrates your learning journey and progress.
-            </p>
-          ) : (
-            <p>
-              <strong>Black-hat view:</strong> Example of manipulative framing – same data, different emotion. This demonstrates how competitive language can create pressure and comparison.
-            </p>
-          )}
-        </div>
       </div>
 
       {/* Helper Text */}
       <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-        {viewMode === 'white-hat' ? (
-          <p>
-            This leaderboard celebrates your journey of mastery. Each entry represents someone's
-            commitment to growth and learning. Your progress is your own—compare to inspire, not to
-            compete.
-          </p>
-        ) : (
-          <p>
-            Rankings are updated in real-time. Your position reflects your current standing. Keep
-            pushing to climb higher and outperform others.
-          </p>
-        )}
+        <p>
+          This leaderboard celebrates your journey of mastery. Each entry represents someone's
+          commitment to growth and learning. Your progress is your own—compare to inspire, not to
+          compete.
+        </p>
       </div>
 
       {/* Leaderboard Table */}
@@ -222,13 +150,13 @@ export default function LeaderboardPage({ params }: LeaderboardPageProps) {
           <thead className="bg-gray-50 dark:bg-gray-900/50">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                {viewMode === 'white-hat' ? 'Rank' : 'Position'}
+                Rank
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                {viewMode === 'white-hat' ? 'Learner' : 'Competitor'}
+                Learner
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                {viewMode === 'white-hat' ? 'Mastery Level' : 'Tier'}
+                Mastery Level
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                 Verification
@@ -244,7 +172,6 @@ export default function LeaderboardPage({ params }: LeaderboardPageProps) {
                 address={shortenAddress(entry.address)}
                 tier={entry.tier}
                 proofOfHuman={entry.proofOfHuman}
-                viewMode={viewMode}
                 onClick={() => handleRowClick(entry.address)}
               />
             ))}
@@ -254,16 +181,10 @@ export default function LeaderboardPage({ params }: LeaderboardPageProps) {
 
       {/* Footer Note */}
       <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-        {viewMode === 'white-hat' ? (
-          <p>
-            Remember: Your learning journey is unique. This leaderboard is a celebration of
-            collective progress, not a competition.
-          </p>
-        ) : (
-          <p>
-            Rankings are competitive. Your position matters. Stay ahead of the competition.
-          </p>
-        )}
+        <p>
+          Remember: Your learning journey is unique. This leaderboard is a celebration of
+          collective progress, not a competition.
+        </p>
       </div>
     </main>
   );
