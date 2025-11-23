@@ -29,6 +29,9 @@ import { ethers } from 'ethers';
 export default function AztecLabPage() {
   const { address: connectedAddress, isConnected } = useAccount();
   
+  // Sample wallet address (Hardhat default test account)
+  const SAMPLE_WALLET_ADDRESS = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
+  
   // Skill Profile Section
   const [profileAddress, setProfileAddress] = useState<string>(
     connectedAddress || ''
@@ -257,6 +260,48 @@ export default function AztecLabPage() {
           <li><code>/api/dev/publish-and-fetch</code> → <code>publishAndFetchAztecBuilderLeaderboard()</code></li>
         </ul>
         <p>Wallet Status: {isConnected ? `Connected: ${connectedAddress}` : 'Not connected'}</p>
+        
+        {/* Connect Sample Wallet Button */}
+        <div style={{ 
+          marginTop: '0.75rem',
+          padding: '0.75rem',
+          background: '#e3f2fd',
+          borderRadius: '4px',
+          border: '1px solid #90caf9'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div>
+              <strong>🧪 Dev Testing:</strong> Connect sample wallet for quick testing
+              <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
+                Sample wallet: <code style={{ fontFamily: 'monospace' }}>{SAMPLE_WALLET_ADDRESS}</code>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                // Set all address fields to sample wallet
+                setProfileAddress(SAMPLE_WALLET_ADDRESS);
+                setRevealAddress(SAMPLE_WALLET_ADDRESS);
+                setCryptoUserAddress(SAMPLE_WALLET_ADDRESS);
+                // Also set chain ID to local Hardhat
+                setProfileChainId('31337');
+                setRevealChainId('31337');
+              }}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#2196F3',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+              }}
+            >
+              {profileAddress === SAMPLE_WALLET_ADDRESS && revealAddress === SAMPLE_WALLET_ADDRESS ? '✅ Sample Wallet Connected' : 'Connect Sample Wallet'}
+            </button>
+          </div>
+        </div>
+        
         <div style={{ 
           background: '#e8f5e9', 
           padding: '0.75rem', 
