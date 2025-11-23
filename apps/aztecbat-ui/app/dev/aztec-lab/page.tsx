@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import type { SkillProfile, LeaderboardEntry } from '@hidden-garden/core-logic';
+import type { SkillProfile, LeaderboardEntry, ArkivSkillProfilePayload } from '@hidden-garden/core-logic';
 import { 
   CHAINS, 
   getSelfHumanSBTAddress, 
@@ -1519,7 +1519,148 @@ export default function AztecLabPage() {
           </>
         )}
       </section>
+
+      {/* Section 3: Arkiv Profiles (Public Snapshot Layer) */}
+      <ArkivProfilesSection />
     </div>
+  );
+}
+
+// Arkiv Profiles Section Component
+function ArkivProfilesSection() {
+  const [profiles, setProfiles] = useState<ArkivSkillProfilePayload[]>([]);
+  const [humanOnly, setHumanOnly] = useState(false);
+  const [allowAgentsOnly, setAllowAgentsOnly] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function loadProfiles() {
+    setLoading(true);
+    setError(null);
+
+    const params = new URLSearchParams();
+    if (humanOnly) params.set('humanOnly', 'true');
+    if (allowAgentsOnly) params.set('allowAgentsOnly', 'true');
+
+    try {
+      const res = await fetch(`/api/dev/arkiv-profiles?${params.toString()}`);
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error ?? 'Request failed');
+      setProfiles(json.profiles ?? []);
+    } catch (err: any) {
+      setError(err.message ?? 'Failed to load profiles');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadProfiles();
+  }, []); // initial load
+
+  return (
+    <section style={{ 
+      marginTop: '2rem', 
+      border: '1px solid #ddd', 
+      borderRadius: '4px', 
+      padding: '1rem',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem'
+    }}>
+      <h2 style={{ fontSize: '1.125rem', fontWeight: '600' }}>
+        Section 3: Arkiv Profiles (Public Snapshot Layer)
+      </h2>
+      <p style={{ fontSize: '0.875rem', color: '#666' }}>
+        Shows public skill profile snapshots stored on Arkiv. This data NEVER
+        includes individual quest details – only tier, human status, and badges.
+      </p>
+
+      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', fontSize: '0.875rem' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <input
+            type="checkbox"
+            checked={humanOnly}
+            onChange={(e) => setHumanOnly(e.target.checked)}
+          />
+          Humans only (require Self SBT)
+        </label>
+
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <input
+            type="checkbox"
+            checked={allowAgentsOnly}
+            onChange={(e) => setAllowAgentsOnly(e.target.checked)}
+          />
+          Allow agents (opt-out of KYC)
+        </label>
+
+        <button
+          onClick={loadProfiles}
+          disabled={loading}
+          style={{
+            padding: '0.25rem 0.75rem',
+            border: '1px solid #000',
+            borderRadius: '4px',
+            fontSize: '0.875rem',
+            background: '#000',
+            color: '#fff',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.5 : 1
+          }}
+        >
+          {loading ? 'Loading…' : 'Reload Profiles'}
+        </button>
+      </div>
+
+      {error && <p style={{ fontSize: '0.875rem', color: '#dc2626' }}>{error}</p>}
+
+      <div style={{ border: '1px solid #ddd', borderRadius: '4px', overflowX: 'auto' }}>
+        <table style={{ width: '100%', fontSize: '0.875rem' }}>
+          <thead style={{ background: '#f9fafb' }}>
+            <tr>
+              <th style={{ padding: '0.25rem 0.5rem', textAlign: 'left' }}>Address</th>
+              <th style={{ padding: '0.25rem 0.5rem', textAlign: 'left' }}>Human</th>
+              <th style={{ padding: '0.25rem 0.5rem', textAlign: 'left' }}>Allow Agents</th>
+              <th style={{ padding: '0.25rem 0.5rem', textAlign: 'left' }}>Tier</th>
+              <th style={{ padding: '0.25rem 0.5rem', textAlign: 'left' }}>Badges</th>
+              <th style={{ padding: '0.25rem 0.5rem', textAlign: 'left' }}>Last Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {profiles.length === 0 && !loading && (
+              <tr>
+                <td colSpan={6} style={{ padding: '0.75rem', textAlign: 'center', color: '#666' }}>
+                  No profiles found yet – publish a tier first, then try again.
+                </td>
+              </tr>
+            )}
+            {profiles.map((p) => (
+              <tr key={`${p.address}-${p.lastUpdated}`} style={{ borderTop: '1px solid #ddd' }}>
+                <td style={{ padding: '0.25rem 0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                  {p.address.slice(0, 6)}…{p.address.slice(-4)}
+                </td>
+                <td style={{ padding: '0.25rem 0.5rem' }}>
+                  {p.humanVerified ? '✅' : '❌'}
+                </td>
+                <td style={{ padding: '0.25rem 0.5rem' }}>
+                  {p.allowAgents ? '🧠 (agents allowed)' : '🧍 humans only'}
+                </td>
+                <td style={{ padding: '0.25rem 0.5rem' }}>
+                  {p.aztecBuilderTier ?? '–'}
+                </td>
+                <td style={{ padding: '0.25rem 0.5rem' }}>
+                  {p.externalBadges?.map((b) => b.label).join(', ') || '—'}
+                </td>
+                <td style={{ padding: '0.25rem 0.5rem' }}>
+                  {new Date(p.lastUpdated).toLocaleString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 
