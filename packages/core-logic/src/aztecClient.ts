@@ -15,7 +15,9 @@ let path: typeof import('path') | null = null;
 
 // Lazy load Node.js modules only when needed (server-side only)
 function getNodeModules() {
-  if (typeof window === 'undefined' && !fs && !path) {
+  // Check if we're in a Node.js environment (not browser)
+  const isNode = typeof process !== 'undefined' && process.versions && process.versions.node;
+  if (isNode && !fs && !path) {
     try {
       fs = require('fs');
       path = require('path');
