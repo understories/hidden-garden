@@ -1,0 +1,12 @@
+{
+  "pxeUrl": "http://localhost:8080",
+  "timeout": 60000,
+  "pollingInterval": 3000,
+  "maxPollingAttempts": 10,
+  "wallet": {
+    "useTestAccounts": true,
+    "createIfMissing": true
+  },
+  "description": "Local sandbox configuration for development"
+}
+
