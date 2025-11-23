@@ -20,7 +20,7 @@ const mockSkillTrees = [
     quests: [
       { id: 'quest-1', name: 'Quest 1', participantCount: 450, privacyMode: 'private-heavy' as const },
     ],
-    treeType: 'conifer' as const,
+    customTreeType: 'shrub' as const,
   },
   {
     skillId: 'rust-foundations',
@@ -31,7 +31,7 @@ const mockSkillTrees = [
     quests: [
       { id: 'quest-1', name: 'Quest 1', participantCount: 890, privacyMode: 'public-heavy' as const },
     ],
-    treeType: 'round' as const,
+    customTreeType: 'spring' as const,
   },
   {
     skillId: 'zero-knowledge-basics',
@@ -42,7 +42,7 @@ const mockSkillTrees = [
     quests: [
       { id: 'quest-1', name: 'Quest 1', participantCount: 420, privacyMode: 'mixed' as const },
     ],
-    treeType: 'mushroom' as const,
+    customTreeType: 'autumn' as const,
   },
   {
     skillId: 'advanced-circuits',
@@ -53,7 +53,7 @@ const mockSkillTrees = [
     quests: [
       { id: 'quest-1', name: 'Quest 1', participantCount: 280, privacyMode: 'private-heavy' as const },
     ],
-    treeType: 'round' as const,
+    customTreeType: 'mushroom' as const,
   },
   {
     skillId: 'l1-l2-bridging',
@@ -64,7 +64,7 @@ const mockSkillTrees = [
     quests: [
       { id: 'quest-1', name: 'Quest 1', participantCount: 200, privacyMode: 'mixed' as const },
     ],
-    treeType: 'mushroom' as const,
+    customTreeType: 'base' as const,
   },
   {
     skillId: 'noir-basics',
@@ -75,7 +75,7 @@ const mockSkillTrees = [
     quests: [
       { id: 'quest-1', name: 'Quest 1', participantCount: 520, privacyMode: 'public-heavy' as const },
     ],
-    treeType: 'conifer' as const,
+    customTreeType: 'moonlit' as const,
   },
 ];
 
@@ -157,7 +157,7 @@ export default function SkillForestPage() {
             privacyMode={skill.privacyMode}
             privacyStats={skill.privacyStats}
             quests={skill.quests}
-            treeType={skill.treeType}
+            customTreeType={skill.customTreeType}
           />
         ))}
       </div>
