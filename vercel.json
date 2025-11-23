@@ -1,6 +1,7 @@
 {
-  "buildCommand": "pnpm --filter @hidden-garden/aztecbat-ui build",
+  "buildCommand": "cd apps/aztecbat-ui && pnpm build",
   "installCommand": "pnpm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "rootDirectory": "apps/aztecbat-ui"
 }
 
