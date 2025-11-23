@@ -247,8 +247,23 @@ export class RealAztecClient implements AztecClient {
       
       // Create Aztec node client (in v3, this replaces createPXEClient)
       // The node client can be used as a PXE-like interface
+      // Provide a minimal logger stub to avoid "logger?.verbose is not a function" errors
+      const logger = {
+        verbose: () => {},
+        debug: () => {},
+        info: () => {},
+        warn: console.warn.bind(console),
+        error: console.error.bind(console),
+      };
+      
       try {
-        this.pxe = createPXEClient(pxeUrl);
+        // Try with logger first, fall back to no logger if that fails
+        try {
+          this.pxe = createPXEClient(pxeUrl, { logger });
+        } catch (loggerError) {
+          // If logger causes issues, try without it
+          this.pxe = createPXEClient(pxeUrl);
+        }
       } catch (error) {
         throw new Error(
           getPXEErrorMessage(pxeUrl, error)
