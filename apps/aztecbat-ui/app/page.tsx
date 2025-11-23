@@ -1,9 +1,9 @@
-import { IvyBackground } from '@/components/IvyBackground';
+import { FallingLeaves } from '@/components/FallingLeaves';
 
 export default function Home() {
   return (
     <main className="relative flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] py-8 px-4 text-center">
-      <IvyBackground />
+      <FallingLeaves />
       <div className="relative z-10">
         <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gray-900 dark:text-gray-100">
           Hidden Garden 🌱
