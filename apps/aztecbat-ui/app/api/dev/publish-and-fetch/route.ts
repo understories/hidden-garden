@@ -29,7 +29,7 @@ import { ethers } from 'ethers';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { address, chainId, minTier, minAverageScore } = body;
+    const { address, chainId, minTier, minAverageScore, requireSBT } = body;
 
     console.log('[publish-and-fetch] Request:', {
       address,
@@ -71,11 +71,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Determine Aztec mode - default to REAL for demonstrating Aztec privacy
-    // Set NEXT_PUBLIC_USE_MOCK_AZTEC=true to use mock mode
-    // If @aztec/aztec.js is not available, automatically fall back to mock
-    const useMockAztec = process.env.NEXT_PUBLIC_USE_MOCK_AZTEC === 'true';
-    let aztecMode: 'mock' | 'real' = useMockAztec ? 'mock' : 'real';
+    // Determine Aztec mode - default to MOCK for development
+    // Set NEXT_PUBLIC_USE_REAL_AZTEC=true to use real Aztec devnet for live demo
+    const useRealAztec = process.env.NEXT_PUBLIC_USE_REAL_AZTEC === 'true';
+    let aztecMode: 'mock' | 'real' = useRealAztec ? 'real' : 'mock';
     
     // Check if Aztec SDK is available (only if trying to use real mode)
     if (aztecMode === 'real') {
@@ -143,6 +142,7 @@ export async function POST(request: NextRequest) {
       userAddress: address,
       minTier,
       minAverageScore,
+      requireSBT: requireSBT || false,
       indexerBaseUrl: indexerBaseUrl || 'not set',
       aztecMode,
     });
@@ -156,6 +156,7 @@ export async function POST(request: NextRequest) {
       signer,
       aztecClient,
       indexerBaseUrl,
+      requireSBT: requireSBT || false,
     });
 
     console.log('[publish-and-fetch] Success:', {
@@ -163,6 +164,7 @@ export async function POST(request: NextRequest) {
       skillHash: result.skillHash,
       leaderboardEntries: result.leaderboard.length,
       isHumanVerified: result.isHumanVerified,
+      indexerAvailable: result.indexerAvailable,
     });
 
     return NextResponse.json({
@@ -171,6 +173,8 @@ export async function POST(request: NextRequest) {
       skillHash: result.skillHash,
       leaderboard: result.leaderboard,
       isHumanVerified: result.isHumanVerified,
+      indexerAvailable: result.indexerAvailable,
+      warning: result.warning,
     });
   } catch (error) {
     console.error('[publish-and-fetch] Error:', error);
