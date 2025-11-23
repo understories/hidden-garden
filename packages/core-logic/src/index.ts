@@ -144,3 +144,13 @@ export {
   getArkivSkillProfile,
   listArkivSkillProfiles,
 } from './arkiv/skillProfiles';
+
+// ============================================================================
+// Aztec Utilities (Wallet, Accounts, Fees)
+// ============================================================================
+export { setupWallet } from './aztec/utils/setupWallet';
+export { createAccountFromEnv } from './aztec/utils/createAccountFromEnv';
+export { setupSponsoredFPC } from './aztec/utils/sponsoredFPC';
+export type { SetupWalletConfig } from './aztec/utils/setupWallet';
+export type { AccountFromEnvConfig } from './aztec/utils/createAccountFromEnv';
+export type { SponsoredFPCConfig } from './aztec/utils/sponsoredFPC';
