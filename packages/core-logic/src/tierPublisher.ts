@@ -198,6 +198,26 @@ export async function submitTierProofWithSBTCheck(
   }
 
   // 6. Submit to SkillLeaderboard
+  // Check if we're in mock mode (MockAztecClient) - if so, skip contract call
+  const isMockMode = (aztecClient as any).isMock === true;
+  
+  if (isMockMode) {
+    // Mock mode: return a mock transaction hash without calling the contract
+    // This allows the demo to work without requiring SBT or real contract deployment
+    const mockTxHash = `0x${Array.from({ length: 64 }, () => 
+      Math.floor(Math.random() * 16).toString(16)
+    ).join('')}` as `0x${string}`;
+    
+    console.log('[tierPublisher] Mock mode: skipping contract call, returning mock tx hash');
+    
+    return {
+      txHash: mockTxHash,
+      skillHash,
+      isHumanVerified,
+    };
+  }
+
+  // Real mode: call the contract
   const leaderboardContract = new ethers.Contract(
     leaderboardAddress,
     SkillLeaderboardAbi,
@@ -225,6 +245,15 @@ export async function submitTierProofWithSBTCheck(
       isHumanVerified,
     };
   } catch (error) {
+    // If contract call fails, provide helpful error message
+    if (error instanceof Error && error.message.includes('hasValidSBT')) {
+      throw new Error(
+        `Failed to submit tier proof to SkillLeaderboard: User must have a valid SelfHumanSBT. ` +
+        `Address ${userAddress} does not have an SBT on chain ${chainId}. ` +
+        `For demo purposes, you can mint an SBT using the mint-sbt-for-demo.ts script, ` +
+        `or use mock mode (set NEXT_PUBLIC_USE_REAL_AZTEC=false).`
+      );
+    }
     if (error instanceof Error) {
       throw new Error(
         `Failed to submit tier proof to SkillLeaderboard: ${error.message}`
