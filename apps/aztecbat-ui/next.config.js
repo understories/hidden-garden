@@ -3,7 +3,7 @@ const path = require('path');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Transpile the package to ensure it's processed correctly
-  transpilePackages: ['@walletconnect/ethereum-provider'],
+  transpilePackages: ['@walletconnect/ethereum-provider', '@hidden-garden/core-logic'],
   webpack: (config, { isServer, webpack }) => {
     // Add IgnorePlugin for optional dependencies at the top level
     config.plugins = config.plugins || [];
@@ -15,6 +15,17 @@ const nextConfig = {
     
     // Ensure webpack can resolve packages from pnpm's node_modules structure
     // This is critical for optional dependencies that are dynamically imported
+    // Server-side also needs proper resolution for ESM packages like @aztec/aztec.js
+    if (isServer) {
+      // Server-side: Handle ESM packages and pnpm symlinks
+      config.resolve.symlinks = true;
+      config.resolve.modules = [
+        path.resolve(__dirname, 'node_modules'),
+        path.resolve(__dirname, '../../node_modules'),
+        ...(config.resolve.modules || []),
+      ];
+    }
+    
     if (!isServer) {
       // Enable symlink resolution (pnpm uses symlinks)
       config.resolve.symlinks = true;
