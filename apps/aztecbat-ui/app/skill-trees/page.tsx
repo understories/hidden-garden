@@ -667,11 +667,19 @@ export default function SkillTreesPage() {
           <div className="absolute left-1/2 top-1/2 w-0 h-0" id="center-sun" />
 
           {/* Atmospheric depth layers - black space with moving stars */}
-          <div className="absolute inset-0">
-            {/* Moving stars/particles */}
-            {[...Array(60)].map((_, i) => {
-              const x = Math.random() * 100;
-              const y = Math.random() * 100;
+          <div 
+            className="absolute inset-0"
+            style={{
+              // Scale and translate stars with zoom and pan for dynamic expansion
+              transform: `translate(${panX * 0.3}px, ${panY * 0.3}px) scale(${1 + (zoom - 1) * 0.5})`,
+              transformOrigin: 'center center',
+            }}
+          >
+            {/* Moving stars/particles - more stars for expanded view */}
+            {[...Array(120)].map((_, i) => {
+              // Spread stars across a larger area (200% of viewport)
+              const x = (Math.random() * 200) - 50; // -50% to 150%
+              const y = (Math.random() * 200) - 50; // -50% to 150%
               const size = Math.random() * 2 + 1;
               const opacity = Math.random() * 0.5 + 0.3;
               const delay = Math.random() * 3;
@@ -693,6 +701,40 @@ export default function SkillTreesPage() {
                 />
               );
             })}
+            
+            {/* Additional star layer for depth - moves slower (parallax) */}
+            <div
+              style={{
+                transform: `translate(${panX * 0.15}px, ${panY * 0.15}px) scale(${1 + (zoom - 1) * 0.3})`,
+                transformOrigin: 'center center',
+              }}
+            >
+              {[...Array(80)].map((_, i) => {
+                const x = (Math.random() * 200) - 50;
+                const y = (Math.random() * 200) - 50;
+                const size = Math.random() * 1.5 + 0.5;
+                const opacity = Math.random() * 0.3 + 0.2;
+                const delay = Math.random() * 3;
+                const duration = Math.random() * 3 + 3;
+                
+                return (
+                  <div
+                    key={`deep-${i}`}
+                    className="absolute rounded-full bg-white animate-pulse"
+                    style={{
+                      width: `${size}px`,
+                      height: `${size}px`,
+                      left: `${x}%`,
+                      top: `${y}%`,
+                      opacity: opacity,
+                      animationDelay: `${delay}s`,
+                      animationDuration: `${duration}s`,
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
 
             {/* Privacy zones - subtle Ghibli colors in dark space */}
             <div className="absolute inset-0">
