@@ -252,13 +252,8 @@ export default function ProofFlowPage() {
               Or toggle it on to guarantee this is a human skills leaderboard.
             </li>
           </ul>
-          <p>
-            We also show what responsible design looks like by offering both white-hat and
-            black-hat leaderboard views.
-          </p>
           <p className="font-medium">
-            Same data, different emotional framing. We choose white-hat; empowerment, progress,
-            mastery.
+            We choose responsible design: empowerment, progress, and mastery over competitive pressure.
           </p>
         </div>
       </section>
