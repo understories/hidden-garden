@@ -71,12 +71,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Determine Aztec mode
-    const useRealAztec =
-      process.env.NEXT_PUBLIC_USE_REAL_AZTEC === 'true';
-    const aztecMode = useRealAztec ? 'real' : 'mock';
+    // Determine Aztec mode - default to REAL for demonstrating Aztec privacy
+    // Set NEXT_PUBLIC_USE_MOCK_AZTEC=true to use mock mode
+    const useMockAztec = process.env.NEXT_PUBLIC_USE_MOCK_AZTEC === 'true';
+    const aztecMode = useMockAztec ? 'mock' : 'real';
 
-    console.log('[publish-and-fetch] Aztec mode:', aztecMode);
+    console.log('[publish-and-fetch] Aztec mode:', aztecMode, useMockAztec ? '(MOCK - set NEXT_PUBLIC_USE_MOCK_AZTEC=false for real Aztec)' : '(REAL - demonstrating Aztec privacy)');
 
     // Create Aztec client
     const aztecClient = createAztecClient(aztecMode, {
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     // In mock mode, this won't actually send transactions
     let signer: ethers.Signer;
 
-    if (useRealAztec && process.env.SERVER_PRIVATE_KEY) {
+    if (!useMockAztec && process.env.SERVER_PRIVATE_KEY) {
       // Real mode: use private key from environment
       const provider = new ethers.JsonRpcProvider(
         process.env.RPC_URL || 'http://localhost:8545'
