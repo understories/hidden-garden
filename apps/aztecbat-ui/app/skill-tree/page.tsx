@@ -1,5 +1,5 @@
 /**
- * Skill Tree Page
+ * Skill Forest Page
  *
  * A lunar-punk forest view of skills across the network.
  * Shows skills as tree tiles with growth and privacy-based glow.
@@ -74,7 +74,7 @@ export default function SkillTreePage() {
             }
           `}
         >
-          Skill Tree
+          Skill Forest
         </Link>
         <Link
           href="/skill-canopy"
@@ -91,7 +91,7 @@ export default function SkillTreePage() {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold mb-2">Skill Tree</h1>
+        <h1 className="text-3xl font-bold mb-2">Skill Forest</h1>
         <p className="text-gray-600 dark:text-gray-400">
           A lunar-punk forest view of skills across the network.
         </p>
