@@ -338,6 +338,131 @@ export default function TreePreviewPage() {
         </div>
       </section>
 
+      {/* Interactive Visualization Questions & Suggestions */}
+      <section className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-8">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+          Interactive Visualization - Questions & Suggestions
+        </h2>
+        
+        {/* Interaction Suggestions */}
+        <div className="space-y-3 mt-4">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            Interaction Suggestions
+          </h3>
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+              <strong>Selected Approach:</strong> Constellation layout with cluster-based interactions
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-sm text-gray-600 dark:text-gray-400">
+              <li>
+                <strong>Hover over cluster zone:</strong> Show information panel with:
+                <ul className="list-circle list-inside ml-4 mt-1 space-y-1">
+                  <li>Privacy mode name (e.g., "Public-Heavy Cluster")</li>
+                  <li>Number of skills in cluster</li>
+                  <li>Total participants across cluster</li>
+                  <li>Breakdown of skill types</li>
+                </ul>
+              </li>
+              <li>
+                <strong>Hover over individual tree:</strong> Show tooltip with:
+                <ul className="list-circle list-inside ml-4 mt-1 space-y-1">
+                  <li>Skill name</li>
+                  <li>Participant count</li>
+                  <li>Privacy mode</li>
+                  <li>Quick stats</li>
+                </ul>
+              </li>
+              <li>
+                <strong>Click on tree:</strong> Navigate to <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">/leaderboard/[skillId]</code>
+              </li>
+              <li>
+                <strong>Click on center silver tree:</strong> Navigate to <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">/skills</code>
+              </li>
+              <li>
+                <strong>Zoom & Pan:</strong> Mouse wheel to zoom, drag to pan (optional, for larger forests)
+              </li>
+              <li>
+                <strong>Filter toggle:</strong> Show/hide clusters by privacy mode (optional)
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Clustering Suggestions */}
+        <div className="space-y-3 mt-6">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            Clustering Mode Suggestions
+          </h3>
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+              <strong>Selected for MVP:</strong> Privacy mode clustering
+            </p>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Should clustering be toggleable or always on?
+                </p>
+                <div className="bg-white dark:bg-gray-800 rounded p-3 border border-amber-200 dark:border-amber-700">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <strong>Suggestion:</strong> Start with clustering <strong>always on</strong> (simpler UX), but make cluster zones visually distinct with soft background colors. 
+                    Later, we can add a toggle if users want to see an unclustered view. This keeps the initial implementation clean and focused.
+                  </p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Visual Cluster Zones:
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400 ml-2">
+                  <li>Soft, semi-transparent background zones for each privacy cluster</li>
+                  <li>Subtle borders matching privacy colors (spring green, amber, violet)</li>
+                  <li>Gentle blur/glow effect to distinguish zones without being harsh</li>
+                  <li>Zones should be organic/rounded, not rigid rectangles</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Other Clustering Modes (For Reference) */}
+        <div className="space-y-3 mt-6">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            Other Clustering Modes (For Future Reference)
+          </h3>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 italic">
+              These clustering modes are documented for future implementation but not used in the MVP:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-sm text-gray-600 dark:text-gray-400">
+              <li><strong>By skill category/domain:</strong> Group related skills (e.g., "Aztec Protocol", "Rust Foundations")</li>
+              <li><strong>By participant count:</strong> Size-based clustering (large vs small communities)</li>
+              <li><strong>By quest count:</strong> Skills with many quests vs few quests</li>
+              <li><strong>By relationships/overlaps:</strong> Skills that share participants or have connections</li>
+              <li><strong>By activity level:</strong> Recently active skills vs dormant ones</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Data & Relationships Questions */}
+        <div className="space-y-3 mt-6">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            Data & Relationships Questions (For Future)
+          </h3>
+          <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+              Questions to answer when implementing relationships:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-sm text-gray-600 dark:text-gray-400">
+              <li>Do skills have explicit relationships/overlaps (like the old <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">overlaps</code> array)?</li>
+              <li>Should relationships be shown as connection lines between trees in the constellation?</li>
+              <li>What additional metadata exists? (categories, tags, skill levels, etc.)</li>
+              <li>How should we determine "related" skills? (shared participants, similar topics, etc.)</li>
+              <li>Should connection lines be interactive? (click to see relationship details)</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       {/* Design Notes */}
       <section className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-8">
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
