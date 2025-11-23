@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Quicksand font */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
 /* Base theme colors */
 :root {
   --bg-primary: #ffffff;
@@ -20,11 +23,12 @@
   --border-color: #374151;
 }
 
-/* Apply theme colors */
+/* Apply theme colors and Quicksand font */
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: 'Quicksand', sans-serif;
 }
 
 /* Respect user's motion preferences for accessibility */
