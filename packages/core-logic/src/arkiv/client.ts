@@ -12,6 +12,35 @@ import {
 import { privateKeyToAccount } from '@arkiv-network/sdk/accounts';
 import { mendoza } from '@arkiv-network/sdk/chains';
 
+/**
+ * Read and validate Arkiv private key from environment variable
+ * 
+ * Server-side only - this should never be imported in browser code.
+ * 
+ * @returns Validated private key as 0x-prefixed hex string
+ * @throws Error if key is missing or invalid format
+ */
+function readArkivPrivateKey(): `0x${string}` {
+  const raw = process.env.ARKIV_PRIVATE_KEY;
+
+  if (!raw) {
+    throw new Error(
+      'ARKIV_PRIVATE_KEY is not set. Add ARKIV_PRIVATE_KEY=0x<64-hex> to your .env.local (server-only, no quotes).',
+    );
+  }
+
+  const trimmed = raw.trim();
+  const isHex = /^0x[0-9a-fA-F]{64}$/.test(trimmed);
+
+  if (!isHex) {
+    throw new Error(
+      `ARKIV_PRIVATE_KEY has invalid format: "${trimmed.slice(0, 10)}...". Expected 0x-prefixed 64-hex string (66 chars total).`,
+    );
+  }
+
+  return trimmed as `0x${string}`;
+}
+
 const rpcUrl = process.env.ARKIV_RPC_URL;
 const chainIdFromEnv = process.env.ARKIV_CHAIN_ID
   ? Number(process.env.ARKIV_CHAIN_ID)
@@ -36,14 +65,14 @@ export const arkivPublicClient = rpcUrl
   : null;
 
 // Wallet client – write operations (create entities)
+// Server-side only - this module should never be imported in browser code
+// Note: If ARKIV_PRIVATE_KEY is set but invalid, this will throw at module load time
 export const arkivWalletClient =
   rpcUrl && process.env.ARKIV_PRIVATE_KEY
     ? createWalletClient({
         chain,
         transport: http(rpcUrl),
-        account: privateKeyToAccount(
-          process.env.ARKIV_PRIVATE_KEY as `0x${string}`,
-        ),
+        account: privateKeyToAccount(readArkivPrivateKey()),
       })
     : null;
 
