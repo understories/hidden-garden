@@ -1,0 +1,12 @@
+{
+  "pxeUrl": "http://localhost:8080",
+  "timeout": 120000,
+  "pollingInterval": 5000,
+  "maxPollingAttempts": 20,
+  "wallet": {
+    "useTestAccounts": false,
+    "createIfMissing": true
+  },
+  "description": "Devnet configuration for testing and demos"
+}
+
