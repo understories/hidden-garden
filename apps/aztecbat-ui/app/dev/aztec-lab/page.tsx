@@ -33,6 +33,28 @@ export default function AztecLabPage() {
   // Sample wallet address (Hardhat default test account)
   const SAMPLE_WALLET_ADDRESS = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
   
+  // Minimal Proof Test Section
+  const [testProofLoading, setTestProofLoading] = useState(false);
+  const [testProofResult, setTestProofResult] = useState<any>(null);
+  
+  const handleTestProof = async () => {
+    setTestProofLoading(true);
+    setTestProofResult(null);
+    
+    try {
+      const response = await fetch('/api/dev/test-proof');
+      const data = await response.json();
+      setTestProofResult(data);
+    } catch (error) {
+      setTestProofResult({
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setTestProofLoading(false);
+    }
+  };
+  
   // Skill Profile Section
   const [profileAddress, setProfileAddress] = useState<string>(
     connectedAddress || ''
@@ -345,6 +367,55 @@ export default function AztecLabPage() {
           Ensure Aztec devnet is running at <code>http://localhost:8080</code>.
         </div>
       </div>
+
+      {/* Section 0: Minimal Proof Test (Debug) */}
+      <section style={{ 
+        border: '2px solid #ff6b6b', 
+        padding: '1.5rem', 
+        marginBottom: '2rem',
+        borderRadius: '4px',
+        backgroundColor: '#fff5f5'
+      }}>
+        <h2>Section 0: Minimal Proof Test (Debug)</h2>
+        <p style={{ color: '#666', marginBottom: '1rem' }}>
+          Test the absolute minimum: can we generate a single proof? This helps isolate the logger issue.
+        </p>
+        
+        <button
+          onClick={handleTestProof}
+          disabled={testProofLoading}
+          style={{
+            padding: '0.75rem 1.5rem',
+            fontSize: '1rem',
+            backgroundColor: testProofLoading ? '#ccc' : '#ff6b6b',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: testProofLoading ? 'not-allowed' : 'pointer',
+            marginBottom: '1rem'
+          }}
+        >
+          {testProofLoading ? 'Testing...' : '🧪 Test Single Proof'}
+        </button>
+        
+        {testProofResult && (
+          <div style={{
+            marginTop: '1rem',
+            padding: '1rem',
+            backgroundColor: testProofResult.success ? '#f0f9ff' : '#fff5f5',
+            border: `1px solid ${testProofResult.success ? '#3b82f6' : '#ff6b6b'}`,
+            borderRadius: '4px',
+            fontFamily: 'monospace',
+            fontSize: '0.875rem',
+            whiteSpace: 'pre-wrap',
+            overflow: 'auto',
+            maxHeight: '400px'
+          }}>
+            <strong>Result:</strong>
+            <pre>{JSON.stringify(testProofResult, null, 2)}</pre>
+          </div>
+        )}
+      </section>
 
       {/* Section 1: Skill Profile */}
       <section style={{ 
