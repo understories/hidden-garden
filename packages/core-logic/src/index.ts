@@ -23,6 +23,7 @@ export {
   SkillLeaderboardAbi,
   getSelfHumanSBTAddress,
   getSkillLeaderboardAddress,
+  getExplorerTxUrl,
 } from './contracts';
 
 // ============================================================================
