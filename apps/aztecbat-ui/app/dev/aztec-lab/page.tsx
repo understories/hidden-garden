@@ -400,6 +400,82 @@ export default function AztecLabPage() {
             }}>
               {JSON.stringify(profileResult, null, 2)}
             </pre>
+            
+            {/* My Private Progress Card */}
+            {profileResult.questSummaries && profileResult.questSummaries.length > 0 && (
+              <div style={{
+                marginTop: '1.5rem',
+                padding: '1.5rem',
+                background: '#f0f4ff',
+                border: '1px solid #b3c9ff',
+                borderRadius: '4px',
+              }}>
+                <h3 style={{ marginTop: 0, marginBottom: '0.5rem' }}>
+                  🔒 My Private Progress
+                </h3>
+                <p style={{
+                  fontSize: '0.85rem',
+                  color: '#666',
+                  marginBottom: '1rem',
+                  fontStyle: 'italic',
+                }}>
+                  This mirrors what we store privately in Aztec. Only the tier proof below ever leaves the garden.
+                </p>
+                
+                <div style={{
+                  display: 'grid',
+                  gap: '0.5rem',
+                }}>
+                  {profileResult.questSummaries.map((quest) => (
+                    <div
+                      key={quest.id}
+                      style={{
+                        padding: '0.75rem',
+                        background: quest.status === 'completed' ? '#e8f5e9' : '#fafafa',
+                        border: `1px solid ${quest.status === 'completed' ? '#81c784' : '#ddd'}`,
+                        borderRadius: '4px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                          {quest.title}
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: '#666' }}>
+                          {quest.status === 'completed' ? (
+                            <>✅ Completed {quest.score !== null && `(Score: ${quest.score}%)`}</>
+                          ) : (
+                            <>⏳ Not started</>
+                          )}
+                        </div>
+                      </div>
+                      {quest.status === 'completed' && quest.score !== null && (
+                        <div style={{
+                          fontSize: '1.25rem',
+                          fontWeight: 'bold',
+                          color: quest.score >= 60 ? '#4caf50' : '#ff9800',
+                        }}>
+                          {quest.score}%
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                <div style={{
+                  marginTop: '1rem',
+                  padding: '0.75rem',
+                  background: '#fff',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '0.9rem',
+                }}>
+                  <strong>Summary:</strong> {profileResult.questsCompleted || 0} of {profileResult.questSummaries.length} quests completed
+                </div>
+              </div>
+            )}
           </div>
         )}
       </section>
