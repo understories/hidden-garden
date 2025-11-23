@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       minAverageScore,
       requireSBT: requireSBT || false,
       indexerBaseUrl: indexerBaseUrl || 'not set',
-      aztecMode,
+      aztecMode: 'real', // Always real mode for dev UI
     });
 
     // Call publishAndFetchAztecBuilderLeaderboard
