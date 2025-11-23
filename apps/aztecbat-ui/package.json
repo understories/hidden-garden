@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@aztec/aztec.js": "3.0.0-devnet.5",
     "@hidden-garden/core-logic": "workspace:*",
     "@hidden-garden/game-engine": "workspace:*",
     "@tanstack/react-query": "^5.90.10",
@@ -20,6 +21,7 @@
     "next": "^16.0.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "testing": "link:@aztec/accounts/testing",
     "viem": "^2.39.3",
     "wagmi": "^3.0.1"
   }
