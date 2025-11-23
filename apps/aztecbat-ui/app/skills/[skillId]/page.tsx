@@ -77,9 +77,12 @@ export default function SkillDetailPage({ params, searchParams }: SkillDetailPag
       </div>
 
       {isPrivate && (
-        <div className="border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-          <p className="text-sm text-green-800 dark:text-green-200">
-            ✓ Kept private. Your attempt remains private and won't appear on leaderboards.
+        <div className="border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 rounded-lg p-4 space-y-2">
+          <p className="text-sm text-green-800 dark:text-green-200 font-medium">
+            ✓ Your attempt has been kept private
+          </p>
+          <p className="text-sm text-green-700 dark:text-green-300">
+            Your progress is saved and counts toward your private skill tree. This attempt won't appear on public leaderboards, but your learning journey continues to grow privately.
           </p>
         </div>
       )}
