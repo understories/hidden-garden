@@ -3,7 +3,18 @@
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import type { SkillProfile, LeaderboardEntry } from '@hidden-garden/core-logic';
-import { CHAINS, getSelfHumanSBTAddress, SelfHumanSBTAbi, createAztecClient } from '@hidden-garden/core-logic';
+import { 
+  CHAINS, 
+  getSelfHumanSBTAddress, 
+  SelfHumanSBTAbi, 
+  createAztecClient,
+  computeQuestIdHash,
+  computeCategoryHash,
+  computePathHash,
+  stringToBytes,
+  encodeTierProofPublicInputs,
+  hashSkillName,
+} from '@hidden-garden/core-logic';
 import { listAllQuests, getQuestDefinition, type QuestDefinition, type QuestSubmission } from '@hidden-garden/game-engine';
 import { ethers } from 'ethers';
 
@@ -22,7 +33,7 @@ export default function AztecLabPage() {
   const [profileAddress, setProfileAddress] = useState<string>(
     connectedAddress || ''
   );
-  const [profileChainId, setProfileChainId] = useState<string>('11155111');
+  const [profileChainId, setProfileChainId] = useState<string>('31337');
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileResult, setProfileResult] = useState<SkillProfile | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -31,7 +42,7 @@ export default function AztecLabPage() {
   const [revealAddress, setRevealAddress] = useState<string>(
     connectedAddress || ''
   );
-  const [revealChainId, setRevealChainId] = useState<string>('11155111');
+  const [revealChainId, setRevealChainId] = useState<string>('31337');
   const [minTier, setMinTier] = useState<string>('1');
   const [minAverageScore, setMinAverageScore] = useState<string>('60');
   const [revealLoading, setRevealLoading] = useState(false);
@@ -45,6 +56,14 @@ export default function AztecLabPage() {
   const [humanOnlyFilter, setHumanOnlyFilter] = useState<boolean>(false);
   const [filteredLeaderboard, setFilteredLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [enrichingLeaderboard, setEnrichingLeaderboard] = useState<boolean>(false);
+
+  // Cryptographic Computations Section
+  const [cryptoQuestId, setCryptoQuestId] = useState<string>('aztec_concept_quiz');
+  const [cryptoCategory, setCryptoCategory] = useState<string>('aztec_builder');
+  const [cryptoPath, setCryptoPath] = useState<string>('aztec_builder_path');
+  const [cryptoUserAddress, setCryptoUserAddress] = useState<string>(connectedAddress || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266');
+  const [cryptoMinTier, setCryptoMinTier] = useState<string>('1');
+  const [cryptoComputations, setCryptoComputations] = useState<any>(null);
 
   // Quest Testing Section
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(null);
@@ -115,7 +134,20 @@ export default function AztecLabPage() {
       // Store quest completion
       // Use addQuestCompletion with quest ID hash
       const { computeQuestIdHash } = await import('@hidden-garden/core-logic');
-      const questIdHash = computeQuestIdHash(selectedQuest.questId);
+      
+      let questIdHash;
+      try {
+        questIdHash = computeQuestIdHash(selectedQuest.questId);
+      } catch (error) {
+        // If hash computation fails (placeholder), show helpful error
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        setQuestStorageResult({
+          success: false,
+          error: `${errorMsg}\n\n💡 For demo, use quests with computed hashes:\n- aztec_concept_quiz\n- noir_syntax_basics\n- aztec_storage_intro`,
+        });
+        return;
+      }
+
       const result = await aztecClient.addQuestCompletion(
         questIdHash,
         questValidationResult.score
@@ -221,6 +253,16 @@ export default function AztecLabPage() {
           <li><code>/api/dev/publish-and-fetch</code> → <code>publishAndFetchAztecBuilderLeaderboard()</code></li>
         </ul>
         <p>Wallet Status: {isConnected ? `Connected: ${connectedAddress}` : 'Not connected'}</p>
+        <div style={{ 
+          background: '#e8f5e9', 
+          padding: '0.75rem', 
+          marginTop: '0.5rem',
+          borderRadius: '4px',
+          border: '1px solid #81c784'
+        }}>
+          <strong>🔐 Real Aztec Mode:</strong> This UI uses <strong>real Aztec client</strong> by default to demonstrate privacy-preserving cryptographic operations. 
+          Set <code>NEXT_PUBLIC_USE_MOCK_AZTEC=true</code> to use mock mode.
+        </div>
       </div>
 
       {/* Section 1: Skill Profile */}
@@ -593,6 +635,23 @@ export default function AztecLabPage() {
       }}>
         <h2>Section 3: Quest Testing (Validate & Store in Aztec)</h2>
         <p>Tests: Quest validation and Aztec quest completion storage</p>
+        <div style={{ 
+          background: '#fff3e0', 
+          padding: '1rem', 
+          marginBottom: '1rem',
+          borderRadius: '4px',
+          fontSize: '0.9rem'
+        }}>
+          <strong>💡 Demo Tip:</strong> Use quests with computed hashes for best results:
+          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+            <li><strong>aztec_concept_quiz</strong> - Tier 1, multiple_choice</li>
+            <li><strong>noir_syntax_basics</strong> - Tier 2, multiple_choice</li>
+            <li><strong>aztec_storage_intro</strong> - Tier 2, multiple_choice</li>
+          </ul>
+          <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: '#666' }}>
+            Other quests use placeholder hashes and cannot be stored in Aztec until hashes are computed.
+          </p>
+        </div>
         
         <div style={{ marginBottom: '1rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>
