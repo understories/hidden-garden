@@ -14,6 +14,9 @@ export default function RootLayout({
 }: {
   children: ReactNode;
 }) {
+  // Mock: in production this would come from auth/wallet state
+  const isLoggedIn = true;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
@@ -31,6 +34,20 @@ export default function RootLayout({
                   >
                     Skills
                   </Link>
+                  <Link
+                    href="/leaderboards"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                  >
+                    Leaderboards
+                  </Link>
+                  {isLoggedIn && (
+                    <Link
+                      href="/garden"
+                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                    >
+                      My Garden
+                    </Link>
+                  )}
                 </nav>
               </div>
               <div className="flex items-center gap-4">
