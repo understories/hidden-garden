@@ -25,44 +25,53 @@ const mockSkills: Record<string, { name: string }> = {
   'aztec-protocol': { name: 'Aztec Protocol' },
 };
 
-// Mock data - in production this would come from the backend
-const mockLeaderboardData = [
-  {
-    rank: 1,
-    displayName: 'alice.eth',
-    address: '0x1234567890123456789012345678901234567890',
-    tier: 4,
-    proofOfHuman: true,
-  },
-  {
-    rank: 2,
-    displayName: 'bob.eth',
-    address: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
-    tier: 4,
-    proofOfHuman: true,
-  },
-  {
-    rank: 3,
-    displayName: '0x9876...5432',
-    address: '0x9876543210987654321098765432109876543210',
-    tier: 3,
-    proofOfHuman: false,
-  },
-  {
-    rank: 4,
-    displayName: 'charlie.eth',
-    address: '0xfedcba9876543210fedcba9876543210fedcba98',
-    tier: 3,
-    proofOfHuman: true,
-  },
-  {
-    rank: 5,
-    displayName: '0x2468...1357',
-    address: '0x2468135790246813579024681357902468135790',
-    tier: 2,
-    proofOfHuman: true,
-  },
-];
+// Mock leaderboard data - varies by skill
+// In production this would come from the backend and be filtered by skillId
+const getMockLeaderboardData = (skillId: string) => {
+  // Base data that varies by skill
+  const baseData: Record<string, Array<{
+    rank: number;
+    displayName: string;
+    address: string;
+    tier: number;
+    proofOfHuman: boolean;
+  }>> = {
+    'rust-foundations': [
+      { rank: 1, displayName: 'alice.eth', address: '0x1234567890123456789012345678901234567890', tier: 4, proofOfHuman: true },
+      { rank: 2, displayName: 'bob.eth', address: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd', tier: 3, proofOfHuman: true },
+      { rank: 3, displayName: 'charlie.eth', address: '0xfedcba9876543210fedcba9876543210fedcba98', tier: 3, proofOfHuman: true },
+      { rank: 4, displayName: 'circuitbuilder.eth', address: '0xaaaabbbbccccddddeeeeffff1111222233334444', tier: 3, proofOfHuman: true },
+      { rank: 5, displayName: 'dana.eth', address: '0x2468135790246813579024681357902468135790', tier: 2, proofOfHuman: true },
+      { rank: 6, displayName: '0x9876...5432', address: '0x9876543210987654321098765432109876543210', tier: 2, proofOfHuman: false },
+      { rank: 7, displayName: 'rustlearner.eth', address: '0x5555666677778888999900001111222233334444', tier: 2, proofOfHuman: true },
+    ],
+    'zero-knowledge-basics': [
+      { rank: 1, displayName: 'zkmaster.eth', address: '0x1111222233334444555566667777888899990000', tier: 4, proofOfHuman: true },
+      { rank: 2, displayName: 'bob.eth', address: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd', tier: 4, proofOfHuman: true },
+      { rank: 3, displayName: 'shadowmage.eth', address: 'shadowmage.eth', tier: 3, proofOfHuman: true },
+      { rank: 4, displayName: 'alice.eth', address: '0x1234567890123456789012345678901234567890', tier: 3, proofOfHuman: true },
+      { rank: 5, displayName: 'charlie.eth', address: '0xfedcba9876543210fedcba9876543210fedcba98', tier: 2, proofOfHuman: true },
+      { rank: 6, displayName: 'zkexplorer.eth', address: '0x3333444455556666777788889999000011112222', tier: 2, proofOfHuman: true },
+    ],
+    'advanced-circuits': [
+      { rank: 1, displayName: 'circuitbuilder.eth', address: '0xaaaabbbbccccddddeeeeffff1111222233334444', tier: 4, proofOfHuman: true },
+      { rank: 2, displayName: 'bob.eth', address: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd', tier: 4, proofOfHuman: true },
+      { rank: 3, displayName: '0x9876...5432', address: '0x9876543210987654321098765432109876543210', tier: 3, proofOfHuman: false },
+      { rank: 4, displayName: 'shadowmage.eth', address: 'shadowmage.eth', tier: 3, proofOfHuman: true },
+      { rank: 5, displayName: 'zkmaster.eth', address: '0x1111222233334444555566667777888899990000', tier: 2, proofOfHuman: true },
+      { rank: 6, displayName: 'circuitdesigner.eth', address: '0x7777888899990000111122223333444455556666', tier: 2, proofOfHuman: true },
+    ],
+    'aztec-protocol': [
+      { rank: 1, displayName: 'shadowmage.eth', address: 'shadowmage.eth', tier: 4, proofOfHuman: true },
+      { rank: 2, displayName: 'alice.eth', address: '0x1234567890123456789012345678901234567890', tier: 2, proofOfHuman: true },
+      { rank: 3, displayName: '0x9876...5432', address: '0x9876543210987654321098765432109876543210', tier: 2, proofOfHuman: false },
+      { rank: 4, displayName: 'circuitbuilder.eth', address: '0xaaaabbbbccccddddeeeeffff1111222233334444', tier: 2, proofOfHuman: false },
+      { rank: 5, displayName: 'aztecexplorer.eth', address: '0x9999000011112222333344445555666677778888', tier: 1, proofOfHuman: true },
+    ],
+  };
+
+  return baseData[skillId] || baseData['rust-foundations'];
+};
 
 function shortenAddress(address: string): string {
   if (address.length <= 10) return address;
@@ -84,6 +93,9 @@ export default function LeaderboardPage({ params }: LeaderboardPageProps) {
   // Get skill name from lookup
   const skill = skillId ? mockSkills[skillId] : null;
   const skillDisplayName = skill?.name || skillId.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') || skillId;
+
+  // Get leaderboard data for this skill
+  const leaderboardData = skillId ? getMockLeaderboardData(skillId) : [];
 
   const handleRowClick = (address: string) => {
     router.push(`/profile/${address}`);
@@ -186,7 +198,7 @@ export default function LeaderboardPage({ params }: LeaderboardPageProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {mockLeaderboardData.map((entry) => (
+            {leaderboardData.map((entry) => (
               <LeaderboardEntry
                 key={entry.rank}
                 rank={entry.rank}
