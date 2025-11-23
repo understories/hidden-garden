@@ -65,3 +65,70 @@ body {
   animation: dash 3s linear infinite;
 }
 
+/* Power transmission animations */
+@keyframes power-flow {
+  0% {
+    left: -128px;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes power-flow-reverse {
+  0% {
+    right: -128px;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    right: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.4;
+    box-shadow: 0 0 4px rgba(103, 232, 249, 0.3);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 8px rgba(103, 232, 249, 0.6);
+  }
+}
+
+.animate-power-flow {
+  animation: power-flow 3s ease-in-out infinite;
+}
+
+.animate-power-flow-reverse {
+  animation: power-flow-reverse 3s ease-in-out infinite 1.5s;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Orbital animation for explorer clusters */
+.orbit-container {
+  transform: translate(-50%, -50%);
+  animation: orbit var(--orbit-duration, 20s) linear infinite;
+}
+
+@keyframes orbit {
+  from {
+    transform: translate(-50%, -50%) rotate(var(--orbit-angle, 0deg)) translateX(var(--orbit-distance, 80px)) rotate(calc(-1 * var(--orbit-angle, 0deg)));
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(calc(var(--orbit-angle, 0deg) + 360deg)) translateX(var(--orbit-distance, 80px)) rotate(calc(-1 * var(--orbit-angle, 0deg) - 360deg));
+  }
+}
+
