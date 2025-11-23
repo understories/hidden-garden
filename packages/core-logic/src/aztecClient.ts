@@ -7,8 +7,24 @@
 
 import type { QuestIdHash, QuestId } from './quests/types';
 import { computeQuestIdHash } from './quests/hashing';
-import * as fs from 'fs';
-import * as path from 'path';
+
+// Node.js modules - only available in server-side environments
+// Use dynamic imports to avoid bundling issues in client-side code
+let fs: typeof import('fs') | null = null;
+let path: typeof import('path') | null = null;
+
+// Lazy load Node.js modules only when needed (server-side only)
+function getNodeModules() {
+  if (typeof window === 'undefined' && !fs && !path) {
+    try {
+      fs = require('fs');
+      path = require('path');
+    } catch (e) {
+      // Not in Node.js environment
+    }
+  }
+  return { fs, path };
+}
 
 // Aztec.js types - using type-only imports to avoid runtime dependency issues during build
 // The actual values will be imported dynamically at runtime
@@ -233,17 +249,21 @@ export class RealAztecClient implements AztecClient {
 
       // Load contract artifact
       const artifactPath = this.config.artifactPath || this.findContractArtifact();
-      if (!artifactPath || !fs.existsSync(artifactPath)) {
+      const { fs: fsModule, path: pathModule } = getNodeModules();
+      if (!fsModule || !pathModule) {
+        throw new Error('Node.js modules (fs, path) are not available. This function must run server-side.');
+      }
+      if (!artifactPath || !fsModule.existsSync(artifactPath)) {
         const checkedPaths = this.config.artifactPath 
           ? [this.config.artifactPath]
           : [
-              path.join(__dirname, '../target/PrivateIdentityGarden.json'),
-              path.join(__dirname, '../target/private_skill_tree.json'),
-              path.join(__dirname, '../artifacts/PrivateIdentityGarden.json'),
-              path.join(process.cwd(), 'packages/core-logic/target/PrivateIdentityGarden.json'),
-              path.join(process.cwd(), 'packages/core-logic/target/private_skill_tree.json'),
-              path.join(process.cwd(), 'target/PrivateIdentityGarden.json'),
-              path.join(process.cwd(), 'target/private_skill_tree.json'),
+              pathModule.join(__dirname, '../target/PrivateIdentityGarden.json'),
+              pathModule.join(__dirname, '../target/private_skill_tree.json'),
+              pathModule.join(__dirname, '../artifacts/PrivateIdentityGarden.json'),
+              pathModule.join(process.cwd(), 'packages/core-logic/target/PrivateIdentityGarden.json'),
+              pathModule.join(process.cwd(), 'packages/core-logic/target/private_skill_tree.json'),
+              pathModule.join(process.cwd(), 'target/PrivateIdentityGarden.json'),
+              pathModule.join(process.cwd(), 'target/private_skill_tree.json'),
             ];
         throw new Error(
           `RealAztecClient: Could not load PrivateIdentityGarden artifact. ` +
@@ -253,7 +273,7 @@ export class RealAztecClient implements AztecClient {
         );
       }
 
-      const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf-8'));
+      const artifact = JSON.parse(fsModule.readFileSync(artifactPath, 'utf-8'));
 
       // Load or deploy contract using real Aztec.js SDK API
       if (this.config.contractAddress) {
@@ -456,18 +476,22 @@ export class RealAztecClient implements AztecClient {
    * Looks in common locations: target/, artifacts/, target/PrivateIdentityGarden.json
    */
   private findContractArtifact(): string | null {
+    const { fs: fsModule, path: pathModule } = getNodeModules();
+    if (!fsModule || !pathModule) {
+      return null; // Not in Node.js environment
+    }
     const possiblePaths = [
-      path.join(__dirname, '../target/PrivateIdentityGarden.json'),
-      path.join(__dirname, '../target/private_skill_tree.json'),
-      path.join(__dirname, '../artifacts/PrivateIdentityGarden.json'),
-      path.join(process.cwd(), 'packages/core-logic/target/PrivateIdentityGarden.json'),
-      path.join(process.cwd(), 'packages/core-logic/target/private_skill_tree.json'),
-      path.join(process.cwd(), 'target/PrivateIdentityGarden.json'),
-      path.join(process.cwd(), 'target/private_skill_tree.json'),
+      pathModule.join(__dirname, '../target/PrivateIdentityGarden.json'),
+      pathModule.join(__dirname, '../target/private_skill_tree.json'),
+      pathModule.join(__dirname, '../artifacts/PrivateIdentityGarden.json'),
+      pathModule.join(process.cwd(), 'packages/core-logic/target/PrivateIdentityGarden.json'),
+      pathModule.join(process.cwd(), 'packages/core-logic/target/private_skill_tree.json'),
+      pathModule.join(process.cwd(), 'target/PrivateIdentityGarden.json'),
+      pathModule.join(process.cwd(), 'target/private_skill_tree.json'),
     ];
 
     for (const artifactPath of possiblePaths) {
-      if (fs.existsSync(artifactPath)) {
+      if (fsModule.existsSync(artifactPath)) {
         return artifactPath;
       }
     }
