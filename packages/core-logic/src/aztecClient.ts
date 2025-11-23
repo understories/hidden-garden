@@ -194,7 +194,7 @@ export class RealAztecClient implements AztecClient {
         throw new Error(
           'Failed to load @aztec/aztec.js. Make sure it is installed. ' +
           'Install with: pnpm add @aztec/aztec.js @aztec/accounts/testing. ' +
-          'Or use mock mode by setting NEXT_PUBLIC_USE_MOCK_AZTEC=true'
+          'Aztec devnet must be running for the dev UI to work.'
         );
       }
 
