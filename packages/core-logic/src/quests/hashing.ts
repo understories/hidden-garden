@@ -71,7 +71,10 @@ const PEDERSEN_HASH_LOOKUP: Record<string, QuestIdHash> = {
   'aztec_concept_quiz': EXPECTED_AZTEC_CONCEPT_QUIZ_HASH,
   'noir_syntax_basics': '0x0c948fc303a4b6888e3398c0970657320ee4ba36d3a6597bcb649fb8092d2a19' as QuestIdHash,
   'aztec_storage_intro': '0x1a14c5abc569fc55179d3221e140be698747b65c38a6a398e3ca90587e117289' as QuestIdHash,
-  // Legacy quest IDs (not yet computed - will be added when needed)
+  // Placeholder hashes for demo (will be replaced with real hashes when computed)
+  'aztec_privacy_basics': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
+  'aztec_notes_concept': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
+  'aztec_public_vs_private': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
   'noir_basic_puzzle': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
   'first_private_tx': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
   'identity_architect_scenario': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
@@ -124,11 +127,18 @@ function computePedersenHash(input: string): QuestIdHash {
   // Check if we have a hardcoded value
   if (PEDERSEN_HASH_LOOKUP[input]) {
     const hash = PEDERSEN_HASH_LOOKUP[input];
-    // If it's not the placeholder, cache and return it
-    if (!isPlaceholder(hash)) {
-      hashCache[input] = hash;
+    // If it's a placeholder, return it with a warning (for demo purposes)
+    if (isPlaceholder(hash)) {
+      console.warn(
+        `⚠️  Using placeholder hash for "${input}". ` +
+        `This quest cannot be stored in Aztec until the real hash is computed. ` +
+        `For demo, use quests with computed hashes: aztec_concept_quiz, noir_syntax_basics, aztec_storage_intro`
+      );
       return hash;
     }
+    // If it's not the placeholder, cache and return it
+    hashCache[input] = hash;
+    return hash;
   }
   
   // If we reach here, the hash is not in the lookup table
@@ -147,7 +157,7 @@ function computePedersenHash(input: string): QuestIdHash {
  * @param str The string to convert
  * @returns Array of byte values (0-255)
  */
-function stringToBytes(str: string): number[] {
+export function stringToBytes(str: string): number[] {
   const bytes: number[] = [];
   for (let i = 0; i < str.length; i++) {
     bytes.push(str.charCodeAt(i));
