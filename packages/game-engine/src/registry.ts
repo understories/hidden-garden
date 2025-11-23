@@ -94,8 +94,40 @@ export const questRegistry: Record<QuestId, QuestDefinition> = {
     prompt: 'What makes Aztec different from other Layer 2 solutions?\nA) It uses zero-knowledge proofs for privacy\nB) It has lower transaction fees\nC) It supports more token types\nD) It has faster block times',
     expectedAnswerDescription: 'Integer index (0-3) representing selected option. Correct answer is 0.',
     dependencies: [],
-    validate: (_submission: QuestSubmission): ValidationResult => {
-      throw new Error('Quest validation not implemented yet.');
+    validate: (submission: QuestSubmission): ValidationResult => {
+      // Type guard: ensure it's a multiple choice submission
+      if (!('selectedOptionId' in submission)) {
+        return {
+          success: false,
+          score: 0,
+          feedback: 'Invalid submission type. Expected multiple choice submission with selectedOptionId.',
+        };
+      }
+
+      const mcSubmission = submission as MultipleChoiceSubmission;
+      const selectedOption = mcSubmission.selectedOptionId;
+
+      // Accept both string "0" and numeric string representations
+      // Also accept "A" as option 0
+      const isCorrect = 
+        selectedOption === '0' || 
+        selectedOption === 'A' || 
+        selectedOption === 'a' ||
+        parseInt(selectedOption, 10) === 0;
+
+      if (isCorrect) {
+        return {
+          success: true,
+          score: 100,
+          feedback: 'Correct! Aztec uses zero-knowledge proofs for privacy, which is what makes it different from other Layer 2 solutions.',
+        };
+      } else {
+        return {
+          success: false,
+          score: 0,
+          feedback: `Incorrect. The correct answer is A) It uses zero-knowledge proofs for privacy. You selected option ${selectedOption}.`,
+        };
+      }
     },
   },
   
@@ -109,8 +141,40 @@ export const questRegistry: Record<QuestId, QuestDefinition> = {
     prompt: 'What is a private note in Aztec?\nA) An encrypted piece of data only the owner can decrypt\nB) A public transaction record\nC) A smart contract function\nD) A token type',
     expectedAnswerDescription: 'Integer index (0-3) representing selected option. Correct answer is 0.',
     dependencies: [],
-    validate: (_submission: QuestSubmission): ValidationResult => {
-      throw new Error('Quest validation not implemented yet.');
+    validate: (submission: QuestSubmission): ValidationResult => {
+      // Type guard: ensure it's a multiple choice submission
+      if (!('selectedOptionId' in submission)) {
+        return {
+          success: false,
+          score: 0,
+          feedback: 'Invalid submission type. Expected multiple choice submission with selectedOptionId.',
+        };
+      }
+
+      const mcSubmission = submission as MultipleChoiceSubmission;
+      const selectedOption = mcSubmission.selectedOptionId;
+
+      // Accept both string "0" and numeric string representations
+      // Also accept "A" as option 0
+      const isCorrect = 
+        selectedOption === '0' || 
+        selectedOption === 'A' || 
+        selectedOption === 'a' ||
+        parseInt(selectedOption, 10) === 0;
+
+      if (isCorrect) {
+        return {
+          success: true,
+          score: 100,
+          feedback: 'Correct! A private note in Aztec is an encrypted piece of data that only the owner can decrypt. Notes are the fundamental building block of Aztec\'s privacy model.',
+        };
+      } else {
+        return {
+          success: false,
+          score: 0,
+          feedback: `Incorrect. The correct answer is A) An encrypted piece of data only the owner can decrypt. You selected option ${selectedOption}.`,
+        };
+      }
     },
   },
   
@@ -124,8 +188,40 @@ export const questRegistry: Record<QuestId, QuestDefinition> = {
     prompt: 'What is the difference between a public and private transaction in Aztec?\nA) Public transactions are visible to everyone; private transactions encrypt inputs/outputs\nB) Public transactions are faster\nC) Private transactions cost more\nD) There is no difference',
     expectedAnswerDescription: 'Integer index (0-3) representing selected option. Correct answer is 0.',
     dependencies: [],
-    validate: (_submission: QuestSubmission): ValidationResult => {
-      throw new Error('Quest validation not implemented yet.');
+    validate: (submission: QuestSubmission): ValidationResult => {
+      // Type guard: ensure it's a multiple choice submission
+      if (!('selectedOptionId' in submission)) {
+        return {
+          success: false,
+          score: 0,
+          feedback: 'Invalid submission type. Expected multiple choice submission with selectedOptionId.',
+        };
+      }
+
+      const mcSubmission = submission as MultipleChoiceSubmission;
+      const selectedOption = mcSubmission.selectedOptionId;
+
+      // Accept both string "0" and numeric string representations
+      // Also accept "A" as option 0
+      const isCorrect = 
+        selectedOption === '0' || 
+        selectedOption === 'A' || 
+        selectedOption === 'a' ||
+        parseInt(selectedOption, 10) === 0;
+
+      if (isCorrect) {
+        return {
+          success: true,
+          score: 100,
+          feedback: 'Correct! Public transactions in Aztec are visible to everyone, while private transactions encrypt inputs and outputs to maintain privacy.',
+        };
+      } else {
+        return {
+          success: false,
+          score: 0,
+          feedback: `Incorrect. The correct answer is A) Public transactions are visible to everyone; private transactions encrypt inputs/outputs. You selected option ${selectedOption}.`,
+        };
+      }
     },
   },
   
