@@ -17,6 +17,11 @@ const mockSkillTrees = [
     participantCount: 1247,
     privacyMode: 'mostly-private' as const,
     privacyStats: { public: 15, mixed: 15, private: 70 },
+    quests: [
+      { id: 'quest-1', name: 'Quest 1', participantCount: 450, privacyMode: 'mostly-private' as const },
+      { id: 'quest-2', name: 'Quest 2', participantCount: 380, privacyMode: 'private-heavy' as const },
+      { id: 'quest-3', name: 'Quest 3', participantCount: 417, privacyMode: 'mostly-private' as const },
+    ],
   },
   {
     skillId: 'rust-foundations',
@@ -24,6 +29,11 @@ const mockSkillTrees = [
     participantCount: 2156,
     privacyMode: 'public-heavy' as const,
     privacyStats: { public: 70, mixed: 20, private: 10 },
+    quests: [
+      { id: 'quest-1', name: 'Quest 1', participantCount: 890, privacyMode: 'public-heavy' as const },
+      { id: 'quest-2', name: 'Quest 2', participantCount: 756, privacyMode: 'public-heavy' as const },
+      { id: 'quest-3', name: 'Quest 3', participantCount: 510, privacyMode: 'mixed' as const },
+    ],
   },
   {
     skillId: 'zero-knowledge-basics',
@@ -31,6 +41,11 @@ const mockSkillTrees = [
     participantCount: 892,
     privacyMode: 'mixed' as const,
     privacyStats: { public: 40, mixed: 40, private: 20 },
+    quests: [
+      { id: 'quest-1', name: 'Quest 1', participantCount: 420, privacyMode: 'mixed' as const },
+      { id: 'quest-2', name: 'Quest 2', participantCount: 310, privacyMode: 'public-heavy' as const },
+      { id: 'quest-3', name: 'Quest 3', participantCount: 162, privacyMode: 'private-heavy' as const },
+    ],
   },
   {
     skillId: 'advanced-circuits',
@@ -38,6 +53,11 @@ const mockSkillTrees = [
     participantCount: 634,
     privacyMode: 'mostly-private' as const,
     privacyStats: { public: 20, mixed: 20, private: 60 },
+    quests: [
+      { id: 'quest-1', name: 'Quest 1', participantCount: 280, privacyMode: 'mostly-private' as const },
+      { id: 'quest-2', name: 'Quest 2', participantCount: 220, privacyMode: 'private-heavy' as const },
+      { id: 'quest-3', name: 'Quest 3', participantCount: 134, privacyMode: 'mostly-private' as const },
+    ],
   },
   {
     skillId: 'l1-l2-bridging',
@@ -45,6 +65,11 @@ const mockSkillTrees = [
     participantCount: 445,
     privacyMode: 'mixed' as const,
     privacyStats: { public: 35, mixed: 45, private: 20 },
+    quests: [
+      { id: 'quest-1', name: 'Quest 1', participantCount: 200, privacyMode: 'mixed' as const },
+      { id: 'quest-2', name: 'Quest 2', participantCount: 180, privacyMode: 'public-heavy' as const },
+      { id: 'quest-3', name: 'Quest 3', participantCount: 65, privacyMode: 'private-heavy' as const },
+    ],
   },
   {
     skillId: 'noir-basics',
@@ -52,6 +77,11 @@ const mockSkillTrees = [
     participantCount: 1123,
     privacyMode: 'public-heavy' as const,
     privacyStats: { public: 75, mixed: 15, private: 10 },
+    quests: [
+      { id: 'quest-1', name: 'Quest 1', participantCount: 520, privacyMode: 'public-heavy' as const },
+      { id: 'quest-2', name: 'Quest 2', participantCount: 380, privacyMode: 'public-heavy' as const },
+      { id: 'quest-3', name: 'Quest 3', participantCount: 223, privacyMode: 'mixed' as const },
+    ],
   },
 ];
 
@@ -132,6 +162,7 @@ export default function SkillTreePage() {
             participantCount={skill.participantCount}
             privacyMode={skill.privacyMode}
             privacyStats={skill.privacyStats}
+            quests={skill.quests}
           />
         ))}
       </div>
