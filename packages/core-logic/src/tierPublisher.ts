@@ -92,6 +92,18 @@ export async function checkSelfHumanSBT(
   chainId: number,
   userAddress: Address
 ): Promise<boolean> {
+  // Mock mode: For demo purposes, treat specific dev wallet as human-verified
+  // This allows the demo to work without requiring SBT minting
+  const DEMO_HUMAN_ADDRESS = process.env.DEMO_HUMAN_ADDRESS || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
+  const isMockMode = process.env.NEXT_PUBLIC_USE_MOCK_AZTEC === 'true' || 
+                     process.env.USE_MOCK_SBT === 'true' ||
+                     !process.env.NEXT_PUBLIC_USE_REAL_AZTEC;
+  
+  if (isMockMode && userAddress.toLowerCase() === DEMO_HUMAN_ADDRESS.toLowerCase()) {
+    console.log(`[checkSelfHumanSBT] Mock mode: treating ${userAddress} as human-verified for demo`);
+    return true;
+  }
+
   const sbtAddress = getSelfHumanSBTAddress(chainId);
   if (!sbtAddress) {
     throw new Error(
