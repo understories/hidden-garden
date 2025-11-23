@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { WalletProvider } from '../components/WalletProvider';
 import { DarkModeToggle } from '../components/DarkModeToggle';
+import { SeedlingLogo } from '../components/SeedlingLogo';
 import './globals.css';
 
 export const metadata = {
@@ -27,8 +28,9 @@ export default function RootLayout({
           <header className="w-full border-b border-gray-200 dark:border-gray-700 mb-4 bg-white dark:bg-gray-900">
             <div className="max-w-4xl mx-auto flex items-center justify-between p-4">
               <div className="flex items-center gap-6">
-                <Link href="/" className="font-semibold text-lg hover:opacity-80 transition-opacity">
-                  Hidden Garden 🌱
+                <Link href="/" className="flex items-center gap-2 font-semibold text-lg hover:opacity-80 transition-opacity">
+                  <SeedlingLogo size="sm" />
+                  <span>Hidden Garden</span>
                 </Link>
                 <nav className="flex items-center gap-4">
                   <Link
