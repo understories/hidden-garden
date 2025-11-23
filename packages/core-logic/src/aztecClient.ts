@@ -34,6 +34,7 @@ let Fr: any;
 let AztecAddress: any;
 let getDeployedTestAccountsWallets: any;
 let Contract: any;
+let createLogger: any;
 
 // Initialize Aztec.js imports dynamically at runtime
 // This will fail gracefully if @aztec/aztec.js is not available
@@ -51,6 +52,8 @@ async function loadAztecSDK() {
     const aztecContracts = await import('@aztec/aztec.js/contracts');
     // @ts-ignore - dynamic import may not be recognized by TypeScript
     const aztecAccount = await import('@aztec/aztec.js/account');
+    // @ts-ignore - dynamic import may not be recognized by TypeScript
+    const aztecLog = await import('@aztec/aztec.js/api/log');
     
     // Map to our expected function names
     // In v3, createAztecNodeClient replaces createPXEClient
@@ -60,6 +63,7 @@ async function loadAztecSDK() {
     Fr = aztecFields.Fr;
     AztecAddress = aztecAddresses.AztecAddress;
     Contract = aztecContracts.Contract;
+    createLogger = aztecLog.createLogger;
     
     // Account creation is now handled by setupWallet utility
     // No need to load getDeployedTestAccountsWallets here
@@ -246,25 +250,26 @@ export class RealAztecClient implements AztecClient {
       }
       
       // Create Aztec node client (in v3, this replaces createPXEClient)
-      // The node client can be used as a PXE-like interface
-      // Provide a minimal logger stub to avoid "logger?.verbose is not a function" errors
-      const logger = {
-        verbose: () => {},
-        debug: () => {},
-        info: () => {},
-        warn: console.warn.bind(console),
-        error: console.error.bind(console),
-      };
-      
+      // Following official Aztec starter pattern: just pass the URL
+      // The SDK handles logger internally
       try {
-        // Try with logger first, fall back to no logger if that fails
-        try {
-          this.pxe = createPXEClient(pxeUrl, { logger });
-        } catch (loggerError) {
-          // If logger causes issues, try without it
-          this.pxe = createPXEClient(pxeUrl);
+        this.pxe = createPXEClient(pxeUrl);
+      } catch (error: any) {
+        // Provide detailed error message for debugging
+        const errorMsg = error?.message || String(error);
+        const errorStack = error?.stack ? `\nStack: ${error.stack.split('\n').slice(0, 5).join('\n')}` : '';
+        
+        // If logger error, provide specific guidance
+        if (errorMsg.includes('logger') || errorMsg.includes('verbose')) {
+          throw new Error(
+            `Failed to create Aztec node client: ${errorMsg}${errorStack}\n\n` +
+            'This may be an SDK internal logger issue. Try:\n' +
+            '1. Ensure Aztec sandbox is running: `aztec start --sandbox`\n' +
+            '2. Check PXE URL is correct: ' + pxeUrl + '\n' +
+            '3. Verify @aztec/aztec.js version matches sandbox version\n' +
+            '4. Check Aztec SDK documentation for logger requirements'
+          );
         }
-      } catch (error) {
         throw new Error(
           getPXEErrorMessage(pxeUrl, error)
         );
