@@ -17,7 +17,8 @@
     "@aztec/accounts": "3.0.0-devnet.5",
     "@aztec/aztec.js": "3.0.0-devnet.5",
     "@aztec/bb.js": "^2.1.7",
-    "ethers": "^6.15.0"
+    "ethers": "^6.15.0",
+    "testing": "link:@aztec/accounts/testing"
   },
   "_aztecVersionInfo": {
     "comment": "Aztec devnet version pinned to 3.0.0-devnet.5. This must match:",
