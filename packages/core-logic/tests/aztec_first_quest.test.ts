@@ -123,13 +123,13 @@ const testSuite = SKIP_TESTS
         expect(proofResult.proof?.publicInputs).toBeDefined();
         
         // Verify proof is non-empty
-        expect(proofResult.proof.proof).toMatch(/^0x[0-9a-f]+$/);
-        expect(proofResult.proof.publicInputs).toMatch(/^0x[0-9a-f]+$/);
+        expect(proofResult.proof!.proof).toMatch(/^0x[0-9a-f]+$/);
+        expect(proofResult.proof!.publicInputs).toMatch(/^0x[0-9a-f]+$/);
 
         // Parse public inputs
         // Note: The actual format depends on Aztec SDK receipt structure
         // For now, we verify the publicInputs string is non-empty and properly formatted
-        const publicInputsHex = proofResult.proof.publicInputs;
+        const publicInputsHex = proofResult.proof!.publicInputs;
         expect(publicInputsHex).toBeDefined();
         expect(publicInputsHex).toMatch(/^0x[0-9a-f]+$/); // Valid hex format
 
