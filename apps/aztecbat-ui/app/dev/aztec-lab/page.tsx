@@ -51,6 +51,8 @@ export default function AztecLabPage() {
     skillHash: string;
     leaderboard: LeaderboardEntry[];
     isHumanVerified?: boolean;
+    indexerAvailable?: boolean;
+    warning?: string;
   } | null>(null);
   const [revealError, setRevealError] = useState<string | null>(null);
   const [humanOnlyFilter, setHumanOnlyFilter] = useState<boolean>(false);
@@ -221,12 +223,14 @@ export default function AztecLabPage() {
       const result = {
         txHash: data.txHash,
         skillHash: data.skillHash,
-        leaderboard: data.leaderboard,
+        leaderboard: data.leaderboard || [],
         isHumanVerified: data.isHumanVerified,
+        indexerAvailable: data.indexerAvailable !== false, // Default to true if not specified
+        warning: data.warning,
       };
       setRevealResult(result);
       // Initialize filtered leaderboard with all entries
-      setFilteredLeaderboard(data.leaderboard);
+      setFilteredLeaderboard(data.leaderboard || []);
     } catch (error) {
       setRevealError(
         error instanceof Error ? error.message : String(error)
@@ -503,6 +507,27 @@ export default function AztecLabPage() {
               <strong>Skill Hash:</strong>{' '}
               <code style={{ fontFamily: 'monospace' }}>{revealResult.skillHash}</code>
             </div>
+            
+            {/* Show warning if indexer timed out but transaction succeeded */}
+            {revealResult.warning && (
+              <div style={{
+                marginBottom: '1rem',
+                padding: '1rem',
+                background: '#fff3e0',
+                border: '1px solid #ffb74d',
+                borderRadius: '4px',
+              }}>
+                <strong>⚠️ Indexer Status:</strong>
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>
+                  {revealResult.warning}
+                </p>
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: '#666' }}>
+                  <strong>✅ Transaction Successful:</strong> Your tier proof was submitted to the blockchain. 
+                  The indexer may need more time to process the event, or it may not be running.
+                </p>
+              </div>
+            )}
+            
             {revealResult.isHumanVerified !== undefined && (
               <div style={{ 
                 marginBottom: '1rem',
@@ -521,7 +546,14 @@ export default function AztecLabPage() {
             )}
             
             <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <h4 style={{ margin: 0 }}>Leaderboard Entries ({humanOnlyFilter ? 'Human-Only' : 'All'}):</h4>
+              <h4 style={{ margin: 0 }}>
+              Leaderboard Entries ({humanOnlyFilter ? 'Human-Only' : 'All'})
+              {revealResult.indexerAvailable === false && (
+                <span style={{ fontSize: '0.85rem', color: '#ff9800', marginLeft: '0.5rem' }}>
+                  (Indexer not available - showing empty)
+                </span>
+              )}
+            </h4>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
@@ -585,7 +617,15 @@ export default function AztecLabPage() {
               )}
             </div>
             {filteredLeaderboard.length === 0 ? (
-              <p>No entries found{humanOnlyFilter ? ' (no human-verified entries)' : ''}.</p>
+              <div>
+                <p>No entries found{humanOnlyFilter ? ' (no human-verified entries)' : ''}.</p>
+                {revealResult.indexerAvailable === false && (
+                  <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
+                    💡 <strong>Tip:</strong> The transaction was successful, but the indexer hasn't processed it yet. 
+                    You can check the transaction on the blockchain explorer using the transaction hash above.
+                  </p>
+                )}
+              </div>
             ) : (
               <table style={{
                 width: '100%',
