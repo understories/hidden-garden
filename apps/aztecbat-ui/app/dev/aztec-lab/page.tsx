@@ -1049,24 +1049,59 @@ export default function AztecLabPage() {
               value={selectedQuestId || ''}
               onChange={(e) => {
                 const questId = e.target.value;
-                setSelectedQuestId(questId || null);
-                if (questId) {
-                  const quest = getQuestDefinition(questId);
-                  if (quest) {
-                    setSelectedQuest(quest);
-                    // Set default submission based on quest type
-                    if (quest.type === 'multiple_choice') {
-                      setQuestSubmission('{"selectedOptionId": "0"}');
-                    } else if (quest.type === 'numeric_input') {
-                      setQuestSubmission('{"numericValue": 0}');
-                    } else {
-                      setQuestSubmission('{}');
-                    }
-                  } else {
-                    setSelectedQuest(null);
-                  }
-                } else {
+                if (!questId) {
+                  setSelectedQuestId(null);
                   setSelectedQuest(null);
+                  return;
+                }
+                
+                const quest = getQuestDefinition(questId);
+                if (!quest) {
+                  setSelectedQuestId(null);
+                  setSelectedQuest(null);
+                  return;
+                }
+                
+                // Check if quest is fully implemented before allowing selection
+                const hasRealHash = quest.questIdHash !== '0xPLACEHOLDER';
+                if (!hasRealHash) {
+                  // Don't allow selection of quests with placeholder hashes
+                  setSelectedQuestId(null);
+                  setSelectedQuest(null);
+                  return;
+                }
+                
+                // Check if validate function is implemented (doesn't throw)
+                try {
+                  const dummySubmission = quest.type === 'multiple_choice' 
+                    ? { selectedOptionId: '0' }
+                    : quest.type === 'numeric_input'
+                    ? { value: 0 }
+                    : {};
+                  const result = quest.validate(dummySubmission as any);
+                  if (!result || typeof result !== 'object' || !('success' in result)) {
+                    // Validate function not properly implemented
+                    setSelectedQuestId(null);
+                    setSelectedQuest(null);
+                    return;
+                  }
+                } catch (e) {
+                  // Validate function throws - not implemented
+                  setSelectedQuestId(null);
+                  setSelectedQuest(null);
+                  return;
+                }
+                
+                // Quest is fully implemented - allow selection
+                setSelectedQuestId(questId);
+                setSelectedQuest(quest);
+                // Set default submission based on quest type
+                if (quest.type === 'multiple_choice') {
+                  setQuestSubmission('{"selectedOptionId": "0"}');
+                } else if (quest.type === 'numeric_input') {
+                  setQuestSubmission('{"numericValue": 0}');
+                } else {
+                  setQuestSubmission('{}');
                 }
               }}
               style={{
@@ -1076,11 +1111,43 @@ export default function AztecLabPage() {
               }}
             >
               <option value="">-- Select a quest --</option>
-              {listAllQuests().map((quest) => (
-                <option key={quest.questId} value={quest.questId}>
-                  {quest.name} (Tier {quest.tier}, {quest.type})
-                </option>
-              ))}
+              {listAllQuests().map((quest) => {
+                // Check if quest is fully implemented:
+                // 1. Has a real questIdHash (not placeholder)
+                // 2. Has a validate function that doesn't throw
+                const hasRealHash = quest.questIdHash !== '0xPLACEHOLDER';
+                const isImplemented = hasRealHash && (() => {
+                  try {
+                    // Try to call validate with a dummy submission to check if it throws
+                    const dummySubmission = quest.type === 'multiple_choice' 
+                      ? { selectedOptionId: '0' }
+                      : quest.type === 'numeric_input'
+                      ? { value: 0 }
+                      : {};
+                    const result = quest.validate(dummySubmission as any);
+                    // If it returns a result (not a promise), it's implemented
+                    return result && typeof result === 'object' && 'success' in result;
+                  } catch (e) {
+                    // If it throws, it's not implemented
+                    return false;
+                  }
+                })();
+                
+                return (
+                  <option 
+                    key={quest.questId} 
+                    value={quest.questId}
+                    disabled={!isImplemented}
+                    style={{
+                      color: isImplemented ? 'inherit' : '#999',
+                      fontStyle: isImplemented ? 'normal' : 'italic',
+                    }}
+                  >
+                    {quest.name} (Tier {quest.tier}, {quest.type})
+                    {!isImplemented && ' - Not implemented yet'}
+                  </option>
+                );
+              })}
             </select>
           </label>
         </div>
