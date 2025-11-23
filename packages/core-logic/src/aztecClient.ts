@@ -512,6 +512,8 @@ export class RealAztecClient implements AztecClient {
  * without requiring actual Aztec infrastructure.
  */
 export class MockAztecClient implements AztecClient {
+  // Flag to identify mock client for conditional logic
+  public readonly isMock = true;
   private address: AztecAddress | null = null;
   private questCompletions: Map<QuestIdHash, number> = new Map();
 
