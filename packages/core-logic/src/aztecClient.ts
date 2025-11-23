@@ -182,12 +182,17 @@ export class RealAztecClient implements AztecClient {
     // Load config from file based on AZTEC_ENV
     const aztecConfig = loadAztecConfig();
     
+    // Get PXE URL with proper priority:
+    // config.pxeUrl > AZTEC_PXE_URL > NEXT_PUBLIC_AZTEC_PXE_URL > PXE_URL > config default
+    const pxeUrl = 
+      config?.pxeUrl ??
+      process.env.AZTEC_PXE_URL ??
+      process.env.NEXT_PUBLIC_AZTEC_PXE_URL ??
+      process.env.PXE_URL ??
+      aztecConfig.pxeUrl;
+    
     this.config = {
-      pxeUrl: config?.pxeUrl || 
-              process.env.AZTEC_PXE_URL || 
-              process.env.PXE_URL || 
-              process.env.NEXT_PUBLIC_AZTEC_PXE_URL ||
-              aztecConfig.pxeUrl,
+      pxeUrl,
       contractAddress: process.env.AZTEC_PRIVATE_IDENTITY_GARDEN_ADDRESS || config?.contractAddress,
       artifactPath: config?.artifactPath,
       ...config,
@@ -206,15 +211,13 @@ export class RealAztecClient implements AztecClient {
     }
 
     try {
-      const pxeUrl = this.config.pxeUrl!;
-      
-      if (!pxeUrl) {
-        throw new Error(
-          'RealAztecClient: PXE URL not configured. ' +
-          'Set PXE_URL or AZTEC_PXE_URL environment variable, or pass pxeUrl in config. ' +
-          'Example: PXE_URL=http://localhost:8080'
-        );
-      }
+      // Get PXE URL from config, environment variables, or default
+      // Priority: config.pxeUrl > AZTEC_PXE_URL > NEXT_PUBLIC_AZTEC_PXE_URL > default
+      const pxeUrl = 
+        this.config.pxeUrl ??
+        process.env.AZTEC_PXE_URL ??
+        process.env.NEXT_PUBLIC_AZTEC_PXE_URL ??
+        'http://localhost:8080';
       
       // Validate PXE URL format
       if (!validatePXEUrl(pxeUrl)) {
@@ -466,8 +469,6 @@ export class RealAztecClient implements AztecClient {
       const receipt: TxReceipt = await tx.wait();
       
       // Extract proof from receipt using proper validation
-      // CRITICAL FIX: This replaces the incorrect JSON.stringify approach
-      // The proof should be extracted directly from receipt.proof
       let proof: `0x${string}`;
       try {
         if (receipt.proof) {
@@ -492,12 +493,7 @@ export class RealAztecClient implements AztecClient {
       }
       
       // Store raw return values - these will be properly ABI-encoded in tierPublisher.ts
-      // The returnValues contain the public inputs from the Noir circuit:
-      // (owner: AztecAddress, minTier: u8, minAverageScore: u8, pathHash: Field)
-      // 
-      // NOTE: We do NOT JSON.stringify here. The tierPublisher will extract these values
-      // and properly ABI-encode them using the user's Ethereum address and skill hash.
-      // For now, we store them as-is in the proof result for tierPublisher to process.
+      // The returnValues contain the public inputs from the Noir circuit
       const rawReturnValues = receipt.returnValues || null;
       
       // Return proof and raw return values
@@ -676,15 +672,21 @@ export function createAztecClient(
     return new MockAztecClient();
   }
 
-  // For real client, check if PXE_URL is available
-  const pxeUrl = process.env.PXE_URL || config?.pxeUrl || 'http://localhost:8080';
+  // Get PXE URL with proper priority:
+  // config.pxeUrl > AZTEC_PXE_URL > NEXT_PUBLIC_AZTEC_PXE_URL > PXE_URL > default
+  const pxeUrl = 
+    config?.pxeUrl ??
+    process.env.AZTEC_PXE_URL ??
+    process.env.NEXT_PUBLIC_AZTEC_PXE_URL ??
+    process.env.PXE_URL ??
+    'http://localhost:8080';
   
   // If explicitly requesting real but no PXE URL, warn and fall back to mock
   if (clientMode === 'real' && !pxeUrl) {
     console.warn('⚠️  PXE_URL not set. Falling back to mock client. Set PXE_URL to use real Aztec client.');
     return new MockAztecClient();
   }
-
+  
   // Try to check if @aztec/aztec.js is available synchronously (for better error messages)
   // Note: We can't actually load it synchronously, but we can provide a helpful error
   // The actual check will happen in initialize()
