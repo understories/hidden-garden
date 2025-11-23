@@ -641,18 +641,18 @@ export default function SkillTreesPage() {
         </button>
       </div>
 
-      {/* Ghibli-style Forest Canvas */}
+      {/* Black space canvas with moving stars */}
       <div
-        className="relative min-h-[800px] rounded-lg overflow-hidden bg-gradient-to-b from-green-50 via-emerald-50 to-teal-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 cursor-move"
+        className="relative min-h-[800px] rounded-lg overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-900 border border-gray-800 dark:border-gray-700 cursor-move"
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        {/* Expanding background - Ghibli style */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-radial from-yellow-100/20 via-green-100/10 to-transparent dark:from-yellow-900/10 dark:via-green-900/5 dark:to-transparent animate-expand-background" />
+        {/* Expanding background glow around sun */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-yellow-200/10 via-amber-200/5 to-transparent dark:from-yellow-900/10 dark:via-amber-900/5 dark:to-transparent animate-expand-background rounded-full blur-3xl" />
         </div>
 
         {/* Zoomable container */}
@@ -666,37 +666,47 @@ export default function SkillTreesPage() {
           {/* Center coordinates for orbital calculations - 50% of container */}
           <div className="absolute left-1/2 top-1/2 w-0 h-0" id="center-sun" />
 
-          {/* Ghibli-style atmospheric layers */}
+          {/* Atmospheric depth layers - black space with moving stars */}
           <div className="absolute inset-0">
-            {/* Soft clouds/particles */}
-            {[...Array(20)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute rounded-full bg-white/20 dark:bg-white/10 blur-xl animate-float"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  width: `${Math.random() * 100 + 50}px`,
-                  height: `${Math.random() * 100 + 50}px`,
-                  animationDelay: `${Math.random() * 5}s`,
-                  animationDuration: `${Math.random() * 10 + 10}s`,
-                }}
-              />
-            ))}
+            {/* Moving stars/particles */}
+            {[...Array(60)].map((_, i) => {
+              const x = Math.random() * 100;
+              const y = Math.random() * 100;
+              const size = Math.random() * 2 + 1;
+              const opacity = Math.random() * 0.5 + 0.3;
+              const delay = Math.random() * 3;
+              const duration = Math.random() * 2 + 2;
+              
+              return (
+                <div
+                  key={i}
+                  className="absolute rounded-full bg-white animate-pulse"
+                  style={{
+                    width: `${size}px`,
+                    height: `${size}px`,
+                    left: `${x}%`,
+                    top: `${y}%`,
+                    opacity: opacity,
+                    animationDelay: `${delay}s`,
+                    animationDuration: `${duration}s`,
+                  }}
+                />
+              );
+            })}
 
-            {/* Privacy zones - soft Ghibli colors */}
+            {/* Privacy zones - subtle Ghibli colors in dark space */}
             <div className="absolute inset-0">
               {/* Public zone (top-right) */}
-              <div className="absolute top-0 right-0 w-1/3 h-1/3 rounded-full blur-3xl" style={{ backgroundColor: 'rgba(125, 216, 125, 0.1)' }} />
+              <div className="absolute top-0 right-0 w-1/3 h-1/3 rounded-full blur-3xl" style={{ backgroundColor: 'rgba(125, 216, 125, 0.05)' }} />
               {/* Mixed zone (center) */}
-              <div className="absolute top-1/3 left-1/3 w-1/3 h-1/3 rounded-full blur-3xl" style={{ backgroundColor: 'rgba(244, 164, 96, 0.1)' }} />
+              <div className="absolute top-1/3 left-1/3 w-1/3 h-1/3 rounded-full blur-3xl" style={{ backgroundColor: 'rgba(244, 164, 96, 0.05)' }} />
               {/* Private zone (bottom-left) */}
-              <div className="absolute bottom-0 left-0 w-1/3 h-1/3 rounded-full blur-3xl" style={{ backgroundColor: 'rgba(135, 206, 235, 0.1)' }} />
+              <div className="absolute bottom-0 left-0 w-1/3 h-1/3 rounded-full blur-3xl" style={{ backgroundColor: 'rgba(135, 206, 235, 0.05)' }} />
             </div>
 
-            {/* Subtle mist layers */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-50/20 to-transparent dark:via-gray-800/20" />
-            <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-green-100/40 to-transparent dark:from-gray-900/60 dark:to-transparent" />
+            {/* Subtle fog/mist layers */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-900/10 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-slate-900/60 to-transparent" />
           </div>
 
           {/* Power transmission lines between planets */}
