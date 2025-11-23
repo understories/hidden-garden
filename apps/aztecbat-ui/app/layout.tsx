@@ -49,7 +49,7 @@ export default function RootLayout({
                     href="/skill-tree"
                     className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   >
-                    Skill Tree
+                    Skill Forest
                   </Link>
                   {isLoggedIn && (
                     <Link
