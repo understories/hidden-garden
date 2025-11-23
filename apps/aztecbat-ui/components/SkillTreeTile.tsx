@@ -6,6 +6,7 @@
  */
 
 import Link from 'next/link';
+import { TreeIcon } from './TreeIcon';
 
 type PrivacyMode = 'public-heavy' | 'mixed' | 'mostly-private';
 
@@ -24,36 +25,36 @@ type SkillTreeTileProps = {
 function getPrivacyGradient(privacyMode: PrivacyMode): string {
   switch (privacyMode) {
     case 'public-heavy':
-      // Bright bioluminescent greens/cyans
-      return 'from-emerald-400/20 via-cyan-400/15 to-teal-400/20 dark:from-emerald-400/30 dark:via-cyan-400/25 dark:to-teal-400/30';
+      // Soft spring green (Ghibli style)
+      return 'from-green-50 via-emerald-50/80 to-teal-50 dark:from-gray-800/60 dark:via-gray-700/50 dark:to-gray-800/60';
     case 'mixed':
-      // Amber/orange transitional hues
-      return 'from-amber-400/20 via-orange-400/15 to-yellow-400/20 dark:from-amber-400/30 dark:via-orange-400/25 dark:to-yellow-400/30';
+      // Soft sandy amber (Ghibli style)
+      return 'from-amber-50 via-orange-50/80 to-yellow-50 dark:from-gray-800/60 dark:via-gray-700/50 dark:to-gray-800/60';
     case 'mostly-private':
-      // Pale, moonlit blues/purples
-      return 'from-blue-300/15 via-indigo-300/10 to-purple-300/15 dark:from-blue-400/25 dark:via-indigo-400/20 dark:to-purple-400/25';
+      // Soft sky blue (Ghibli style)
+      return 'from-blue-50 via-cyan-50/80 to-indigo-50 dark:from-gray-800/60 dark:via-gray-700/50 dark:to-gray-800/60';
   }
 }
 
 function getPrivacyBorder(privacyMode: PrivacyMode): string {
   switch (privacyMode) {
     case 'public-heavy':
-      return 'border-emerald-400/30 dark:border-emerald-400/40';
+      return 'border-green-200/50 dark:border-gray-600/30';
     case 'mixed':
-      return 'border-amber-400/30 dark:border-amber-400/40';
+      return 'border-amber-200/50 dark:border-gray-600/30';
     case 'mostly-private':
-      return 'border-blue-400/20 dark:border-indigo-400/30';
+      return 'border-blue-200/50 dark:border-gray-600/30';
   }
 }
 
 function getPrivacyGlow(privacyMode: PrivacyMode): string {
   switch (privacyMode) {
     case 'public-heavy':
-      return 'shadow-emerald-400/20 dark:shadow-emerald-400/30';
+      return 'shadow-lg';
     case 'mixed':
-      return 'shadow-amber-400/20 dark:shadow-amber-400/30';
+      return 'shadow-lg';
     case 'mostly-private':
-      return 'shadow-blue-400/10 dark:shadow-indigo-400/20';
+      return 'shadow-lg';
   }
 }
 
@@ -84,13 +85,23 @@ export function SkillTreeTile({
         {/* Enhanced glow effect on hover/focus */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 dark:from-white/0 dark:to-white/10 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity duration-300 rounded-xl" />
         
-        <div className="relative z-10">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-white dark:group-hover:text-white transition-colors duration-300">
-            {skillName}
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-200 dark:group-hover:text-gray-300 transition-colors duration-300">
-            {participantCount.toLocaleString()} participants
-          </p>
+        <div className="relative z-10 flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-white dark:group-hover:text-white transition-colors duration-300">
+              {skillName}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-200 dark:group-hover:text-gray-300 transition-colors duration-300">
+              {participantCount.toLocaleString()} participants
+            </p>
+          </div>
+          {/* Small tree icon */}
+          <div className="flex-shrink-0">
+            <TreeIcon
+              type="round"
+              privacy={privacyMode === 'mostly-private' ? 'private-heavy' : privacyMode}
+              size="sm"
+            />
+          </div>
         </div>
       </Link>
 
