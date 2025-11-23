@@ -81,7 +81,7 @@ export default function MyGardenPage() {
       setProfileLoading(true);
       try {
         const params = new URLSearchParams({
-          address,
+          address: address || '',
           chainId: '31337', // Default to local Hardhat
         });
         const response = await fetch(`/api/dev/skill-profile?${params}`);
