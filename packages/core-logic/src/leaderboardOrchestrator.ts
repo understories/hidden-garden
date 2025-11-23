@@ -13,6 +13,8 @@ import { submitTierProofWithSBTCheck } from './tierPublisher';
 import type { AztecClient } from './aztecClient';
 import type { SubmitTierProofParams } from './tierPublisher';
 import { ethers } from 'ethers';
+import { upsertArkivSkillProfile } from './arkiv/skillProfiles';
+import { getSkillProfile } from './skillProfile';
 
 /**
  * Parameters for publishing and fetching Aztec Builder leaderboard
@@ -120,13 +122,41 @@ export async function publishAndFetchAztecBuilderLeaderboard(
       );
 
       if (found) {
-        return { 
+        const result = { 
           txHash, 
           skillHash, 
           leaderboard, 
           isHumanVerified,
           indexerAvailable: true,
         };
+
+        // 4. Push snapshot to Arkiv after successful tier publish
+        // Feature flag – if Arkiv is disabled, skip
+        if (process.env.NEXT_PUBLIC_USE_ARKIV !== 'false') {
+          try {
+            const skillProfile = await getSkillProfile({
+              chainId: params.chainId,
+              address: params.userAddress,
+              indexerBaseUrl: params.indexerBaseUrl,
+            });
+
+            await upsertArkivSkillProfile({
+              address: skillProfile.address,
+              chainId: params.chainId,
+              humanVerified: skillProfile.humanVerified,
+              allowAgents: skillProfile.allowAgents,
+              aztecBuilderTier: skillProfile.aztecBuilderTier,
+              aztecBuilderSkillHash: skillProfile.aztecBuilderSkillHash,
+              externalBadges: skillProfile.externalBadges ?? [],
+              lastUpdated: Date.now(),
+            });
+          } catch (err) {
+            console.warn('[arkiv] failed to upsert profile snapshot', err);
+            // non-fatal – demo should still work even if Arkiv write fails
+          }
+        }
+
+        return result;
       }
     } catch (error) {
       // If indexer is not reachable, log warning but continue polling
@@ -145,7 +175,7 @@ export async function publishAndFetchAztecBuilderLeaderboard(
   // If we get here, polling timed out, but transaction succeeded
   // Return partial result with warning instead of throwing error
   // This allows the UI to show the transaction was successful even if indexer isn't ready
-  return {
+  const result = {
     txHash,
     skillHash,
     leaderboard: [], // Empty leaderboard since indexer hasn't ingested yet
@@ -155,5 +185,33 @@ export async function publishAndFetchAztecBuilderLeaderboard(
              `The indexer may need more time, or it may not be running. ` +
              `You can check the transaction on the blockchain explorer.`,
   };
+
+  // 4. Push snapshot to Arkiv even if indexer timed out (transaction succeeded)
+  // Feature flag – if Arkiv is disabled, skip
+  if (process.env.NEXT_PUBLIC_USE_ARKIV !== 'false') {
+    try {
+      const skillProfile = await getSkillProfile({
+        chainId: params.chainId,
+        address: params.userAddress,
+        indexerBaseUrl: params.indexerBaseUrl,
+      });
+
+      await upsertArkivSkillProfile({
+        address: skillProfile.address,
+        chainId: params.chainId,
+        humanVerified: skillProfile.humanVerified,
+        allowAgents: skillProfile.allowAgents,
+        aztecBuilderTier: skillProfile.aztecBuilderTier,
+        aztecBuilderSkillHash: skillProfile.aztecBuilderSkillHash,
+        externalBadges: skillProfile.externalBadges ?? [],
+        lastUpdated: Date.now(),
+      });
+    } catch (err) {
+      console.warn('[arkiv] failed to upsert profile snapshot', err);
+      // non-fatal – demo should still work even if Arkiv write fails
+    }
+  }
+
+  return result;
 }
 
