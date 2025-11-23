@@ -730,13 +730,28 @@ export default function SkillTreesPage() {
           {/* Center Sun */}
           <CenterSun />
 
-          {/* Planets orbiting the sun */}
+          {/* Planets orbiting the sun - realistic solar system layout */}
           <div className="relative w-full h-full min-h-[800px]" style={{ position: 'relative' }}>
             {mockSkillTrees.map((tree, index) => {
-              // Calculate orbital parameters - center is 50% of container
-              const baseDistance = 180 + (index * 40); // Staggered orbits
-              const baseAngle = (index * 360) / mockSkillTrees.length; // Evenly spaced
-              const orbitDuration = 30 + (index * 5); // Different speeds for visual interest
+              // Realistic orbital parameters - like a real solar system
+              // Inner planets closer, outer planets further
+              // Use a logarithmic scale for more realistic spacing
+              const totalPlanets = mockSkillTrees.length;
+              const orbitRatio = index / (totalPlanets - 1); // 0 to 1
+              const minDistance = 120; // Closest orbit
+              const maxDistance = 350; // Farthest orbit
+              // Logarithmic scale for more realistic spacing (inner planets closer together)
+              const logScale = Math.pow(orbitRatio, 0.6); // 0.6 gives nice spacing
+              const orbitDistance = minDistance + (maxDistance - minDistance) * logScale;
+              
+              // Evenly distribute planets around the sun (360 degrees)
+              const baseAngle = (index * 360) / totalPlanets;
+              
+              // Orbital period - outer planets move slower (like real planets)
+              // Use Kepler's laws: period increases with distance
+              const basePeriod = 20; // Base period in seconds
+              const periodMultiplier = Math.pow(orbitDistance / minDistance, 1.5); // Kepler's 3rd law approximation
+              const orbitDuration = basePeriod * periodMultiplier;
               
               return (
                 <BioluminescentOrganism
@@ -745,7 +760,7 @@ export default function SkillTreesPage() {
                   centerX={0} // Will be calculated relative to center
                   centerY={0}
                   orbitAngle={baseAngle}
-                  orbitDistance={baseDistance}
+                  orbitDistance={orbitDistance}
                   orbitDuration={orbitDuration}
                 />
               );
