@@ -93,7 +93,7 @@ export default function LeaderboardsPage() {
           return (
             <div
               key={skill.id}
-              className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800/50 overflow-hidden"
+              className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800/50 overflow-hidden hover:scale-[1.01] transition-transform duration-200 ease-out"
             >
               <Link
                 href={`/leaderboard/${skill.id}`}
