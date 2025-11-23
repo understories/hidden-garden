@@ -46,7 +46,7 @@ export default function SkillsListPage() {
           <Link
             key={skill.id}
             href={`/skills/${skill.id}`}
-            className="block border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800/50 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm transition-all"
+            className="block border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800/50 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm hover:scale-[1.01] transition-all duration-200 ease-out"
           >
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
               {skill.name}
