@@ -50,6 +50,10 @@ export interface PublishAndFetchResult {
   leaderboard: LeaderboardEntry[];
   /** Whether the user has a valid SelfHumanSBT (human-verified) */
   isHumanVerified: boolean;
+  /** Whether indexer data is available (false if polling timed out) */
+  indexerAvailable?: boolean;
+  /** Warning message if indexer timed out but transaction succeeded */
+  warning?: string;
 }
 
 /**
@@ -102,15 +106,29 @@ export async function publishAndFetchAztecBuilderLeaderboard(
 
   // 3. Polling loop to wait for indexer to ingest the event
   for (let i = 0; i < maxAttempts; i++) {
-    const leaderboard = await client.getLeaderboard(skillHash as `0x${string}`);
+    try {
+      const leaderboard = await client.getLeaderboard(skillHash as `0x${string}`);
 
-    // Check if user's entry is in the leaderboard
-    const found = leaderboard.some(
-      (entry) => entry.user_address.toLowerCase() === userAddress.toLowerCase()
-    );
+      // Check if user's entry is in the leaderboard
+      const found = leaderboard.some(
+        (entry) => entry.user_address.toLowerCase() === userAddress.toLowerCase()
+      );
 
-    if (found) {
-      return { txHash, skillHash, leaderboard, isHumanVerified };
+      if (found) {
+        return { 
+          txHash, 
+          skillHash, 
+          leaderboard, 
+          isHumanVerified,
+          indexerAvailable: true,
+        };
+      }
+    } catch (error) {
+      // If indexer is not reachable, log warning but continue polling
+      console.warn(
+        `[leaderboardOrchestrator] Indexer request failed (attempt ${i + 1}/${maxAttempts}):`,
+        error instanceof Error ? error.message : String(error)
+      );
     }
 
     // Wait before next attempt (except on last iteration)
@@ -119,11 +137,18 @@ export async function publishAndFetchAztecBuilderLeaderboard(
     }
   }
 
-  // If we get here, polling timed out
-  throw new Error(
-    `Timed out waiting for indexer to ingest leaderboard data. ` +
-    `Checked ${maxAttempts} times with ${pollIntervalMs}ms interval. ` +
-    `Transaction hash: ${txHash}`
-  );
+  // If we get here, polling timed out, but transaction succeeded
+  // Return partial result with warning instead of throwing error
+  // This allows the UI to show the transaction was successful even if indexer isn't ready
+  return {
+    txHash,
+    skillHash,
+    leaderboard: [], // Empty leaderboard since indexer hasn't ingested yet
+    isHumanVerified,
+    indexerAvailable: false,
+    warning: `Transaction submitted successfully (tx: ${txHash}), but indexer hasn't ingested the data yet. ` +
+             `The indexer may need more time, or it may not be running. ` +
+             `You can check the transaction on the blockchain explorer.`,
+  };
 }
 
