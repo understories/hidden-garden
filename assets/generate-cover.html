@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hidden Garden - Cover Image Generator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .cover-container {
+      width: 1280px;
+      height: 640px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* Animated background particles */
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(125, 216, 125, 0.6);
+      border-radius: 50%;
+      animation: float 20s infinite ease-in-out;
+    }
+    
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0.3;
+      }
+      50% {
+        transform: translateY(-100px) translateX(50px);
+        opacity: 0.8;
+      }
+    }
+    
+    .content {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      padding: 80px;
+      text-align: center;
+    }
+    
+    .logo-container {
+      margin-bottom: 40px;
+    }
+    
+    .logo {
+      width: 120px;
+      height: 160px;
+    }
+    
+    h1 {
+      font-size: 72px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 20px;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      letter-spacing: -1px;
+    }
+    
+    .tagline {
+      font-size: 28px;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 400;
+      margin-bottom: 40px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .features {
+      display: flex;
+      gap: 40px;
+      margin-top: 40px;
+    }
+    
+    .feature {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    
+    .feature-text {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: 500;
+    }
+    
+    .tech-badges {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .badge {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+    }
+    
+    .instructions {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      text-align: center;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div class="cover-container" id="cover">
+    <!-- Animated particles -->
+    <div class="particle" style="left: 10%; top: 20%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 30%; top: 60%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 50%; top: 10%; animation-delay: 4s;"></div>
+    <div class="particle" style="left: 70%; top: 50%; animation-delay: 6s;"></div>
+    <div class="particle" style="left: 90%; top: 30%; animation-delay: 8s;"></div>
+    <div class="particle" style="left: 20%; top: 80%; animation-delay: 10s;"></div>
+    <div class="particle" style="left: 60%; top: 70%; animation-delay: 12s;"></div>
+    <div class="particle" style="left: 80%; top: 15%; animation-delay: 14s;"></div>
+    
+    <div class="content">
+      <div class="logo-container">
+        <svg class="logo" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 24 10 Q 18 12, 16 18 Q 14 24, 18 28 Q 22 32, 24 30 Q 26 32, 30 28 Q 34 24, 32 18 Q 30 12, 24 10 Z" fill="#7dd87d" fillOpacity="0.9" stroke="#7dd87d" strokeWidth="0.5" strokeOpacity="0.7"/>
+          <path d="M 24 14 Q 20 16, 18 20 Q 16 24, 20 26 Q 24 28, 26 26 Q 30 24, 28 20 Q 26 16, 24 14 Z" fill="#7dd87d" fillOpacity="0.8" stroke="#7dd87d" strokeWidth="0.5" strokeOpacity="0.6" transform="rotate(10 24 24)"/>
+          <path d="M 23 30 Q 22 40, 24 48 Q 26 40, 25 30 Z" fill="#8b6f47" fillOpacity="0.8"/>
+          <ellipse cx="24" cy="56" rx="16" ry="8" fill="#a0522d" fillOpacity="0.7"/>
+          <ellipse cx="24" cy="56" rx="14" ry="6" fill="#a0522d" fillOpacity="0.9"/>
+        </svg>
+      </div>
+      
+      <h1>Hidden Garden</h1>
+      <p class="tagline">Privacy-preserving skill tree and leaderboard</p>
+      
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-text">Private Learning</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-text">Selective Disclosure</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🌳</div>
+          <div class="feature-text">Skill Forest</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📊</div>
+          <div class="feature-text">Leaderboards</div>
+        </div>
+      </div>
+      
+      <div class="tech-badges">
+        <span class="badge">Aztec Protocol</span>
+        <span class="badge">Zero-Knowledge Proofs</span>
+        <span class="badge">Next.js</span>
+        <span class="badge">TypeScript</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="instructions">
+    <strong>To capture this as an image:</strong><br>
+    1. Right-click on the cover image above → "Inspect"<br>
+    2. In DevTools, right-click the element with id="cover" → "Capture node screenshot"<br>
+    OR use a browser extension like "Full Page Screen Capture"<br>
+    OR take a screenshot manually (Cmd+Shift+4 on Mac, Snipping Tool on Windows)
+  </div>
+  
+  <script>
+    // Add more particles dynamically
+    for (let i = 0; i < 15; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.top = Math.random() * 100 + '%';
+      particle.style.animationDelay = Math.random() * 20 + 's';
+      particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+      document.getElementById('cover').appendChild(particle);
+    }
+  </script>
+</body>
+</html>
+
