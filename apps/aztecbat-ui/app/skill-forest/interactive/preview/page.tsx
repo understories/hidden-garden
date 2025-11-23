@@ -16,6 +16,7 @@ import {
   BaseTree,
   BioluminescentMushroom,
   MiniShrub,
+  SilverPineTree,
   PrivacyMode,
 } from '@/components/CustomTreeIcons';
 
@@ -111,10 +112,8 @@ function ForceDirectedPreview() {
       {/* Center silver tree */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
         <div className="relative">
-          <div className="w-16 h-16 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-gray-700">
-            <span className="text-2xl">🌳</span>
-          </div>
-          <div className="absolute -inset-2 bg-gray-300/30 rounded-full blur-md animate-pulse" />
+          <SilverPineTree size="lg" />
+          <div className="absolute -inset-4 bg-gray-300/20 rounded-full blur-lg animate-pulse" />
         </div>
       </div>
 
@@ -150,7 +149,189 @@ function ForceDirectedPreview() {
   );
 }
 
-// Layout Option 2: Organic Forest (Natural clustering, varied spacing)
+// Layout Option 2: Garden Beds (Skills grouped in rounded garden bed clusters)
+function GardenBedsPreview() {
+  // Group skills by privacy mode into "garden beds"
+  const beds = [
+    {
+      id: 'public',
+      privacy: 'public-heavy' as const,
+      skills: mockSkills.filter(s => s.privacyMode === 'public-heavy'),
+      position: { x: 280, y: 100 },
+      size: { width: 120, height: 100 },
+    },
+    {
+      id: 'mixed',
+      privacy: 'mixed' as const,
+      skills: mockSkills.filter(s => s.privacyMode === 'mixed'),
+      position: { x: 200, y: 240 },
+      size: { width: 140, height: 100 },
+    },
+    {
+      id: 'private',
+      privacy: 'private-heavy' as const,
+      skills: mockSkills.filter(s => s.privacyMode === 'mostly-private'),
+      position: { x: 120, y: 100 },
+      size: { width: 100, height: 120 },
+    },
+  ];
+
+  return (
+    <div className="relative w-full h-[400px] border-2 border-gray-300 dark:border-gray-700 rounded-lg bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
+      {/* Center silver tree */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+        <div className="relative">
+          <SilverPineTree size="xl" />
+          <div className="absolute -inset-4 bg-gray-300/20 rounded-full blur-lg" />
+        </div>
+      </div>
+
+      {/* Garden beds */}
+      {beds.map((bed) => {
+        const bedColor = bed.privacy === 'public-heavy' 
+          ? 'rgba(125, 216, 125, 0.15)' 
+          : bed.privacy === 'mixed' 
+          ? 'rgba(244, 164, 96, 0.15)' 
+          : 'rgba(147, 112, 219, 0.15)';
+        
+        return (
+          <div key={bed.id}>
+            {/* Garden bed background */}
+            <div
+              className="absolute rounded-3xl border-2 border-opacity-30"
+              style={{
+                left: `${bed.position.x - bed.size.width / 2}px`,
+                top: `${bed.position.y - bed.size.height / 2}px`,
+                width: `${bed.size.width}px`,
+                height: `${bed.size.height}px`,
+                backgroundColor: bedColor,
+                borderColor: bedColor.replace('0.15', '0.4'),
+              }}
+            />
+            
+            {/* Skills in this bed */}
+            {bed.skills.map((skill, index) => {
+              const angle = (index / bed.skills.length) * Math.PI * 2;
+              const radius = Math.min(bed.size.width, bed.size.height) * 0.3;
+              const x = bed.position.x + Math.cos(angle) * radius;
+              const y = bed.position.y + Math.sin(angle) * radius;
+              const privacy = convertPrivacyMode(skill.privacyMode);
+
+              return (
+                <div
+                  key={skill.skillId}
+                  className="absolute cursor-pointer hover:scale-110 transition-transform"
+                  style={{
+                    left: `${x}px`,
+                    top: `${y}px`,
+                    transform: 'translate(-50%, -50%)',
+                  }}
+                >
+                  {renderCustomTree(skill.customTreeType, privacy, 'sm')}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Layout Option 3: Constellation (Skills arranged like stars in a constellation)
+function ConstellationPreview() {
+  // Constellation positions (would be calculated with force-directed or manual positioning)
+  const positions = [
+    { x: 150, y: 120 },
+    { x: 250, y: 100 },
+    { x: 320, y: 180 },
+    { x: 200, y: 200 },
+    { x: 100, y: 240 },
+    { x: 280, y: 280 },
+  ];
+
+  return (
+    <div className="relative w-full h-[400px] border-2 border-gray-300 dark:border-gray-700 rounded-lg bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
+      {/* Center silver tree */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+        <div className="relative">
+          <SilverPineTree size="xl" />
+          <div className="absolute -inset-4 bg-gray-300/20 rounded-full blur-lg animate-pulse" />
+        </div>
+      </div>
+
+      {/* Subtle starfield background */}
+      {Array.from({ length: 20 }).map((_, i) => {
+        // Deterministic positions based on index
+        const x = ((i * 17) % 100);
+        const y = ((i * 23) % 100);
+        return (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-gray-400 rounded-full opacity-40"
+            style={{ left: `${x}%`, top: `${y}%` }}
+          />
+        );
+      })}
+
+      {/* Connection lines between related skills (simplified) */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-30">
+        {positions.slice(0, 3).map((pos, i) => (
+          <line
+            key={i}
+            x1={pos.x}
+            y1={pos.y}
+            x2="50%"
+            y2="50%"
+            stroke="#c0c0c0"
+            strokeWidth="1"
+            strokeDasharray="3 3"
+          />
+        ))}
+      </svg>
+
+      {/* Skill trees as constellation points */}
+      {mockSkills.map((skill, index) => {
+        const pos = positions[index];
+        const privacy = convertPrivacyMode(skill.privacyMode);
+
+        return (
+          <div key={skill.skillId}>
+            {/* Subtle glow around tree */}
+            <div
+              className="absolute rounded-full opacity-20 blur-md"
+              style={{
+                left: `${pos.x}px`,
+                top: `${pos.y}px`,
+                transform: 'translate(-50%, -50%)',
+                width: '40px',
+                height: '40px',
+                backgroundColor: privacy === 'public-heavy' 
+                  ? '#7dd87d' 
+                  : privacy === 'mixed' 
+                  ? '#f4a460' 
+                  : '#9370db',
+              }}
+            />
+            {/* Tree */}
+            <div
+              className="absolute cursor-pointer hover:scale-110 transition-transform"
+              style={{
+                left: `${pos.x}px`,
+                top: `${pos.y}px`,
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              {renderCustomTree(skill.customTreeType, privacy, 'sm')}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Layout Option 4: Organic Forest (Natural clustering, varied spacing)
 function OrganicForestPreview() {
   // Organic, varied positions (would be calculated with clustering algorithm in real implementation)
   const positions = [
@@ -166,10 +347,10 @@ function OrganicForestPreview() {
     <div className="relative w-full h-[400px] border-2 border-gray-300 dark:border-gray-700 rounded-lg bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
       {/* Center silver tree */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-        <div className="w-20 h-20 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center shadow-xl border-2 border-white dark:border-gray-700">
-          <span className="text-3xl">🌳</span>
+        <div className="relative">
+          <SilverPineTree size="xl" />
+          <div className="absolute -inset-4 bg-gray-300/20 rounded-full blur-lg" />
         </div>
-        <div className="absolute -inset-4 bg-gray-300/30 rounded-full blur-lg" />
       </div>
 
       {/* Cluster backgrounds (subtle) */}
@@ -211,6 +392,22 @@ export default function LayoutPreviewPage() {
       component: ForceDirectedPreview,
       pros: ['Natural, organic feel', 'Shows relationships clearly', 'Dynamic and fluid'],
       cons: ['Can be less organized', 'May require zoom for clarity'],
+    },
+    {
+      id: 'garden-beds',
+      name: 'Garden Beds',
+      description: 'Skills grouped in rounded garden bed clusters by privacy mode. Each bed has its own organic boundary.',
+      component: GardenBedsPreview,
+      pros: ['Perfect for garden theme', 'Clear clustering by privacy', 'Organized yet organic'],
+      cons: ['Requires defining bed boundaries', 'May need adjustment for many skills'],
+    },
+    {
+      id: 'constellation',
+      name: 'Constellation',
+      description: 'Skills arranged like stars in a constellation with subtle connection lines. Mystical, lunar-punk aesthetic.',
+      component: ConstellationPreview,
+      pros: ['Fits lunar-punk theme', 'Shows connections elegantly', 'Mystical and beautiful'],
+      cons: ['May be less organized', 'Connection lines can get complex'],
     },
     {
       id: 'organic',
