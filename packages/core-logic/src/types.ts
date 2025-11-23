@@ -27,6 +27,17 @@ export type ExternalBadge = {
 };
 
 /**
+ * Quest summary for private progress display
+ * Represents app-level quest completion data (mirrors what's stored privately in Aztec)
+ */
+export type QuestSummary = {
+  id: string;
+  title: string;
+  score: number | null;
+  status: 'completed' | 'not_started';
+};
+
+/**
  * Complete skill profile for a user
  * Aggregates data from SelfHumanSBT, Aztec tier proofs, quest completions, and external badges
  */
@@ -37,6 +48,7 @@ export type SkillProfile = {
   aztecBuilderSkillHash: string | null;
   aztecAverageScore?: number | null;
   questsCompleted?: number | null;
+  questSummaries: QuestSummary[]; // App-level quest completion data (mirrors Aztec private storage)
   externalBadges: ExternalBadge[];
   allowAgents: boolean;
 };
