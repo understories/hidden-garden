@@ -8,7 +8,11 @@
 
 import { describe, it, expect } from '@jest/globals';
 import { getQuestDefinition } from '../src/registry';
-import type { MultipleChoiceSubmission, QuestSubmission } from '@hidden-garden/core-logic';
+import type {
+  MultipleChoiceSubmission,
+  NumericInputSubmission,
+  QuestSubmission,
+} from '@hidden-garden/core-logic';
 
 describe('Quest Validation', () => {
   describe('noir_syntax_basics', () => {
@@ -344,6 +348,85 @@ describe('Quest Validation', () => {
       
       expect(result.success).toBe(false);
       expect(result.score).toBe(0);
+    });
+  });
+
+  describe('noir_basic_puzzle (numeric_input)', () => {
+    const quest = getQuestDefinition('noir_basic_puzzle');
+
+    it('should exist in registry', () => {
+      expect(quest).toBeDefined();
+      expect(quest?.questId).toBe('noir_basic_puzzle');
+      expect(quest?.type).toBe('numeric_input');
+      expect(quest?.tier).toBe(2);
+    });
+
+    it('should accept correct answer (8)', () => {
+      const submission: NumericInputSubmission = { value: 8 };
+      const result = quest!.validate(submission);
+
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+
+      expect(result.success).toBe(true);
+      expect(result.score).toBe(100);
+      expect(result.feedback).toContain('Correct');
+      expect(result.feedback).toContain('8');
+    });
+
+    it('should reject incorrect answer (wrong number)', () => {
+      const submission: NumericInputSubmission = { value: 7 };
+      const result = quest!.validate(submission);
+
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+
+      expect(result.success).toBe(false);
+      expect(result.score).toBe(0);
+      expect(result.feedback).toContain('Incorrect');
+      expect(result.feedback).toContain('8');
+      expect(result.feedback).toContain('7');
+    });
+
+    it('should reject incorrect answer (0)', () => {
+      const submission: NumericInputSubmission = { value: 0 };
+      const result = quest!.validate(submission);
+
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+
+      expect(result.success).toBe(false);
+      expect(result.score).toBe(0);
+    });
+
+    it('should handle invalid submission type gracefully', () => {
+      const invalidSubmission = { wrongField: 'value' } as unknown as QuestSubmission;
+      const result = quest!.validate(invalidSubmission);
+
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+
+      expect(result.success).toBe(false);
+      expect(result.score).toBe(0);
+      expect(result.feedback).toContain('Invalid submission type');
+      expect(result.feedback).toContain('numeric input');
+    });
+
+    it('should handle non-numeric value gracefully', () => {
+      const invalidSubmission = { value: 'not a number' } as unknown as QuestSubmission;
+      const result = quest!.validate(invalidSubmission);
+
+      if (result instanceof Promise) {
+        throw new Error('Expected synchronous result but got Promise');
+      }
+
+      expect(result.success).toBe(false);
+      expect(result.score).toBe(0);
+      expect(result.feedback).toContain('Invalid submission type');
     });
   });
 });
