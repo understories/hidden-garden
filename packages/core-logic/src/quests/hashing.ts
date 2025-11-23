@@ -63,17 +63,37 @@ export const EXPECTED_AZTEC_BUILDER_CATEGORY_HASH: QuestIdHash = '0x000000000000
  */
 export const EXPECTED_AZTEC_BUILDER_PATH_HASH: QuestIdHash = '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash; // TODO: Compute from Noir
 
+/**
+ * Pedersen Hash Lookup Table
+ * 
+ * ⚠️ MVP PLACEHOLDERS: All values are currently placeholders (0x0000...)
+ * 
+ * Backend team (Team A) will compute actual hashes from Noir circuit and update this table.
+ * 
+ * To compute hashes:
+ * 1. Install aztec-nargo: bash -i <(curl -s https://install.aztec.network)
+ * 2. Run: aztec-nargo test tests/compute_pedersen_hashes.nr
+ * 3. Extract Field values and convert to hex
+ * 4. Update values below
+ * 
+ * See: packages/core-logic/scripts/compute-pedersen-hashes.md for detailed instructions
+ */
 const PEDERSEN_HASH_LOOKUP: Record<string, QuestIdHash> = {
-  // Quest IDs (computed from Noir: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 99, 111, 110, 99, 101, 112, 116, 95, 113, 117, 105, 122]))
+  // Quest IDs
+  // ⚠️ PLACEHOLDER - Backend team will provide actual hash
   'aztec_concept_quiz': EXPECTED_AZTEC_CONCEPT_QUIZ_HASH,
-  'noir_basic_puzzle': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
-  'first_private_tx': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
-  'identity_architect_scenario': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // TODO: Compute from Noir
+  'noir_basic_puzzle': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // ⚠️ PLACEHOLDER
+  'first_private_tx': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // ⚠️ PLACEHOLDER
+  'identity_architect_scenario': '0x0000000000000000000000000000000000000000000000000000000000000000' as QuestIdHash, // ⚠️ PLACEHOLDER
   
-  // Category (computed from Noir: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114]))
+  // Category: "aztec_builder"
+  // ⚠️ PLACEHOLDER - Backend team will provide actual hash
+  // Noir circuit: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114])
   'aztec_builder': EXPECTED_AZTEC_BUILDER_CATEGORY_HASH,
   
-  // Path (computed from Noir: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104]))
+  // Path: "aztec_builder_path"
+  // ⚠️ PLACEHOLDER - Backend team will provide actual hash
+  // Noir circuit: hash::pedersen_hash([97, 122, 116, 101, 99, 95, 98, 117, 105, 108, 100, 101, 114, 95, 112, 97, 116, 104])
   'aztec_builder_path': EXPECTED_AZTEC_BUILDER_PATH_HASH,
 };
 
@@ -105,13 +125,23 @@ function computePedersenHash(input: string): QuestIdHash {
     if (!isPlaceholder(hash)) {
       return hash;
     }
+    // MVP: Return placeholder instead of throwing error
+    // This allows UI development to continue
+    // Backend team will replace with actual hash before production
+    if (isPlaceholder(hash)) {
+      console.warn(
+        `⚠️  Using placeholder hash for "${input}". ` +
+        `Backend team will provide actual hash from Noir circuit.`
+      );
+      return hash;
+    }
   }
   
-  // Hash is not computed yet - throw error with instructions
+  // Hash is not in lookup table - throw error with instructions
   const bytes = stringToBytes(input);
   throw new Error(
-    `Pedersen hash for "${input}" is not yet computed.\n` +
-    `Please compute it from the Noir circuit and add it to PEDERSEN_HASH_LOOKUP.\n` +
+    `Pedersen hash for "${input}" is not in PEDERSEN_HASH_LOOKUP.\n` +
+    `Please add it to the lookup table in hashing.ts.\n` +
     `The Noir circuit uses: hash::pedersen_hash([${bytes.join(', ')}])\n` +
     `See: packages/core-logic/scripts/compute-pedersen-hashes.md for instructions.`
   );
