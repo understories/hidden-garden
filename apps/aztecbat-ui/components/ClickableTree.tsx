@@ -57,17 +57,17 @@ export function ClickableTree({
         onBlur={() => setIsFocused(false)}
         aria-label={`View ${skillName} leaderboard`}
       >
-        {/* Tree with hover effects */}
+        {/* Tree with hover effects - Ghibli style */}
         <div
           className={`
-            transition-transform duration-200 ease-out
+            transition-transform duration-300 ease-out
             motion-reduce:transition-none
             ${showTooltip ? 'scale-110 motion-reduce:scale-100' : 'scale-100'}
           `}
           style={{
-            // Enhanced glow on hover (only if motion is allowed)
+            // Soft shadow on hover (Ghibli style, no harsh glow)
             filter: showTooltip
-              ? 'drop-shadow(0 0 12px currentColor) drop-shadow(0 0 8px currentColor)'
+              ? 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15))'
               : undefined,
           }}
         >
