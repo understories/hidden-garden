@@ -47,10 +47,9 @@ export const CHAINS: Record<SupportedChainId, ChainConfig> = {
     chainId: 31337,
     name: 'Local (Hardhat)',
     rpcUrl: 'http://localhost:8545',
-    // These are example addresses from local Hardhat deployment
-    // Update after running: pnpm --filter @hidden-garden/contracts-public deploy
-    selfHumanSBT: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0' as Address,
-    skillLeaderboard: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9' as Address,
+    // Updated addresses from latest deployment (run: pnpm --filter @hidden-garden/contracts-public deploy:node)
+    selfHumanSBT: '0x0165878A594ca255338adfa4d48449f69242Eb8F' as Address,
+    skillLeaderboard: '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853' as Address,
   },
   // Sepolia testnet
   11155111: {
