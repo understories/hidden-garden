@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { clusters, getSkillsByCluster, skillTreeNodes } from '../skill-canopy/skillCanopyData';
 
 type PrivacyMode = 'public-heavy' | 'mixed' | 'private-heavy';
@@ -24,26 +24,46 @@ function getPrivacyColor(privacy: PrivacyMode): string {
   }
 }
 
-// Generate node positions in an organic, biological cluster pattern
+// Simple deterministic hash function for consistent positioning
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+}
+
+// Generate node positions in an organic, biological cluster pattern (deterministic)
 function generateOrganicLayout(skills: typeof skillTreeNodes) {
   const nodes = skills.map((skill, index) => {
     // Create organic clustering - skills in same cluster are closer together
     const clusterIndex = clusters.findIndex(c => c.id === skill.clusterId);
     const clusterOffset = clusterIndex * (Math.PI * 2 / clusters.length);
     
-    // Radial positioning with organic variation
-    const baseRadius = 150 + (clusterIndex * 80);
-    const angle = clusterOffset + (index % 5) * 0.3 + Math.random() * 0.2;
-    const radiusVariation = 30 + Math.random() * 40;
+    // Deterministic "random" values based on skill ID
+    const seed = hashString(skill.id);
+    const angleVariation = (seed % 100) / 100 * 0.2;
+    const radiusSeed = hashString(skill.id + 'radius');
+    const radiusVariation = 30 + (radiusSeed % 100) / 100 * 40;
+    const offsetSeed = hashString(skill.id + 'offset');
+    const xOffset = (offsetSeed % 100) / 100 - 0.5;
+    const yOffset = (hashString(skill.id + 'y') % 100) / 100 - 0.5;
     
-    const x = baseRadius * Math.cos(angle) + radiusVariation * (Math.random() - 0.5);
-    const y = baseRadius * Math.sin(angle) + radiusVariation * (Math.random() - 0.5);
+    // Radial positioning with organic variation (deterministic)
+    const baseRadius = 150 + (clusterIndex * 80);
+    const angle = clusterOffset + (index % 5) * 0.3 + angleVariation;
+    
+    const x = baseRadius * Math.cos(angle) + radiusVariation * xOffset;
+    const y = baseRadius * Math.sin(angle) + radiusVariation * yOffset;
     
     return {
       id: skill.id,
       name: skill.name,
       privacy: skill.privacy,
       clusterId: skill.clusterId,
+      participants: skill.participants,
       x: x,
       y: y,
       size: skill.participants > 1000 ? 8 : skill.participants > 500 ? 6 : 4,
@@ -51,7 +71,7 @@ function generateOrganicLayout(skills: typeof skillTreeNodes) {
     };
   });
   
-  // Generate organic connections - skills in same cluster connect more, some cross-cluster
+  // Generate organic connections - skills in same cluster connect more, some cross-cluster (deterministic)
   const connections: Array<{ from: string; to: string }> = [];
   
   // Within-cluster connections (dense, organic)
@@ -61,7 +81,9 @@ function generateOrganicLayout(skills: typeof skillTreeNodes) {
       // Connect to nearby skills in same cluster
       const nearby = clusterSkills.slice(i + 1, i + 3);
       nearby.forEach(other => {
-        if (Math.random() > 0.3) { // 70% connection rate within cluster
+        // Deterministic connection based on IDs
+        const connectionSeed = hashString(skill.id + other.id);
+        if ((connectionSeed % 100) > 30) { // 70% connection rate within cluster
           connections.push({ from: skill.id, to: other.id });
           skill.connections.push(other.id);
           other.connections.push(skill.id);
@@ -70,14 +92,16 @@ function generateOrganicLayout(skills: typeof skillTreeNodes) {
     });
   });
   
-  // Cross-cluster connections (sparse, like biological bridges)
+  // Cross-cluster connections (sparse, like biological bridges) - deterministic
   nodes.forEach(skill => {
-    if (Math.random() > 0.85) { // 15% chance of cross-cluster connection
+    const crossSeed = hashString(skill.id + 'cross');
+    if ((crossSeed % 100) > 85) { // 15% chance of cross-cluster connection
       const otherCluster = clusters.find(c => c.id !== skill.clusterId);
       if (otherCluster) {
         const otherSkills = nodes.filter(n => n.clusterId === otherCluster.id);
         if (otherSkills.length > 0) {
-          const target = otherSkills[Math.floor(Math.random() * otherSkills.length)];
+          const targetSeed = hashString(skill.id + 'target');
+          const target = otherSkills[targetSeed % otherSkills.length];
           connections.push({ from: skill.id, to: target.id });
           skill.connections.push(target.id);
           target.connections.push(skill.id);
@@ -91,10 +115,30 @@ function generateOrganicLayout(skills: typeof skillTreeNodes) {
 
 export default function SkillForestTestPage() {
   const { nodes, connections } = useMemo(() => generateOrganicLayout(skillTreeNodes), []);
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   
   // Center the graph
   const centerX = 400;
   const centerY = 400;
+  
+  const handleNodeHover = (nodeId: string, event: React.MouseEvent<SVGCircleElement>) => {
+    setHoveredNode(nodeId);
+    const svg = event.currentTarget.ownerSVGElement;
+    if (svg) {
+      const rect = svg.getBoundingClientRect();
+      const point = svg.createSVGPoint();
+      point.x = event.clientX - rect.left;
+      point.y = event.clientY - rect.top;
+      setTooltipPosition({ x: point.x, y: point.y });
+    }
+  };
+  
+  const handleNodeLeave = () => {
+    setHoveredNode(null);
+  };
+  
+  const hoveredNodeData = hoveredNode ? nodes.find(n => n.id === hoveredNode) : null;
   
   return (
     <main className="min-h-screen bg-gray-900 dark:bg-black p-8">
@@ -156,27 +200,33 @@ export default function SkillForestTestPage() {
             <g className="nodes">
               {nodes.map((node) => {
                 const color = getPrivacyColor(node.privacy);
+                const isHovered = hoveredNode === node.id;
+                const skillData = skillTreeNodes.find(s => s.id === node.id);
+                
                 return (
                   <g key={node.id}>
-                    {/* Glow effect */}
+                    {/* Glow effect - enhanced on hover */}
                     <circle
                       cx={centerX + node.x}
                       cy={centerY + node.y}
-                      r={node.size + 2}
+                      r={isHovered ? node.size + 4 : node.size + 2}
                       fill={color}
-                      opacity="0.2"
-                      className="animate-pulse"
+                      opacity={isHovered ? "0.4" : "0.2"}
+                      className="transition-all duration-200"
                     />
                     {/* Main node */}
                     <circle
                       cx={centerX + node.x}
                       cy={centerY + node.y}
-                      r={node.size}
+                      r={isHovered ? node.size + 2 : node.size}
                       fill={color}
                       stroke={color}
-                      strokeWidth="1"
-                      opacity="0.9"
-                      className="cursor-pointer hover:r-2 transition-all"
+                      strokeWidth={isHovered ? "2" : "1"}
+                      opacity={isHovered ? "1" : "0.9"}
+                      className="cursor-pointer transition-all duration-200"
+                      onMouseEnter={(e) => handleNodeHover(node.id, e)}
+                      onMouseMove={(e) => handleNodeHover(node.id, e)}
+                      onMouseLeave={handleNodeLeave}
                     >
                       <title>{node.name} ({node.privacy})</title>
                     </circle>
@@ -184,6 +234,39 @@ export default function SkillForestTestPage() {
                 );
               })}
             </g>
+            
+            {/* Tooltip */}
+            {hoveredNodeData && (
+              <g className="tooltip">
+                {/* Tooltip background */}
+                <foreignObject
+                  x={tooltipPosition.x + 10}
+                  y={tooltipPosition.y - 10}
+                  width="200"
+                  height="120"
+                  className="pointer-events-none"
+                >
+                  <div className="bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg p-3 shadow-xl border border-gray-700 text-white">
+                    <div className="font-semibold text-sm mb-1">{hoveredNodeData.name}</div>
+                    <div className="text-xs text-gray-300 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-2 h-2 rounded-full" 
+                          style={{ backgroundColor: getPrivacyColor(hoveredNodeData.privacy) }}
+                        />
+                        <span className="capitalize">{hoveredNodeData.privacy.replace('-', ' ')}</span>
+                      </div>
+                      <div className="text-gray-400">
+                        {hoveredNodeData.participants.toLocaleString()} participants
+                      </div>
+                      <div className="text-gray-400">
+                        {hoveredNodeData.connections.length} connections
+                      </div>
+                    </div>
+                  </div>
+                </foreignObject>
+              </g>
+            )}
           </svg>
         </div>
         
