@@ -170,17 +170,39 @@ This document describes the route structure for the Hidden Garden MVP UI, includ
    - New routes are additive only
    - Safe to merge without affecting existing functionality
 
+## Layout & Navigation
+
+### Root Layout (`app/layout.tsx`)
+
+The root layout includes:
+- **Header Navigation**: 
+  - "Hidden Garden 🌱" → Links to `/` (home)
+  - "Skills" → Links to `/skills`
+- **Dark Mode Toggle**: User-controlled theme switching
+- **Placeholder Wallet Text**: "Connected wallet" (no actual connection yet)
+- **WalletProvider**: Preserved for existing pages that use wagmi hooks
+
+### Dark Mode
+
+- **Implementation**: Class-based (`class="dark"` on `<html>`)
+- **Storage**: `localStorage` for persistence
+- **Component**: `components/DarkModeToggle.tsx`
+- **White-Hat**: Explicit, labeled toggle (user comfort, not gamification)
+
+See `docs/TEAMB_LAYOUT_DARKMODE.md` for full details.
+
 ## Next Steps
 
-1. **UI Implementation**: Add basic UI structure to new routes
-2. **Navigation**: Add links between routes in the flow
-3. **State Management**: Determine how to pass state between `/skills/[skillId]` → `/proof`
-4. **Backend Integration**: Connect to existing contracts/APIs
-5. **Testing**: Add tests for new routes
+1. ✅ **Route Structure**: Complete
+2. ✅ **Layout & Navigation**: Complete
+3. ⏳ **UI Implementation**: Add basic UI structure to new routes
+4. ⏳ **State Management**: Determine how to pass state between `/skills/[skillId]` → `/proof`
+5. ⏳ **Backend Integration**: Connect to existing contracts/APIs
+6. ⏳ **Testing**: Add tests for new routes
 
 ---
 
-**Last Updated**: Phase 3 - Route Structure Complete  
-**Status**: ✅ Routes created, documentation complete  
+**Last Updated**: Phase 3 - Route Structure & Layout Complete  
+**Status**: ✅ Routes created, layout updated, dark mode added  
 **Next Phase**: UI Implementation
 
