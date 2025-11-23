@@ -159,11 +159,7 @@ export default function AztecLabPage() {
           success: false,
           error: `Aztec PXE is not available at ${pxeUrl}.\n\n` +
                  `Error: ${errorMsg}\n\n` +
-                 `To start Aztec sandbox:\n` +
-                 `  pnpm aztec:sandbox\n\n` +
-                 `Or with Docker:\n` +
-                 `  docker run -it -p 8080:8080 aztecprotocol/sandbox:latest\n\n` +
-                 `Please ensure the Aztec sandbox is running.`
+                 `To start Aztec sandbox, run: \`aztec start --sandbox\` in a separate terminal.`
         });
         return;
       }
