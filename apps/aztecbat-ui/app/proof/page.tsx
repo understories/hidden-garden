@@ -60,8 +60,8 @@ export default function ProofFlowPage() {
 
     // Navigate based on choice
     if (selectedOption === 'full' || selectedOption === 'completion-only') {
-      // Navigate to leaderboard for the skill
-      router.push(`/leaderboard/${skillId}`);
+      // Navigate to leaderboard for the skill with success param
+      router.push(`/leaderboard/${skillId}?revealed=true`);
     } else {
       // Navigate back to skills with confirmation
       router.push(`/skills/${skillId}?private=true`);
@@ -140,10 +140,10 @@ export default function ProofFlowPage() {
                 </div>
                 <div className="flex-1">
                   <div className="font-medium mb-1">
-                    Share full result on my profile & leaderboard (score + completion)
+                    Reveal this tier publicly (score + completion)
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Your score and completion status will be visible to others
+                    Your score and completion status will be visible to others on your profile and the leaderboard
                   </div>
                 </div>
               </div>
@@ -181,10 +181,10 @@ export default function ProofFlowPage() {
                 </div>
                 <div className="flex-1">
                   <div className="font-medium mb-1">
-                    Share only that I completed this skill (no score)
+                    Reveal completion only (no score)
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Only your completion status will be visible, not your score
+                    Only your completion status will be visible on your profile and the leaderboard, not your score
                   </div>
                 </div>
               </div>
@@ -222,10 +222,10 @@ export default function ProofFlowPage() {
                 </div>
                 <div className="flex-1">
                   <div className="font-medium mb-1">
-                    Keep this attempt private (no leaderboard entry)
+                    Keep this attempt private
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    This attempt will remain private and won't appear on leaderboards
+                    Your progress is saved privately. This attempt won't appear on leaderboards, but it still counts toward your private skill tree.
                   </div>
                 </div>
               </div>
@@ -264,25 +264,38 @@ export default function ProofFlowPage() {
       </section>
 
       {/* Submit Button */}
-      <div className="pt-4">
+      <div className="pt-4 space-y-2">
         <button
           onClick={handleSubmit}
           disabled={!selectedOption || isSubmitting}
           className={`w-full py-3 px-6 rounded-lg font-medium transition-all ${
             selectedOption && !isSubmitting
-              ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
+              ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-sm'
               : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
           }`}
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center gap-2">
               <span className="animate-spin">⏳</span>
-              Verifying & updating leaderboard…
+              Processing your choice…
             </span>
+          ) : selectedOption === 'private' ? (
+            'Keep this attempt private'
+          ) : selectedOption === 'full' ? (
+            'Reveal this tier publicly'
+          ) : selectedOption === 'completion-only' ? (
+            'Reveal completion only'
           ) : (
-            'Submit choice & continue'
+            'Continue'
           )}
         </button>
+        {selectedOption && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            {selectedOption === 'private'
+              ? 'Your progress will be saved privately in your skill tree.'
+              : 'Your achievement will be visible on your profile and the leaderboard.'}
+          </p>
+        )}
       </div>
     </main>
   );
