@@ -14,6 +14,7 @@ type ProfilePageProps = {
 };
 
 // Mock profile data lookup - in production this would come from the backend
+// Each profile has diverse skills and achievements
 const mockProfileDataLookup: Record<string, {
   ensName?: string;
   bio: string;
@@ -25,6 +26,7 @@ const mockProfileDataLookup: Record<string, {
   }>;
   hasPrivateCompletions: boolean;
 }> = {
+  // Alice - Strong in Rust, good in ZK
   '0x1234567890123456789012345678901234567890': {
     ensName: 'alice.eth',
     bio: 'Building a privacy-first skill graph.',
@@ -41,40 +43,61 @@ const mockProfileDataLookup: Record<string, {
         dateRevealed: '2024-01-10T14:20:00Z',
         proofOfHuman: true,
       },
+      {
+        skillName: 'Aztec Protocol',
+        tier: 2,
+        dateRevealed: '2024-01-08T09:15:00Z',
+        proofOfHuman: true,
+      },
     ],
     hasPrivateCompletions: true,
   },
+  // Bob - Strong in ZK and Circuits, good in Rust
   '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd': {
     ensName: 'bob.eth',
     bio: 'Exploring zero-knowledge proofs and privacy tech.',
     achievements: [
       {
-        skillName: 'Rust Foundations',
+        skillName: 'Zero-Knowledge Basics',
         tier: 4,
         dateRevealed: '2024-01-12T08:15:00Z',
         proofOfHuman: true,
       },
       {
         skillName: 'Advanced Circuits',
-        tier: 3,
+        tier: 4,
         dateRevealed: '2024-01-08T16:45:00Z',
+        proofOfHuman: true,
+      },
+      {
+        skillName: 'Rust Foundations',
+        tier: 3,
+        dateRevealed: '2024-01-05T11:20:00Z',
         proofOfHuman: true,
       },
     ],
     hasPrivateCompletions: false,
   },
+  // Agent/Non-human - Rust only, no proof of human
   '0x9876543210987654321098765432109876543210': {
     bio: 'Learning Aztec and Noir.',
     achievements: [
       {
-        skillName: 'Rust Foundations',
+        skillName: 'Advanced Circuits',
         tier: 3,
         dateRevealed: '2024-01-14T12:00:00Z',
+        proofOfHuman: false,
+      },
+      {
+        skillName: 'Aztec Protocol',
+        tier: 2,
+        dateRevealed: '2024-01-11T15:30:00Z',
         proofOfHuman: false,
       },
     ],
     hasPrivateCompletions: false,
   },
+  // Charlie - Mixed results, moderate across skills
   '0xfedcba9876543210fedcba9876543210fedcba98': {
     ensName: 'charlie.eth',
     bio: 'Building a privacy-first skill graph.',
@@ -85,9 +108,16 @@ const mockProfileDataLookup: Record<string, {
         dateRevealed: '2024-01-11T14:30:00Z',
         proofOfHuman: true,
       },
+      {
+        skillName: 'Zero-Knowledge Basics',
+        tier: 2,
+        dateRevealed: '2024-01-09T10:00:00Z',
+        proofOfHuman: true,
+      },
     ],
     hasPrivateCompletions: false,
   },
+  // Dana - Early learner, lower tiers
   '0x2468135790246813579024681357902468135790': {
     bio: 'Exploring privacy-preserving technologies.',
     achievements: [
@@ -96,6 +126,77 @@ const mockProfileDataLookup: Record<string, {
         tier: 2,
         dateRevealed: '2024-01-13T10:00:00Z',
         proofOfHuman: true,
+      },
+    ],
+    hasPrivateCompletions: false,
+  },
+  // Shadowmage - Strong in Aztec, good in Circuits
+  'shadowmage.eth': {
+    ensName: 'shadowmage.eth',
+    bio: 'Privacy researcher and Aztec enthusiast.',
+    achievements: [
+      {
+        skillName: 'Aztec Protocol',
+        tier: 4,
+        dateRevealed: '2024-01-16T08:00:00Z',
+        proofOfHuman: true,
+      },
+      {
+        skillName: 'Advanced Circuits',
+        tier: 3,
+        dateRevealed: '2024-01-12T14:20:00Z',
+        proofOfHuman: true,
+      },
+      {
+        skillName: 'Zero-Knowledge Basics',
+        tier: 3,
+        dateRevealed: '2024-01-07T11:45:00Z',
+        proofOfHuman: true,
+      },
+    ],
+    hasPrivateCompletions: false,
+  },
+  // ZKMaster - Expert in ZK, moderate elsewhere
+  '0x1111222233334444555566667777888899990000': {
+    ensName: 'zkmaster.eth',
+    bio: 'Zero-knowledge proof specialist.',
+    achievements: [
+      {
+        skillName: 'Zero-Knowledge Basics',
+        tier: 4,
+        dateRevealed: '2024-01-17T09:30:00Z',
+        proofOfHuman: true,
+      },
+      {
+        skillName: 'Advanced Circuits',
+        tier: 2,
+        dateRevealed: '2024-01-10T16:00:00Z',
+        proofOfHuman: true,
+      },
+    ],
+    hasPrivateCompletions: true,
+  },
+  // CircuitBuilder - Strong in Circuits, good in Rust
+  '0xaaaabbbbccccddddeeeeffff1111222233334444': {
+    bio: 'Circuit design and optimization.',
+    achievements: [
+      {
+        skillName: 'Advanced Circuits',
+        tier: 4,
+        dateRevealed: '2024-01-15T13:15:00Z',
+        proofOfHuman: true,
+      },
+      {
+        skillName: 'Rust Foundations',
+        tier: 3,
+        dateRevealed: '2024-01-09T10:30:00Z',
+        proofOfHuman: true,
+      },
+      {
+        skillName: 'Aztec Protocol',
+        tier: 2,
+        dateRevealed: '2024-01-06T14:00:00Z',
+        proofOfHuman: false,
       },
     ],
     hasPrivateCompletions: false,
@@ -112,12 +213,17 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const address = decodeURIComponent(rawAddress);
 
   // Mock: in production, fetch profile data based on address
+  // Handle both ENS names and addresses
   const profile = mockProfileDataLookup[address] || {
     bio: 'Building a privacy-first skill graph.',
     achievements: [],
     hasPrivateCompletions: false,
   };
-  const displayName = profile.ensName || shortenAddress(address);
+  
+  // If address is an ENS name, use it as display name; otherwise use profile ENS or shortened address
+  const displayName = address.endsWith('.eth') 
+    ? address 
+    : (profile.ensName || shortenAddress(address));
 
   return (
     <main className="max-w-3xl mx-auto space-y-6 py-8">
