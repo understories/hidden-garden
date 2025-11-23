@@ -783,7 +783,40 @@ export default function AztecLabPage() {
                 </thead>
                 <tbody>
                   {filteredLeaderboard.map((entry, index) => (
-                    <tr key={entry.id || index}>
+                    <tr 
+                      key={entry.id || index}
+                      onClick={async () => {
+                        setPublicProfileAddress(entry.user_address);
+                        setLoadingPublicProfile(true);
+                        try {
+                          const response = await fetch(
+                            `/api/dev/public-profile?address=${encodeURIComponent(entry.user_address)}&chainId=${revealChainId}`
+                          );
+                          const data = await response.json();
+                          if (data.ok && data.profile) {
+                            setPublicProfile(data.profile);
+                          } else {
+                            console.error('Failed to load public profile:', data.error);
+                            setPublicProfile(null);
+                          }
+                        } catch (error) {
+                          console.error('Error loading public profile:', error);
+                          setPublicProfile(null);
+                        } finally {
+                          setLoadingPublicProfile(false);
+                        }
+                      }}
+                      style={{ 
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#f5f5f5';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '';
+                      }}
+                    >
                       <td style={{ padding: '0.5rem', border: '1px solid #ddd' }}>{index + 1}</td>
                       <td style={{ padding: '0.5rem', border: '1px solid #ddd', fontFamily: 'monospace', fontSize: '0.9em' }}>
                         {entry.user_address}
@@ -805,6 +838,115 @@ export default function AztecLabPage() {
           </div>
         )}
       </section>
+
+      {/* Public Profile Modal */}
+      {(publicProfileAddress || publicProfile) && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setPublicProfileAddress(null);
+            setPublicProfile(null);
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              padding: '2rem',
+              borderRadius: '8px',
+              maxWidth: '500px',
+              width: '90%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ margin: 0 }}>Public Profile</h2>
+              <button
+                onClick={() => {
+                  setPublicProfileAddress(null);
+                  setPublicProfile(null);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  padding: '0.25rem 0.5rem',
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {loadingPublicProfile ? (
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <p>Loading public profile...</p>
+              </div>
+            ) : publicProfile ? (
+              <div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <strong>Address:</strong>{' '}
+                  <code style={{ fontFamily: 'monospace', fontSize: '0.9em' }}>
+                    {publicProfile.address}
+                  </code>
+                </div>
+
+                <div style={{ marginBottom: '1rem', padding: '0.75rem', background: '#f0f0f0', borderRadius: '4px' }}>
+                  <strong>Human verified:</strong>{' '}
+                  {publicProfile.humanVerified ? (
+                    <span style={{ color: '#4caf50' }}>✅ Yes (Self SBT)</span>
+                  ) : (
+                    <span style={{ color: '#999' }}>❌ No</span>
+                  )}
+                </div>
+
+                <div style={{ marginBottom: '1rem', padding: '0.75rem', background: '#f0f0f0', borderRadius: '4px' }}>
+                  <strong>Revealed Aztec builder tier:</strong>{' '}
+                  {publicProfile.aztecBuilderTier !== null ? (
+                    <span style={{ fontWeight: 'bold', color: '#2196F3' }}>{publicProfile.aztecBuilderTier}</span>
+                  ) : (
+                    <span style={{ color: '#999' }}>Not revealed</span>
+                  )}
+                </div>
+
+                <div style={{ 
+                  marginTop: '2rem', 
+                  padding: '1rem', 
+                  background: '#fff3e0', 
+                  border: '1px solid #ffb74d',
+                  borderRadius: '4px',
+                }}>
+                  <h3 style={{ marginTop: 0, marginBottom: '0.75rem' }}>Private data:</h3>
+                  <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+                    <li>🔒 Individual quest scores</li>
+                    <li>🔒 Quest list</li>
+                    <li>🔒 Average score</li>
+                  </ul>
+                  <p style={{ marginTop: '0.75rem', marginBottom: 0, fontSize: '0.9rem', color: '#666', fontStyle: 'italic' }}>
+                    This data is stored privately in Aztec and never revealed publicly.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <p>Failed to load public profile</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Section 3: Cryptographic Computations */}
       <section style={{ 
