@@ -142,6 +142,9 @@ export default function LeaderboardPage({ params }: LeaderboardPageProps) {
           commitment to growth and learning. Your progress is your own—compare to inspire, not to
           compete.
         </p>
+        <p className="text-xs mt-2 italic">
+          This leaderboard shows only the minimum information: address/ENS, tier, and verification status. Quest scores and detailed breakdowns remain private.
+        </p>
       </div>
 
       {/* Leaderboard Table */}
