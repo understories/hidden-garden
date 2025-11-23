@@ -28,6 +28,8 @@ type SkillTreeTileProps = {
     private: number;
   };
   quests?: Quest[];
+  treeType?: 'conifer' | 'round' | 'mushroom';
+  treePrivacy?: 'public-heavy' | 'mixed' | 'private-heavy';
 };
 
 function getPrivacyGradient(privacyMode: PrivacyMode): string {
@@ -86,6 +88,8 @@ export function SkillTreeTile({
   privacyMode,
   privacyStats,
   quests = [],
+  treeType,
+  treePrivacy,
 }: SkillTreeTileProps) {
   const gradientClasses = getPrivacyGradient(privacyMode);
   const borderClasses = getPrivacyBorder(privacyMode);
@@ -103,12 +107,19 @@ export function SkillTreeTile({
     return mode === 'mostly-private' ? 'private-heavy' : mode;
   };
 
+  // If treeType and treePrivacy are provided, show single tree
+  // Otherwise, show multiple trees (one per quest) for backward compatibility
+  const showSingleTree = treeType !== undefined && treePrivacy !== undefined;
+  
   // Default quests if not provided
   const defaultQuests: Quest[] = quests.length > 0 ? quests : [
     { id: 'quest-1', name: 'Quest 1', participantCount: Math.floor(participantCount * 0.4), privacyMode: convertPrivacyMode(privacyMode) },
     { id: 'quest-2', name: 'Quest 2', participantCount: Math.floor(participantCount * 0.35), privacyMode: convertPrivacyMode(privacyMode) },
     { id: 'quest-3', name: 'Quest 3', participantCount: Math.floor(participantCount * 0.25), privacyMode: convertPrivacyMode(privacyMode) },
   ];
+
+  // Determine tree size based on participant count
+  const treeSize = participantCount > 1000 ? 'lg' : participantCount > 500 ? 'md' : 'sm';
 
   return (
     <div className="relative group">
@@ -131,18 +142,28 @@ export function SkillTreeTile({
             </div>
           </div>
           
-          {/* Trees - one per quest */}
-          <div className="flex items-end justify-center gap-3 flex-wrap">
-            {defaultQuests.map((quest, index) => (
-              <div key={quest.id} className="flex flex-col items-center">
-                <TreeIcon
-                  type={getTreeType(index)}
-                  privacy={quest.privacyMode}
-                  size={getTreeSize(quest.participantCount)}
-                />
-              </div>
-            ))}
-          </div>
+          {/* Single tree or multiple trees */}
+          {showSingleTree ? (
+            <div className="flex items-end justify-center">
+              <TreeIcon
+                type={treeType}
+                privacy={treePrivacy}
+                size={treeSize}
+              />
+            </div>
+          ) : (
+            <div className="flex items-end justify-center gap-3 flex-wrap">
+              {defaultQuests.map((quest, index) => (
+                <div key={quest.id} className="flex flex-col items-center">
+                  <TreeIcon
+                    type={getTreeType(index)}
+                    privacy={quest.privacyMode}
+                    size={getTreeSize(quest.participantCount)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </Link>
 
