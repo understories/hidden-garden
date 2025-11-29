@@ -12,7 +12,7 @@
  * Quest completions are stored privately in Aztec.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 // Mock skills lookup - in production this would come from the backend
@@ -23,7 +23,7 @@ const mockSkills: Record<string, { name: string }> = {
   'aztec-protocol': { name: 'Aztec Protocol' },
 };
 
-export default function ProofFlowPage() {
+function ProofFlowContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [tierToReveal, setTierToReveal] = useState<number>(1);
@@ -233,5 +233,19 @@ export default function ProofFlowPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function ProofFlowPage() {
+  return (
+    <Suspense fallback={
+      <main className="max-w-2xl mx-auto space-y-8 py-8">
+        <div className="text-center py-12">
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </main>
+    }>
+      <ProofFlowContent />
+    </Suspense>
   );
 }

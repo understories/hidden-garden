@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import type { EnsPublicClient } from '@hidden-garden/core-logic';
 import { shortenAddress, getEnsName } from '@hidden-garden/core-logic';
@@ -96,9 +97,9 @@ export const ConnectButton: React.FC = () => {
           type="button"
           onClick={() => injectedConnector && connect({ connector: injectedConnector })}
           disabled={isPending || !injectedConnector}
-          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isPending ? 'Connecting…' : 'Connect wallet'}
+          {isPending ? 'Connecting…' : 'Connect Wallet'}
         </button>
         {(!injectedConnector || isMockMode) && (
           <button
@@ -117,24 +118,46 @@ export const ConnectButton: React.FC = () => {
     );
   }
 
-  const label =
-    ensLoading ? 'Resolving ENS…' : ensName ?? (address ? shortenAddress(address) : 'Connected');
+  // Format display name: show ENS.eth if available, otherwise shortened address
+  const displayName = ensLoading 
+    ? 'Resolving ENS…' 
+    : ensName 
+    ? `${ensName}${ensName.endsWith('.eth') ? '' : '.eth'}` // Ensure .eth suffix
+    : (address ? shortenAddress(address) : 'Connected');
+  
+  // Use ENS name for profile link if available, otherwise address
+  const profileIdentifier = ensName || address;
+  const profileHref = profileIdentifier ? `/u/${profileIdentifier}` : null;
 
   return (
     <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => disconnect()}
-        className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-      >
-        {isMockMode && <span className="mr-2 text-xs">🎭</span>}
-        {label}
-      </button>
+      {profileHref ? (
+        <Link
+          href={profileHref}
+          className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
+          {isMockMode && <span className="mr-2 text-xs">🎭</span>}
+          {displayName}
+        </Link>
+      ) : (
+        <span className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200">
+          {isMockMode && <span className="mr-2 text-xs">🎭</span>}
+          {displayName}
+        </span>
+      )}
       {isMockMode && (
         <span className="text-xs text-amber-600 dark:text-amber-400" title="Mock wallet mode">
           Mock
         </span>
       )}
+      <button
+        type="button"
+        onClick={() => disconnect()}
+        className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+        title="Disconnect wallet"
+      >
+        Disconnect
+      </button>
     </div>
   );
 };

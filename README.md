@@ -5,7 +5,6 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-77.6%25-blue)](https://www.typescriptlang.org/)
 [![Noir](https://img.shields.io/badge/Noir-13.0%25-orange)](https://noir-lang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16.0-black)](https://nextjs.org/)
-[![License](https://img.shields.io/badge/license-Private-red)](LICENSE)
 
 ## ✨ Features
 
@@ -197,10 +196,6 @@ The application can be deployed to Vercel. See [VERCEL_DEPLOYMENT_CHECKLIST.md](
 - **Repository**: [https://github.com/understories/hidden-garden](https://github.com/understories/hidden-garden)
 - **Aztec Protocol**: [https://aztec.network](https://aztec.network)
 - **Noir Language**: [https://noir-lang.org](https://noir-lang.org)
-
-## 📝 License
-
-This project is private and proprietary. All rights reserved.
 
 ## 🙏 Acknowledgments
 
